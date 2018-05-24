@@ -38,12 +38,26 @@ make.cnames <- function(Labels){
     return(Unique.Names);
 }
 
+GetConservationLaws <- function(N){
+    M <- MASS::Null(t(N));
+    rM <- t(pracma::rref(t(M)));
+    nr=rM;
+    count=0;
+    while (norm(nr-round(nr)) > 1e-6 && count<3){
+        warning("nullspace is not represented by integers. \nTo make the mass conservation more readable, we multiply them by 10 and round.");
+        nr <- nr*10;
+        count <- count+1;
+    }
+    Laws=round(nr);
+    return(Laws);
+}
+
 
 sbtab_to_vfgen <- function(M){
     lM <- length(M);
     SBtab <- list();
     document.name <- GetDocumentName(M[[1]]);
-    print(document.name);
+    message(sprintf("Document Name: %s.",document.name));
     table.name <- list();
     for (i in c(1:lM)){
         table.name[[i]] <- GetTableName(M[[i]]);        
@@ -53,7 +67,7 @@ sbtab_to_vfgen <- function(M){
     }
     cat(sprintf("SBtab has %i tables.\n",length(SBtab)));
     names(SBtab) <- table.name;
-    print(table.name);
+    message(table.name);
     message("The names of the SBtab list:");
     message(names(SBtab),sep=", ");
     message("The names of SBtab[[1]]:");
@@ -100,42 +114,72 @@ sbtab_to_vfgen <- function(M){
     
     lhs_rhs <- strsplit(ReactionFormula,"<=>");
     ODE<-vector(mode="character",length=nC);
+    ## stoichiometry matrix:
+    N <- matrix(0,nrow=nC,ncol=nFlux);
+    
     for (i in c(1:nR)){
         line=lhs_rhs[[i]];
         message(sprintf("Reaction %i:",i));
         cat(sprintf("line (a->b): «%s» -> «%s»\n",line[1],line[2]));
-        a <- make.cnames(unlist(strsplit(line[1],"[+]")));
-        b <- make.cnames(unlist(strsplit(line[2],"[+]")));
+        a <- unlist(strsplit(line[1],"[+]"));
+        b <- unlist(strsplit(line[2],"[+]"));
         message(" where a: ");
         print(a)
         message("   and b: ");
         print(b)
         message("Products:")        
-        for (compound in b){
-            message(compound)
-            j <- grepl(compound,CompoundName)
-            if (any(j)){
+        for (xcompound in b){
+            ## message(xcompound)
+            ## find possible factors within string
+            xb <- unlist(strsplit(xcompound,"[*]"));
+            if (length(xb)>1){
+                n <- as.numeric(xb[1]);
+                compound <- make.cnames(xb[2]);
+            } else {
+                compound <- make.cnames(xb[1]);
+                n <- 1;
+            }            
+            message(sprintf("%i × %s",n,compound))
+            if (compound %in% CompoundName){
+                j <- match(compound,CompoundName)
+                message(sprintf("%s is compound %i\n",compound,j));
                 ODE[j] <- paste(ODE[j],FluxName[i],sep="+");
+                N[j,i] <- N[j,i] + n;
             }
-            rm(j);
         }
         message("Reactants:")
-        for (compound in a){
+        for (xcompound in a){
             message(compound)
-            j <- grepl(compound,CompoundName)
-            if (any(j)){
-                ODE[j] <- paste(ODE[j],FluxName[i],sep="-");
+            xa <- unlist(strsplit(xcompound,"[*]"));
+            if (length(xa)>1){
+                n <- as.numeric(xa[1]);
+                compound <- make.cnames(xa[2]);
+            } else {
+                compound <- make.cnames(xa[1]);
+                n <- 1;
             }
-            rm(j);
+            message(sprintf("%i × %s",n,compound))
+
+            if (compound %in% CompoundName){
+                j <- match(compound,CompoundName)
+                message(sprintf("%s is compound %i\n",compound,j));
+                ODE[j] <- paste(ODE[j],FluxName[i],sep="-");
+                N[j,i] <- N[j,i] - n;
+            }
         }
     }
+
+    Laws <- GetConservationLaws(N);
+    print(Laws);
+    ## currently the laws are not used, but each line of Laws will replace one state variable.
     
     H <- document.name;
     H <- sub("-",'_',H);
     vfgen.header <- "<?xml version=\"1.0\" ?>";
     vfgen.model <- sprintf("<VectorField Name=\"%s\" Description=\"model created by an R script «sbtab_to_vfgen.R»\">",H);
+    vfgen.const <- vector(length=nConst,mode="character");
     for (i in c(1:nConst)){
-        vfgen.const <- sprintf(" <Constant Name=\"%s\" Description=\"constant %s\" Value=\"%s\"/>",ConstantName[i],ConstantID[i],ConstantValue[i]);
+        vfgen.const[i] <- sprintf(" <Constant Name=\"%s\" Description=\"constant %s\" Value=\"%s\"/>",ConstantName[i],ConstantID[i],ConstantValue[i]);
     }
     vfgen.par <- vector(length=nPar,mode="character");
     for (i in c(1:nPar)){
@@ -154,6 +198,9 @@ sbtab_to_vfgen <- function(M){
         vfgen.function[i]=sprintf(" <Function Name=\"%s\" Description=\"output %s\" Formula=\"%s\"/>",OutputName[i],OutputID[i],OutputFormula[i]);
     }
     vfgen.endmodel <- "</VectorField>";
-    cat(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel,sep="\n",file=sprintf("%s_vf.xml",H));
+    fname<-sprintf("%s_vf.xml",H);
+    cat(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel,sep="\n",file=fname);
+
+    message(sprintf("The content was written to: %s\n",fname));
     return(c(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel));
 }
