@@ -79,59 +79,57 @@ sbtab_to_vfgen <- function(M){
     message(colnames(SBtab[[1]]),sep=", ");
     message("assigning specific table columns to variables:");
 
-    ReactionID <- SBtab[["Reaction"]][["!ID"]];
-    ReactionFormula <- SBtab[["Reaction"]][["!ReactionFormula"]];
-    ReactionName <- make.cnames(SBtab[["Reaction"]][["!Name"]])
-    nR <- length(ReactionID);
+    Reaction$ID <- SBtab[["Reaction"]][["!ID"]];
+    Reaction$Formula <- SBtab[["Reaction"]][["!ReactionFormula"]];
+    Reaction$Name <- make.cnames(SBtab[["Reaction"]][["!Name"]])
+    nR <- length(Reaction$ID);
 
-    ConstantID <- SBtab[["Constant"]][["!ID"]];    
-    ConstantName <- make.cnames(SBtab[["Constant"]][["!Name"]])
-    ConstantValue <- SBtab[["Constant"]][["!Value"]];
-    nConst <- length(ConstantID);
+    Constant$ID <- SBtab[["Constant"]][["!ID"]];    
+    Constant$Name <- make.cnames(SBtab[["Constant"]][["!Name"]])
+    Constant$Value <- SBtab[["Constant"]][["!Value"]];
+    nConst <- length(Constant$ID);
 
-    CompoundID <- SBtab[["Compound"]][["!ID"]];
-    CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]])
-    InitialValue <- SBtab[["Compound"]][["!InitialValue"]];
+    Compound$ID <- SBtab[["Compound"]][["!ID"]];
+    Compound$Name <- make.cnames(SBtab[["Compound"]][["!Name"]])
+    Compound$InitialValue <- SBtab[["Compound"]][["!InitialValue"]];
     nC <- length(CompoundID);
     message("Initial Values:");
     print(InitialValue);
     
-    ParID <- SBtab[["Parameter"]][["!ID"]];
-    ParName <- make.cnames(SBtab[["Parameter"]][["!Name"]])
+    Par$ID <- SBtab[["Parameter"]][["!ID"]];
+    Par$Name <- make.cnames(SBtab[["Parameter"]][["!Name"]])
     if (length(grep("!DefaultValue",colnames(SBtab[["Parameter"]])))>0){
-        ParValue <- SBtab[["Parameter"]][["!DefaultValue"]];
+        Par$Value <- SBtab[["Parameter"]][["!DefaultValue"]];
     }else if (length(grep("!Value",colnames(SBtab[["Parameter"]])))>0){
-        ParValue <- SBtab[["Parameter"]][["!Value"]];
+        Par$Value <- SBtab[["Parameter"]][["!Value"]];
     }else if (length(grep("!Mean",colnames(SBtab[["Parameter"]])))>0){
-        ParValue <- SBtab[["Parameter"]][["!Mean"]];
+        Par$Value <- SBtab[["Parameter"]][["!Mean"]];
     }else if (length(grep("!Median",colnames(SBtab[["Parameter"]])))>0){
-        ParValue <- SBtab[["Parameter"]][["!Median"]];
+        Par$Value <- SBtab[["Parameter"]][["!Median"]];
     }
     nPar <- length(ParID);
     
     ## diregard parameters that have been previously auto generated, by Conservation of Mass analysis:
     
 
-    FluxID <- SBtab[["Reaction"]][["!ID"]];
-    Flux <- SBtab[["Reaction"]][["!KineticLaw"]];
-    FluxName <- make.cnames(SBtab[["Reaction"]][["!Name"]]);
-    nFlux <- length(FluxID);
+    Flux$ID <- SBtab[["Reaction"]][["!ID"]];
+    Flux$Formula <- SBtab[["Reaction"]][["!KineticLaw"]];
+    Flux$Name <- make.cnames(SBtab[["Reaction"]][["!Name"]]);
+    nFlux <- length(Flux$ID);
     
-    OutputID <- SBtab[["Output"]][["!ID"]];
-    OutputName <- make.cnames(SBtab[["Output"]][["!QuantityName"]]);
-    OutputFormula <-  SBtab[["Output"]][["!Formula"]];
-    nO <- length(OutputID);
+    Output$ID <- SBtab[["Output"]][["!ID"]];
+    Output$Name <- make.cnames(SBtab[["Output"]][["!QuantityName"]]);
+    Output$Formula <-  SBtab[["Output"]][["!Formula"]];
+    nO <- length(Output$ID);
 
-    InputID <- SBtab[["Input"]][["!ID"]];
-    InputName <- make.cnames(SBtab[["Input"]][["!Name"]]);
-    InputDefaultValue <-  SBtab[["Input"]][["!DefaultValue"]];
+    Input$ID <- SBtab[["Input"]][["!ID"]];
+    Input$Name <- make.cnames(SBtab[["Input"]][["!Name"]]);
+    Input$DefaultValue <-  SBtab[["Input"]][["!DefaultValue"]];
     Disregard <- as.logical(SBtab[["Input"]][["!ConservationLaw"]]);
     message("Some input parameters may be earlier detected Conservation Law constants: ");
     print(Disregard)
     if (length(Disregard)==length(InputID)){
-        InputID <- InputID[!Disregard];
-        InputName <- InputName[!Disregard];
-        InputDefaultValue <- InputDefaultValue[!Disregard];
+        Input <- Input[-Disregard,];
     }
     nInput <- length(InputID);
 
