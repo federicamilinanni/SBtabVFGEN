@@ -89,6 +89,12 @@ sbtab_to_vfgen <- function(M){
     ConstantValue <- SBtab[["Constant"]][["!Value"]];
     nConst <- length(ConstantID);
 
+    ExpressionID <- SBtab[["Expression"]][["!ID"]];    
+    ExpressionName <- make.cnames(SBtab[["Expression"]][["!Name"]])
+    ExpressionFormula <- SBtab[["Expression"]][["!Formula"]];
+    nExpression <- length(ExpressionID);
+
+    
     CompoundID <- SBtab[["Compound"]][["!ID"]];
     CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]])
     InitialValue <- SBtab[["Compound"]][["!InitialValue"]];
@@ -287,6 +293,10 @@ sbtab_to_vfgen <- function(M){
         k <- EliminateCompound[i];
         F <- sprintf("%s - (%s)",ConservationConstantName[i],Formula[i]);
         vfgen.ConservationLaw[i] <- sprintf(" <Expression Name=\"%s\" Description=\"derived from conservation law %i\" Formula=\"%s\"/>",CompoundName[k],i,F);
+    }
+    vfgen.expression=vector(length=nExpression,mode="character");
+    for (i in c(1:nExpression)){
+        vfgen.expression[i] <- sprintf(" <Expression Name=\"%s\" Description=\"defined expression %s\" Formula=\"%s\"/>",ExpressionName[i],ExpressionID[i],ExpressionFormula[i]);
     }    
     vfgen.flux=vector(length=nFlux,mode="character");
     for (i in c(1:nFlux)){
@@ -307,8 +317,8 @@ sbtab_to_vfgen <- function(M){
     }
     vfgen.endmodel <- "</VectorField>";
     fname<-sprintf("%s_vf.xml",H);
-    cat(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.input,vfgen.ConservationInput,vfgen.ConservationLaw,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel,sep="\n",file=fname);
+    cat(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.input,vfgen.ConservationInput,vfgen.ConservationLaw,vfgen.expression,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel,sep="\n",file=fname);
 
     message(sprintf("The content was written to: %s\n",fname));
-    return(c(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.input,vfgen.ConservationInput,vfgen.ConservationLaw,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel));
+    return(c(vfgen.header,vfgen.model,vfgen.const,vfgen.par,vfgen.input,vfgen.ConservationInput,vfgen.ConservationLaw,vfgen.expression,vfgen.flux,vfgen.ode,vfgen.function,vfgen.endmodel));
 }
