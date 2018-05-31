@@ -161,40 +161,52 @@ sbtab_to_vfgen <- function(M){
         for (xcompound in b){
             ## message(xcompound)
             ## find possible factors within string
-            xb <- unlist(strsplit(xcompound,"[*]"));
+            xb <- unlist(strsplit(trimws(xcompound),"[* ]"));
             if (length(xb)>1){
-                n <- as.numeric(xb[1]);
+                n <- round(as.numeric(xb[1]));
                 compound <- make.cnames(xb[2]);
             } else {
                 compound <- make.cnames(xb[1]);
                 n <- 1;
-            }            
-            message(sprintf("%i × %s",n,compound))
+            }
+            cat(sprintf("%i × %s",n,compound))
             if (compound %in% CompoundName){
                 j <- match(compound,CompoundName)
-                message(sprintf("%s is compound %i\n",compound,j));
+                message(sprintf("\t\t\t(%s is compound %i)",compound,j));
                 ODE[j] <- paste(ODE[j],FluxName[i],sep="+");
                 N[j,i] <- N[j,i] + n;
+            } else if (compound %in% ExpressionName){
+                message(sprintf("\t\t\t%s is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
+            } else if (compound %in% "null") {
+                message(sprintf("\t\t\t%s (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
+            } else {
+                stop(sprintf("\t\t\t%s is neither in the list of registered compounds nor is it an expression\n",compound));                
             }
         }
         message("Reactants:")
         for (xcompound in a){
             message(compound)
-            xa <- unlist(strsplit(xcompound,"[*]"));
+            xa <- unlist(strsplit(trimws(xcompound),"[* ]"));
             if (length(xa)>1){
-                n <- as.numeric(xa[1]);
+                n <- round(as.numeric(xa[1]));
                 compound <- make.cnames(xa[2]);
             } else {
                 compound <- make.cnames(xa[1]);
                 n <- 1;
             }
-            message(sprintf("%i × %s",n,compound))
+            cat(sprintf("%i × %s",n,compound))
 
             if (compound %in% CompoundName){
                 j <- match(compound,CompoundName)
-                message(sprintf("%s is compound %i\n",compound,j));
+                message(sprintf("\t\t\t(%s is compound %i)",compound,j));
                 ODE[j] <- paste(ODE[j],FluxName[i],sep="-");
                 N[j,i] <- N[j,i] - n;
+            } else if (compound %in% "null") {
+                message(sprintf("\t\t\t%s (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
+            } else if (compound %in% ExpressionName){
+                message(sprintf("\t\t\t%s is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
+            } else {
+                stop(sprintf("\t\t\t%s is neither in the list of registered compounds nor is it an expression\n",compound));                
             }
         }
     }
