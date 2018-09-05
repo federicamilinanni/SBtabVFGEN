@@ -117,27 +117,49 @@ GetLawText <- function(Laws,CompoundName,InitialValue){
     return(ConLaw)
 }
 
+PrintSteadyStateOutputs <- function(CompoundName,CompoundID,ODE,document.name){
+    n <- length(CompoundID);
+    message(sprintf("!!SBtab;SBtabVersion='1.0' TableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name));
+    message(sprintf("!ID;!Name;!Comment;!ErrorName;!ErrorType;!Unit;!ProbDist;!Formula"));
+    for (i in 1:n){
+        Id <- sprintf("YSS%s",CompoundID[i]);
+        Name <- sprintf("%s_NetFlux",CompoundName[i]);
+        ErrorName <- sprintf("GAMMA_%s",Id);        
+        message(sprintf("%s;%s;measures deviation from steady state;%s;WeightFactor;nM;Normal;%s",Id,Name,ErrorName,ODE[i]));
+    }
+}
+
+GetLogical <- function(Column){
+    n <- length(Column);
+    LC <- vector(mode = "logical", length = n);
+    l10 <- grepl("^1$|^0$",Column);
+    lTF <- grepl("^T(RUE)?$|^F(ALSE)?$",Column);
+    LC[lTF] <- as.logical(Column[lTF]);
+    LC[l10] <- as.logical(as.numeric(Column[l10]));
+    return(LC);
+}
+
 
 sbtab_to_vfgen <- function(M){
     lM <- length(M);
-    SBtab <- list();
+    SBtab <- list(length=lM);
     document.name <- GetDocumentName(M[[1]]);
     message(sprintf("Document Name: %s.",document.name));
-    table.name <- list();
-    for (i in c(1:lM)){
-        table.name[[i]] <- GetTableName(M[[i]]);        
+    table.name <- vector(length=lM);
+    for (i in 1:lM){
+        table.name[i] <- GetTableName(M[[i]]);        
         ## table.title <- GetTableTitle(M[[i]]);
         SBtab[[i]] <- M[[i]][-c(1,2),];
         names(SBtab[[i]]) <- M[[i]][2,];        
     }
     cat(sprintf("SBtab has %i tables.\n",length(SBtab)));
     names(SBtab) <- table.name;
+    print(names(SBtab))
     message(table.name);
-    message("The names of the SBtab list:");
-    message(names(SBtab),sep=", ");
+    ## message("The names of the SBtab list:");
+    ## message(cat(names(SBtab),sep=", "));
     message("The names of SBtab[[1]]:");
-    message(colnames(SBtab[[1]]),sep=", ");
-    message("assigning specific table columns to variables:");
+    message(cat(colnames(SBtab[[1]]),sep=", "));
 
     ReactionID <- SBtab[["Reaction"]][["!ID"]];
     ReactionFormula <- SBtab[["Reaction"]][["!ReactionFormula"]];
@@ -154,10 +176,21 @@ sbtab_to_vfgen <- function(M){
     ExpressionFormula <- SBtab[["Expression"]][["!Formula"]];
     nExpression <- length(ExpressionID);
 
-    
+    message("Parsing Compound Table:")
     CompoundID <- SBtab[["Compound"]][["!ID"]];
-    CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]])
-    InitialValue <- as.numeric(SBtab[["Compound"]][["!InitialValue"]]);
+    CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]]);
+    print(CompoundName)
+    print(names(SBtab[["Compound"]]))
+    IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]]);
+    class(IsInput)
+    print(IsInput)
+    print(IsInput)
+    message("These Compounds are really inputs and not subject to kinetic laws:")
+    print(CompoundName[IsInput]);    
+    CompoundID <- CompoundID[!IsInput];
+    CompoundName <- CompoundName[!IsInput];    
+    InitialValue <- as.numeric(SBtab[["Compound"]][["!InitialValue"]][!IsInput]);
+    SteadyState <- GetLogical(SBtab[["Compound"]][["!SteadyState"]][!IsInput]);
     names(InitialValue) <- CompoundName;
     nC <- length(CompoundID);
     message("Initial Values:");
@@ -192,10 +225,8 @@ sbtab_to_vfgen <- function(M){
     InputID <- SBtab[["Input"]][["!ID"]];
     InputName <- make.cnames(SBtab[["Input"]][["!Name"]]);
     InputDefaultValue <-  SBtab[["Input"]][["!DefaultValue"]];
-    Disregard <- as.logical(SBtab[["Input"]][["!ConservationLaw"]]);
-    if (any(is.na(Disregard))){
-        Disregard <- as.logical(as.numeric(SBtab[["Input"]][["!ConservationLaw"]]));
-    }    
+    Disregard <- GetLogical(SBtab[["Input"]][["!ConservationLaw"]]);
+
     message("Some input parameters may be earlier detected Conservation Law constants: ");
     print(Disregard)
     if (length(Disregard)==length(InputID)){
@@ -240,11 +271,11 @@ sbtab_to_vfgen <- function(M){
                 ODE[j] <- paste(ODE[j],FluxName[i],sep="+");
                 N[j,i] <- N[j,i] + n;
             } else if (compound %in% ExpressionName){
-                message(sprintf("\t\t\t%s is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
+                message(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
             } else if (compound %in% "null") {
-                message(sprintf("\t\t\t%s (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
+                message(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
             } else {
-                stop(sprintf("\t\t\t%s is neither in the list of registered compounds nor is it an expression\n",compound));                
+                stop(sprintf("\t\t\t«%s» is neither in the list of registered compounds nor is it an expression\n",compound));                
             }
         }
         message("Reactants:")
@@ -274,17 +305,16 @@ sbtab_to_vfgen <- function(M){
             }
         }
     }
-
     Laws <- GetConservationLaws(N);
     nLaws <- dim(Laws)[2];
+
+    PrintSteadyStateOutputs(CompoundName,CompoundID,ODE,document.name);
     
     message(sprintf("Number of compunds:\t%i\nNumber of Reactions:\t%i",nC,nFlux));
     message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]));
     message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"));
 
-    ## currently the laws are not used, but each line of Laws will replace one state variable.
     print(t(Laws))
-    
     ConLaw <- GetLawText(Laws,CompoundName,InitialValue);
     message(sprintf("!ID;!Name;!DefaultValue;!Unit;!ConservationLaw;!Formula"))
     for (j in 1:nLaws){
