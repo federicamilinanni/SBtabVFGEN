@@ -308,7 +308,7 @@ sbtab_to_vfgen <- function(M){
     Laws <- GetConservationLaws(N);
     nLaws <- dim(Laws)[2];
 
-    PrintSteadyStateOutputs(CompoundName,CompoundID,ODE,document.name);
+    PrintSteadyStateOutputs(CompoundName[SteadyState],CompoundID[SteadyState],ODE[SteadyState],document.name);
     
     message(sprintf("Number of compunds:\t%i\nNumber of Reactions:\t%i",nC,nFlux));
     message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]));
