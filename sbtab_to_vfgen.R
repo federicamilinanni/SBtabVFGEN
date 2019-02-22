@@ -40,7 +40,9 @@ make.cnames <- function(Labels){
 
 GetConservationLaws <- function(N){
     M <- pracma::null(t(N));
-    if (dim(M)[1] > 1){
+    if (is.null(M)){
+        return(NULL)
+    } else if (dim(M)[1] > 1){
         M <- t(pracma::rref(t(M)));
     } else {
         M <- M/max(M);
@@ -179,14 +181,19 @@ sbtab_to_vfgen <- function(M){
     message("Parsing Compound Table:")
     CompoundID <- SBtab[["Compound"]][["!ID"]];
     CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]]);
+    nComp <- length(CompoundID);
     print(CompoundName)
-    print(names(SBtab[["Compound"]]))
-    IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]]);
-    class(IsInput)
-    print(IsInput)
-    print(IsInput)
-    message("These Compounds are really inputs and not subject to kinetic laws:")
-    print(CompoundName[IsInput]);    
+    ##print(names(SBtab[["Compound"]]))
+    message("Parsing Inputs:")
+    if ("!IsInput" %in% names(SBtab[["Compound"]])){
+        IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]]);
+        class(IsInput)
+        print(IsInput)
+        message("These Compounds are really inputs and not subject to kinetic laws:")
+        print(CompoundName[IsInput]);
+    } else {
+        IsInput <- vector(mode="logical",length=nComp);
+    }
     CompoundID <- CompoundID[!IsInput];
     CompoundName <- CompoundName[!IsInput];    
     InitialValue <- as.numeric(SBtab[["Compound"]][["!InitialValue"]][!IsInput]);
@@ -225,17 +232,19 @@ sbtab_to_vfgen <- function(M){
     InputID <- SBtab[["Input"]][["!ID"]];
     InputName <- make.cnames(SBtab[["Input"]][["!Name"]]);
     InputDefaultValue <-  SBtab[["Input"]][["!DefaultValue"]];
-    Disregard <- GetLogical(SBtab[["Input"]][["!ConservationLaw"]]);
-
-    message("Some input parameters may be earlier detected Conservation Law constants: ");
-    print(Disregard)
-    if (length(Disregard)==length(InputID)){
-        InputID <- InputID[!Disregard];
-        InputName <- InputName[!Disregard];
-        InputDefaultValue <- InputDefaultValue[!Disregard];
+    if ("!ConservationLaw" %in% names(SBtab[["Input"]])){
+        Disregard <- GetLogical(SBtab[["Input"]][["!ConservationLaw"]]);
+        message("Some input parameters may be earlier detected Conservation Law constants: ");
+        print(Disregard)
+        if (length(Disregard)==length(InputID)){
+            InputID <- InputID[!Disregard];
+            InputName <- InputName[!Disregard];
+            InputDefaultValue <- InputDefaultValue[!Disregard];
+        }
+    } else {
+        Disregard <- vector(mode="logical",length=length(InputID));
     }
     nInput <- length(InputID);
-
     
     lhs_rhs <- strsplit(ReactionFormula,"<=>");
     ODE<-vector(mode="character",length=nC);
@@ -272,7 +281,7 @@ sbtab_to_vfgen <- function(M){
                 N[j,i] <- N[j,i] + n;
             } else if (compound %in% ExpressionName){
                 message(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
-            } else if (compound %in% "null") {
+            } else if (compound %in% c("null","NULL","NIL","NONE","NA","Ø","[]","{}")) {
                 message(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
             } else {
                 stop(sprintf("\t\t\t«%s» is neither in the list of registered compounds nor is it an expression\n",compound));                
@@ -305,27 +314,33 @@ sbtab_to_vfgen <- function(M){
             }
         }
     }
-    Laws <- GetConservationLaws(N);
-    nLaws <- dim(Laws)[2];
-
-    PrintSteadyStateOutputs(CompoundName[SteadyState],CompoundID[SteadyState],ODE[SteadyState],document.name);
-    
     message(sprintf("Number of compunds:\t%i\nNumber of Reactions:\t%i",nC,nFlux));
-    message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]));
-    message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"));
 
-    print(t(Laws))
-    ConLaw <- GetLawText(Laws,CompoundName,InitialValue);
-    message(sprintf("!ID;!Name;!DefaultValue;!Unit;!ConservationLaw;!Formula"))
-    for (j in 1:nLaws){
-        message(sprintf("CLU%i;%s;%g;nM;TRUE;%s",j,ConLaw$ConstantName[j],ConLaw$Constant[j],ConLaw$Text[j]));
+    Laws <- GetConservationLaws(N);
+    if (is.null(Laws)){
+        nLaws <- 0;
+        ConLaw <- NULL;
+    } else {
+        nLaws <- dim(Laws)[2];
+        message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]));
+        message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"));
+        
+        print(t(Laws))
+        ConLaw <- GetLawText(Laws,CompoundName,InitialValue);
+        message(sprintf("!ID;!Name;!DefaultValue;!Unit;!ConservationLaw;!Formula"))
+        for (j in 1:nLaws){
+            message(sprintf("CLU%i;%s;%g;nM;TRUE;%s",j,ConLaw$ConstantName[j],ConLaw$Constant[j],ConLaw$Text[j]));
+        }
+        message(sprintf("If you'd like to monitor omitted compounds, add this to the Output table:\n"));
+        message(sprintf("!ID;!Name;!Comment;!ErrorName;!ErrorType;!Unit;!ProbDist;!Formula"))
+        for (j in 1:nLaws){
+            k <- ConLaw$Eliminates[j];
+            message(sprintf("YCL%i;%s_mon;monitors implicit state;SD_YCL%i;not applicable;nM;none;%s",j,CompoundName[k],j,CompoundName[k]));
+        }        
     }
-    message(sprintf("If you'd like to monitor omitted compounds, add this to the Output table:\n"));
-    message(sprintf("!ID;!Name;!Comment;!ErrorName;!ErrorType;!Unit;!ProbDist;!Formula"))
-    for (j in 1:nLaws){
-        k <- ConLaw$Eliminates[j];
-        message(sprintf("YCL%i;%s_mon;monitors implicit state;SD_YCL%i;not applicable;nM;none;%s",j,CompoundName[k],j,CompoundName[k]));
-    }
+
+    
+    PrintSteadyStateOutputs(CompoundName[SteadyState],CompoundID[SteadyState],ODE[SteadyState],document.name);
     
     H <- document.name;
     H <- sub("-",'_',H);
@@ -343,13 +358,18 @@ sbtab_to_vfgen <- function(M){
     for (i in c(1:nInput)){
         vfgen.input[i] <- sprintf(" <Parameter Name=\"%s\" Description=\"input parameter %s\" DefaultValue=\"%s\"/>",InputName[i],InputID[i],InputDefaultValue[i]);
     }
-
-    vfgen.ConservationInput <- vector(length=nLaws,mode="character");
-    for (i in c(1:nLaws)){
-        k <- ConLaw$Eliminates[i];        
-        vfgen.ConservationInput[i] <- sprintf(" <Parameter Name=\"%s\" Description=\"conserved quantity; eliminates %s as a state variable\" DefaultValue=\"%f\"/>",ConLaw$ConstantName[i],CompoundName[k],ConLaw$Constant[i]);
+    if (nLaws>0){
+        vfgen.ConservationInput <- vector(length=nLaws,mode="character");
+        for (i in c(1:nLaws)){
+            k <- ConLaw$Eliminates[i];        
+            vfgen.ConservationInput[i] <- sprintf(" <Parameter Name=\"%s\" Description=\"conserved quantity; eliminates %s as a state variable\" DefaultValue=\"%f\"/>",ConLaw$ConstantName[i],CompoundName[k],ConLaw$Constant[i]);
+        }
+        vfgen.ConservationLaw <- vector(length=nLaws,mode="character");
+    }else{
+        vfgen.ConservationLaw <- NULL;
+        vfgen.ConservationInput <- NULL;
     }
-    vfgen.ConservationLaw <- vector(length=nLaws,mode="character");
+    
     for (i in c(1:nLaws)){
         k <- ConLaw$Eliminates[i];
         ##print(k)
@@ -367,7 +387,7 @@ sbtab_to_vfgen <- function(M){
     }
     vfgen.ode=vector(length=nC,mode="character");
     for (i in c(1:nC)){
-        if (i %in% ConLaw$Eliminates){
+        if (nLaws>0 && i %in% ConLaw$Eliminates){
             message(sprintf("StateVariable %s will be commented out as it was laready defined as a Mass Conservation Law Expression.",CompoundName[i]));
             vfgen.ode[i] <- sprintf("<!-- <StateVariable Name=\"%s\" Description=\"compound %s\" DefaultInitialCondition=\"%s\" Formula=\"%s\"/> -->",CompoundName[i], CompoundID[i], InitialValue[i],ODE[i]);
         }else{
