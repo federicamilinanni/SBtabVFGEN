@@ -204,17 +204,31 @@ sbtab_to_vfgen <- function(M){
     print(InitialValue);
     
     ParID <- SBtab[["Parameter"]][["!ID"]];
+    nPar <- length(ParID);
+    ## possible values for «Scale» are: log, log10, linear
+    if ("!Scale" %in% names(SBtab[["Parameter"]])){
+        Scale <- SBtab[["Parameter"]][["!Scale"]];        
+    }else{
+        Scale <- vector(mode="character",len=nPar);
+        Scale[] <- "log"
+    }
     ParName <- make.cnames(SBtab[["Parameter"]][["!Name"]])
     if (length(grep("!DefaultValue",colnames(SBtab[["Parameter"]])))>0){
         ParValue <- SBtab[["Parameter"]][["!DefaultValue"]];
-    }else if (length(grep("!Value",colnames(SBtab[["Parameter"]])))>0){
+    } else if (length(grep("!Value",colnames(SBtab[["Parameter"]])))>0){
         ParValue <- SBtab[["Parameter"]][["!Value"]];
-    }else if (length(grep("!Mean",colnames(SBtab[["Parameter"]])))>0){
+    } else if (length(grep("!Mean",colnames(SBtab[["Parameter"]])))>0){
         ParValue <- SBtab[["Parameter"]][["!Mean"]];
-    }else if (length(grep("!Median",colnames(SBtab[["Parameter"]])))>0){
+    } else if (length(grep("!Median",colnames(SBtab[["Parameter"]])))>0){
         ParValue <- SBtab[["Parameter"]][["!Median"]];
     }
-    nPar <- length(ParID);
+
+    if (any(Scale %in% c("log","log10"))) {
+        l <- Scale %in% "log"
+        ParValue[l]<-exp(ParValue[l]);
+        l <- Scale %in% "log10"
+        ParValue[l]<-10^ParValue[l];
+    }
     
     ## diregard parameters that have been previously auto generated, by Conservation of Mass analysis:
     
