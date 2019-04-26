@@ -183,6 +183,7 @@ sbtab_to_vfgen <- function(M){
     CompoundName <- make.cnames(SBtab[["Compound"]][["!Name"]]);
     nComp <- length(CompoundID);
     print(CompoundName)
+    row.names(Compound) <- CompoundName
     ##print(names(SBtab[["Compound"]]))
     message("Parsing Inputs:")
     if ("!IsInput" %in% names(SBtab[["Compound"]])){
@@ -223,10 +224,10 @@ sbtab_to_vfgen <- function(M){
         ParValue <- SBtab[["Parameter"]][["!Median"]];
     }
 
-    if (any(Scale %in% c("log","log10"))) {
-        l <- Scale %in% "log"
+    if (any(Scale %in% c("log","log10","natural logarithm","decadic logarithm","base-10 logarithm","logarithm"))) {
+        l <- Scale %in% c("log","logarithm","natural logarithm")
         ParValue[l]<-exp(ParValue[l]);
-        l <- Scale %in% "log10"
+        l <- Scale %in% c("log10","decadic logarithm","base-10 logarithm")
         ParValue[l]<-10^ParValue[l];
     }
     
@@ -291,7 +292,8 @@ sbtab_to_vfgen <- function(M){
             if (compound %in% CompoundName){
                 j <- match(compound,CompoundName)
                 message(sprintf("\t\t\t(%s is compound %i)",compound,j));
-                ODE[j] <- paste(ODE[j],FluxName[i],sep="+");
+                NFlux <- paste(as.character(n),FluxName[i],sep="*")
+                ODE[j] <- paste(ODE[j],NFlux,sep="+");
                 N[j,i] <- N[j,i] + n;
             } else if (compound %in% ExpressionName){
                 message(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound));
@@ -317,7 +319,8 @@ sbtab_to_vfgen <- function(M){
             if (compound %in% CompoundName){
                 j <- match(compound,CompoundName)
                 message(sprintf("\t\t\t(%s is compound %i)",compound,j));
-                ODE[j] <- paste(ODE[j],FluxName[i],sep="-");
+                NFlux <- paste(as.character(n),FluxName[i],sep="*")
+                ODE[j] <- paste(ODE[j],NFlux,sep="-");
                 N[j,i] <- N[j,i] - n;
             } else if (compound %in% "null") {
                 message(sprintf("\t\t\t%s (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound));
