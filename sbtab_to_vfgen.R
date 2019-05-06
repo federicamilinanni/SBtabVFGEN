@@ -42,7 +42,7 @@ GetConservationLaws <- function(N){
     M <- pracma::null(t(N))
     if (is.null(M)){
         return(NULL)
-    } else if (dim(M)[1] > 1){
+    } else if (all(dim(M)>1)){
         M <- t(pracma::rref(t(M)))
     } else {
         M <- M/max(M)
@@ -234,7 +234,8 @@ GetInputs <- function(SBtab){
         message("Some input parameters may be earlier detected Conservation Law constants: ")
         print(Disregard)
     } else {
-        Disregard <- vector(mode="logical",length=length(InputID))
+        n <- length(SBtab[["Input"]][["!ID"]])
+        Disregard <- vector(mode="logical",length=n)
     }
     ID <- SBtab[["Input"]][["!ID"]][!Disregard]
     Name <- make.cnames(SBtab[["Input"]][["!Name"]][!Disregard])
