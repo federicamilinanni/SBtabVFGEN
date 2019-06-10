@@ -402,7 +402,7 @@ make.vfgen <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,O
     CName <- row.names(Compound)
     for (i in 1:nC[1]){
         if (nLaws>0 && i %in% ConLaw$Eliminates){
-            message(sprintf("StateVariable %s will be commented out as it was laready defined as a Mass Conservation Law Expression.",CName[i]))
+            message(sprintf("StateVariable %s will be commented out as it was already defined as a Mass Conservation Law Expression.",CName[i]))
             vfgen[["ode"]][i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
         }else{
             vfgen[["ode"]][i] <- sprintf(fmt$ode,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
