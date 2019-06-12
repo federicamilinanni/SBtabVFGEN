@@ -490,7 +490,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
         }
     }
     Mod[["STATE"]] <- c("STATE {",STATE,"}")
-    Mod[["DERIVATIVE"]] <- c("DERIVATIVE {",DERIVATIVE,"}")
+    Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     Mod[["INITIAL"]] <- c("INITIAL {",IVP,"}")
     Mod[["BREAKPOINT"]] <- c("BREAKPOINT {",
                              ConservationLaw,
