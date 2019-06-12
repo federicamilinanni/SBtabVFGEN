@@ -151,6 +151,9 @@ GetReactions <- function(SBtab){
     Formula <- SBtab[["Reaction"]][["!ReactionFormula"]]
     Name <- make.cnames(SBtab[["Reaction"]][["!Name"]])
     Flux <- SBtab[["Reaction"]][["!KineticLaw"]]
+    kin <- strsplit(SBtab[["Reaction"]][["!KineticLaw"]],split="-")
+    KinMat <- matrix(trimws(unlist(kin)),ncol=2,byrow=TRUE)
+    Kinetic <- data.frame(forward=KinMat[,1],backward=KinMat[,2])
     Reaction <- data.frame(ID,Formula,Flux,row.names=Name)
     return(Reaction)
 }
@@ -306,10 +309,15 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
     ## Names
     RName <- row.names(Reaction)
     CName <- row.names(Compound)
+    lhs <- vector(mode="character",length=nR[1])
+    rhs <- vector(mode="character",length=nR[1])
+    
     for (i in 1:nR[1]){
         line=lhs_rhs[[i]]
+        lhs[i]=trimws(line[1])
+        rhs[i]=trimws(line[2])
         message(sprintf("Reaction %i:",i))
-        cat(sprintf("line (a->b): «%s» → «%s»\n",line[1],line[2]))
+        cat(sprintf("line (a->b): «%s» ←→ «%s»\n",line[1],line[2]))
         a <- unlist(strsplit(line[1],"[+]"))
         b <- unlist(strsplit(line[2],"[+]"))
         message(" where a: ")
@@ -347,7 +355,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
         }
     }
     message(sprintf("Number of compunds:\t%i\nNumber of Reactions:\t%i",nC[1],nR[1]))
-    ModelStructure <- list(ODE=ODE,Stoichiometry=N)
+    ModelStructure <- list(ODE=ODE,Stoichiometry=N,LHS=lhs,RHS=rhs)
     return(ModelStructure) 
 }
 
@@ -414,6 +422,86 @@ make.vfgen <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,O
     return(vfgen)
 }
 
+make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
+    Mod <- list()    
+    fmt <- list(const="\t%s = %s : a constant",
+                par="\t%s = %g : a kinetic parameter",
+                input="\t%s = %g : an input",
+                total="\t%s = %g : the total amount of a conserved sub-set of states",
+                ConservationLaw="\t%s = %s : conservation law",
+                expression="\t%s : a pre-defined algebraic expression",
+                flux="\t%s : a flux, for use in DERIVATIVE mechanism",
+                comment="\t: Compound %s with ID %s and initial condition %g had derivative %s, but is calculated by conservation law.",
+                state="\t%s : a state variable",
+                ode="\t%s' = %s : affects compund with ID %s",
+                reaction="\t %s <-> %s (%s, %s)",
+                output="FUNCTION %s() {\n\t%s = %s : Output ID %s\n}")
+##    Mod[["header"]] <- "TITLE Mod file for componen"
+    Mod[["TITLE"]] <- sprintf("TITLE %s",H)
+    Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautmoatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
+    Mod[["NEURON"]] <- sprintf("NEURON {\n\tPOINT_PROCESS %s\n\tRANGE %s\n}",H,paste0(row.names(Input),collapse=", "))
+
+    ## Conservation Laws
+    if (is.null(ConLaw)){
+        ConservationLaw <- NULL
+        ConservationInput <- NULL
+        CName <- NULL
+        nLaws <- 0
+    }else{                
+        k <- ConLaw$Eliminates
+        CName <- row.names(Compound)[k]
+        ConservationInput <- sprintf(fmt$total,ConLaw$ConstantName,ConLaw$Constant)
+        F <- sprintf("%s - (%s)",ConLaw$ConstantName,ConLaw$Formula)
+        nLaws <- length(F)
+        ConservationLaw <- sprintf(fmt$ConservationLaw,F)
+    }
+    Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value),"}")
+    Mod[["PARAMETER"]] <- c("PARAMETER {",                            
+                            sprintf(fmt$par,row.names(Parameter),Parameter$Value),
+                            sprintf(fmt$input,row.names(Input),Input$DefaultValue),
+                            ConservationInput,
+                            "}")
+
+    
+    # Expressions and Reaction Fluxes
+    Mod[["ASSIGNED"]] <- c("ASSIGNED {",
+                           sprintf(fmt$expression,row.names(Expression)),
+                           sprintf(fmt$flux,row.names(Reaction)),
+                           sprintf("\t%s : computed from conservation law",CName),
+                           "}")
+    
+    ##Mod[["flux"]] <- c("KINETIC kin",sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
+    # ODE right-hand-sides
+    nC <- dim.data.frame(Compound)
+    CName <- row.names(Compound)
+    STATE=vector(mode="character",length=nC[1])
+    DERIVATIVE=vector(mode="character",length=nC[1])
+    IVP=vector(mode="character",length=nC[1])
+    for (i in 1:nC[1]){
+        if (nLaws>0 && i %in% ConLaw$Eliminates){
+            message(sprintf("MOD: StateVariable %s will be commented out as it was already defined as a Mass Conservation Law Expression.",CName[i]))
+            STATE[i] <- sprintf("\t: %s is calculated via Conservation Law",CName[i])
+            DERIVATIVE[i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
+            IVP[i] <- sprintf("\t: %s cannot have initial values as it is determined by conservation law",CName[i])
+        }else{
+            STATE[i] <- sprintf(fmt$state,CName[i])
+            DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], ODE[i],Compound$ID[i])
+            IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
+        }
+    }
+    Mod[["STATE"]] <- c("STATE {",STATE,"}")
+    Mod[["DERIVATIVE"]] <- c("DERIVATIVE {",DERIVATIVE,"}")
+    Mod[["INITIAL"]] <- c("INITIAL {",IVP,"}")
+    Mod[["BREAKPOINT"]] <- c("BREAKPOINT {",
+                             ConservationLaw,
+                             sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,Reaction$ID),
+                             "\tSOLVE ode METHOD sparse",
+                             "}") 
+    ## Output Functions
+    Mod[["FUNCTION"]] <- sprintf(fmt$output,row.names(Output),row.names(Output),Output$Formula,Output$ID)
+    return(Mod)
+}
+
 sbtab_to_vfgen <- function(M){
     lM <- length(M)
     SBtab <- list(length=lM)
@@ -445,6 +533,9 @@ sbtab_to_vfgen <- function(M){
     ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression)
     ODE <- ModelStructure$ODE    
     Laws <- GetConservationLaws(ModelStructure$Stoichiometry)
+    Reaction[["lhs"]] <- ModelStructure$lhs
+    Reaction[["rhs"]] <- ModelStructure$rhs
+    
     if (is.null(Laws)){
         nLaws <- 0
         ConLaw <- NULL
@@ -465,6 +556,12 @@ sbtab_to_vfgen <- function(M){
     vfgen <- make.vfgen(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
     fname<-sprintf("%s_vf.xml",H)
     cat(unlist(vfgen),sep="\n",file=fname)
-    message(sprintf("The content was written to: %s\n",fname))
+    message(sprintf("The vf content was written to: %s\n",fname))
+
+    Mod <- make.mod(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
+    fname<-sprintf("%s.mod",H)
+    cat(unlist(Mod),sep="\n",file=fname)
+    message(sprintf("The mod content was written to: %s\n",fname))
+    
     return(vfgen)
 }
