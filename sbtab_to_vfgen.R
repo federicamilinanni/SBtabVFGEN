@@ -453,7 +453,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
         ConservationInput <- sprintf(fmt$total,ConLaw$ConstantName,ConLaw$Constant)
         F <- sprintf("%s - (%s)",ConLaw$ConstantName,ConLaw$Formula)
         nLaws <- length(F)
-        ConservationLaw <- sprintf(fmt$ConservationLaw,F)
+        ConservationLaw <- sprintf(fmt$ConservationLaw,CName,F)
     }
     Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value),"}")
     Mod[["PARAMETER"]] <- c("PARAMETER {",                            
