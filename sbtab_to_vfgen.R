@@ -168,16 +168,23 @@ GetCompounds <- function(SBtab){
         IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]])
         class(IsInput)
         print(IsInput)
-        message("These Compounds are really inputs and not subject to kinetic laws:")
-        print(SBtab[["Compound"]][["!Name"]][IsInput])
+        if (length(IsInput)>0){
+            message("These Compounds are really inputs and not subject to kinetic laws:")
+            print(SBtab[["Compound"]][["!Name"]][IsInput])
+            message("---")
+        }
     } else {
         IsInput <- vector(mode="logical",length=nComp)
     }
     ID <- SBtab[["Compound"]][["!ID"]][!IsInput]
     Name <- make.cnames(SBtab[["Compound"]][["!Name"]][!IsInput])
     nComp <- length(ID)
+    message("compound names:")
     print(Name)
-    InitialValue <- as.numeric(SBtab[["Compound"]][["!InitialValue"]][!IsInput])
+    message("---")
+    ## replace possible non-ascii "-"
+    CleanIV <- gsub("−","-", SBtab[["Compound"]][["!InitialValue"]][!IsInput])
+    InitialValue <- as.numeric(CleanIV);
     SteadyState <- GetLogical(SBtab[["Compound"]][["!SteadyState"]][!IsInput])
     Compound <- data.frame(ID,InitialValue,SteadyState,row.names=Name)
     return(Compound)
@@ -209,7 +216,15 @@ GetParameters <- function(SBtab){
     } else if (length(grep("!Median",colnames(SBtab[["Parameter"]])))>0){
         Value <- SBtab[["Parameter"]][["!Median"]]
     }
-    Value <- as.numeric(Value)
+
+    ##message("raw parameter values:")
+    ##print(Value)
+    ##message("---")
+    ##message("as.numeric:")
+    nValue <- as.double(gsub("−","-",Value));
+    ##print(nValue)
+    ##message("---")
+    Value <- nValue
     if (any(Scale %in% c("log","log10","natural logarithm","decadic logarithm","base-10 logarithm","logarithm"))) {
         l <- Scale %in% c("log","logarithm","natural logarithm")
         Value[l]<-exp(Value[l])
@@ -233,6 +248,7 @@ GetInputs <- function(SBtab){
         Disregard <- GetLogical(SBtab[["Input"]][["!ConservationLaw"]])
         message("Some input parameters may be earlier detected Conservation Law constants: ")
         print(Disregard)
+        message("---")
     } else {
         n <- length(SBtab[["Input"]][["!ID"]])
         Disregard <- vector(mode="logical",length=n)
@@ -301,7 +317,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
     nR <- dim.data.frame(Reaction)
     ## stoichiometry matrix:
     N <- matrix(0,nrow=nC[1],ncol=nR[1])
-    print(N)
+    ##print(N)
     ODE<-vector(mode="character",length=nC[1])
     ## Names
     RName <- row.names(Reaction)
@@ -451,7 +467,9 @@ sbtab_to_vfgen <- function(M){
     } else {
         nLaws <- dim(Laws)[2]
         N <- ModelStructure$Stoichiometry
+        message("Stoichiometric Matrix:")
         print(N)
+        message("---")
         message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]))
         message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"))
         
