@@ -451,11 +451,12 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
                 state="\t%s : a state variable",
                 ode="\t%s' = %s : affects compund with ID %s",
                 reaction="\t %s <-> %s (%s, %s)",
-                output="FUNCTION %s() {\n\t%s = %s : Output ID %s\n}")
+                output="FUNCTION %s() {\n\t%s = %s : Output ID %s\n}",
+                assignment="\t%s = %s : assignment for expression %s")
 ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
     Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautmoatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
-    Mod[["NEURON"]] <- sprintf("NEURON {\n\tPOINT_PROCESS %s\n\tRANGE %s\n}",H,paste0(row.names(Input),collapse=", "))
+    Mod[["NEURON"]] <- sprintf("NEURON {\n\tPOINT_PROCESS %s\n\tRANGE %s\n\tUSEION ca READ cai VALENCE 2}",H,paste0(row.names(Input),collapse=", "))
 
     ## Conservation Laws
     if (is.null(ConLaw)){
@@ -485,7 +486,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
                            sprintf(fmt$flux,row.names(Reaction)),
                            sprintf("\t%s : computed from conservation law",CName),
                            "}")
-    
+    Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,Expression$ID)
     ##Mod[["flux"]] <- c("KINETIC kin",sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
     # ODE right-hand-sides
     nC <- dim.data.frame(Compound)
@@ -501,18 +502,19 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
             IVP[i] <- sprintf("\t: %s cannot have initial values as it is determined by conservation law",CName[i])
         }else{
             STATE[i] <- sprintf(fmt$state,CName[i])
-            DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], ODE[i],Compound$ID[i])
+            Right.Hand.Side <- sub("^[[:blank:]]*[+]","",ODE[i]) # remove leading plus signs, if present
+            DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], Right.Hand.Side,Compound$ID[i])
             IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
         }
     }
     Mod[["STATE"]] <- c("STATE {",STATE,"}")
-    Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     Mod[["INITIAL"]] <- c("INITIAL {",IVP,"}")
-    Mod[["BREAKPOINT"]] <- c("BREAKPOINT {",
+    Mod[["BREAKPOINT"]] <- c("BREAKPOINT {","\tSOLVE ode METHOD cnexp",
                              ConservationLaw,
+                             Assignment,
                              sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,Reaction$ID),
-                             "\tSOLVE ode METHOD sparse",
                              "}") 
+    Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     ## Output Functions
     Mod[["FUNCTION"]] <- sprintf(fmt$output,row.names(Output),row.names(Output),Output$Formula,Output$ID)
     return(Mod)
@@ -528,7 +530,7 @@ sbtab_to_vfgen <- function(M){
         table.name[i] <- GetTableName(M[[i]])        
         ## table.title <- GetTableTitle(M[[i]])
         SBtab[[i]] <- M[[i]][-c(1,2),]
-        names(SBtab[[i]]) <- M[[i]][2,]        
+        names(SBtab[[i]]) <- M[[i]][2,]
     }
     cat(sprintf("SBtab has %i tables.\n",length(SBtab)))
     names(SBtab) <- table.name
