@@ -461,7 +461,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
                 assignment="\t%s = %s : assignment for expression %s")
 ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
-    Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautmoatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
+    Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautomatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
     Mod[["NEURON"]] <- c("NEURON {",
                          sprintf("\tPOINT_PROCESS %s",H),
                          sprintf("\tRANGE %s : inputs",paste0(row.names(Input),collapse=", ")),
@@ -471,7 +471,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
     l <- grepl("0$",row.names(Compound))
     if (any(l)) {
         message("possibly problematic names: %s.",paste0(Compound[l],collapse=", "));
-        warning("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will automatically create var10 and var100 from them, which will be in conflict with your names. ")
+        warning("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will also create var10 and var100 from them, which will be in conflict with your names. ")
     }
     ## Conservation Laws
     if (is.null(ConLaw)){
