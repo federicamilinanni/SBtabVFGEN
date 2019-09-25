@@ -1,6 +1,6 @@
 #!/bin/bash
 if (($#>0)); then
-    if [[ `which sscnovert` ]]; then
+    if [[ `which ssconvert` ]]; then
     j=0;
     Document=`head -n 1 "${1}" | sed -E "s/^.*Document='([^']+)'.*\\$/\\1/"`
     for i in $*; do
