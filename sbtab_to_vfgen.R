@@ -163,14 +163,20 @@ GetConstants <- function(SBtab){
     Name <- make.cnames(SBtab[["Constant"]][["!Name"]])
     Value <- SBtab[["Constant"]][["!Value"]]
     Constant <- data.frame(ID,Value,row.names=Name)
+    if ("!Unit" %in% names(SBtab[["Constant"]])){
+        Unit=SBtab[["Constant"]][["!Unit"]]
+    } else {
+        Unit=NULL;
+    }
+    Constant <- data.frame(ID,Value,Unit,row.names=Name)
     return(Constant)
 }
 
 GetCompounds <- function(SBtab){
     if ("!IsInput" %in% names(SBtab[["Compound"]])){
         IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]])
-        class(IsInput)
-        print(IsInput)
+        ##class(IsInput)
+        ##print(IsInput)
         if (length(IsInput)>0){
             message("These Compounds are really inputs and not subject to kinetic laws:")
             print(SBtab[["Compound"]][["!Name"]][IsInput])
@@ -442,7 +448,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
     Mod <- list()    
     fmt <- list(const="\t%s = %s : a constant",
                 par="\t%s = %g : a kinetic parameter",
-                input="\t%s = %g : an input",
+                input="\t%s : = %g  an input",
                 total="\t%s = %g : the total amount of a conserved sub-set of states",
                 ConservationLaw="\t%s = %s : conservation law",
                 expression="\t%s : a pre-defined algebraic expression",
@@ -456,8 +462,17 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
 ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
     Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautmoatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
-    Mod[["NEURON"]] <- sprintf("NEURON {\n\tPOINT_PROCESS %s\n\tRANGE %s\n\tUSEION ca READ cai VALENCE 2}",H,paste0(row.names(Input),collapse=", "))
-
+    Mod[["NEURON"]] <- c("NEURON {",
+                         sprintf("\tPOINT_PROCESS %s",H),
+                         sprintf("\tRANGE %s : inputs",paste0(row.names(Input),collapse=", ")),
+                         sprintf("\tRANGE %s : assigned",paste0(row.names(Expression),collapse=", ")),
+                         sprintf("\tRANGE %s : compounds",paste0(row.names(Compound),collapse=", ")),
+                         "USEION ca READ cai VALENCE 2","}")
+    l <- grepl("0$",row.names(Compound))
+    if (any(l)) {
+        message("possibly problematic names: %s.",paste0(Compound[l],collapse=", "));
+        warning("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will automatically create var10 and var100 from them, which will be in conflict with your names. ")
+    }
     ## Conservation Laws
     if (is.null(ConLaw)){
         ConservationLaw <- NULL
@@ -475,7 +490,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
     Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value),"}")
     Mod[["PARAMETER"]] <- c("PARAMETER {",                            
                             sprintf(fmt$par,row.names(Parameter),Parameter$Value),
-                            sprintf(fmt$input,row.names(Input),Input$DefaultValue),
+                            ##sprintf(fmt$input,row.names(Input),Input$DefaultValue),
                             ConservationInput,
                             "}")
 
@@ -485,6 +500,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
                            sprintf(fmt$expression,row.names(Expression)),
                            sprintf(fmt$flux,row.names(Reaction)),
                            sprintf("\t%s : computed from conservation law",CName),
+                           sprintf(fmt$input,row.names(Input),Input$DefaultValue),
                            "}")
     Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,Expression$ID)
     ##Mod[["flux"]] <- c("KINETIC kin",sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
@@ -507,12 +523,16 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
             IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
         }
     }
-    Mod[["STATE"]] <- c("STATE {",STATE,"}")
-    Mod[["INITIAL"]] <- c("INITIAL {",IVP,"}")
-    Mod[["BREAKPOINT"]] <- c("BREAKPOINT {","\tSOLVE ode METHOD cnexp",
+    Mod[["EXPRESSION"]] <- c("PROCEDURE assign_calculated_values() {",
                              ConservationLaw,
                              Assignment,
                              sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,Reaction$ID),
+                             "}")
+
+    Mod[["STATE"]] <- c("STATE {",STATE,"}")
+    Mod[["INITIAL"]] <- c("INITIAL {",IVP,"}")
+    Mod[["BREAKPOINT"]] <- c("BREAKPOINT {","\tSOLVE ode METHOD cnexp",
+                             "\tassign_calculated_values() : procedure",
                              "}") 
     Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     ## Output Functions
