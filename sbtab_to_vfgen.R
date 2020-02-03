@@ -173,6 +173,7 @@ GetConstants <- function(SBtab){
 }
 
 GetCompounds <- function(SBtab){
+    nComp <- length(SBtab[["Compound"]][["!ID"]])
     if ("!IsInput" %in% names(SBtab[["Compound"]])){
         IsInput <- GetLogical(SBtab[["Compound"]][["!IsInput"]])
         ##class(IsInput)
