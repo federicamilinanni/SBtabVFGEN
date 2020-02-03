@@ -541,11 +541,11 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
     return(Mod)
 }
 
-sbtab_to_vfgen <- function(M){
+sbtab_from_ods <- function(ods.file){
+    M <- readODS::read.ods(ods.file)    
     lM <- length(M)
     SBtab <- list(length=lM)
     document.name <- GetDocumentName(M[[1]])
-    message(sprintf("Document Name: %s.",document.name))
     table.name <- vector(length=lM)
     for (i in 1:lM){
         table.name[i] <- GetTableName(M[[i]])        
@@ -553,12 +553,41 @@ sbtab_to_vfgen <- function(M){
         SBtab[[i]] <- M[[i]][-c(1,2),]
         names(SBtab[[i]]) <- M[[i]][2,]
     }
-    cat(sprintf("SBtab has %i tables.\n",length(SBtab)))
+
     names(SBtab) <- table.name
     print(names(SBtab))
     message(table.name)
+    return(list(Document=document.name,Table=SBtab))
+}
+
+sbtab_from_tsv <- function(tsv.file){
+    SBtab=list();
+    
+    header <- readLines(tsv.file[1],n=1);
+    mD <- regexec("Document='([^']+)'", header)
+    match <- regmatches(header,mD)
+    document.name=match[[1]][2]
+    message(sprintf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name))
+    
+    for (f in tsv.file){
+        header <- readLines(f,n=1);
+        mTN <- regexec("TableName='([^']+)'", header)
+        match <- regmatches(header,mTN)
+        TableName=match[[1]][2]
+        SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE)
+    }
+    return(list(Document=document.name,Table=SBtab))
+}
+
+sbtab_to_vfgen <- function(SBtabDoc){
     ## message("The names of the SBtab list:")
     ## message(cat(names(SBtab),sep=", "))
+    document.name <- SBtabDoc[["Document"]]
+    message(sprintf("Document Name: %s.",document.name))
+    
+    SBtab <- SBtabDoc[["Table"]]
+    cat(sprintf("SBtab has %i tables.\n",length(SBtab)))
+    
     message("The names of SBtab[[1]]:")
     message(cat(colnames(SBtab[[1]]),sep=", "))
     Reaction <- GetReactions(SBtab)
