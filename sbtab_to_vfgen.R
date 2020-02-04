@@ -113,7 +113,7 @@ GetLawText <- function(Laws,CompoundName,InitialValue){
         }else{
             Formula <- FormulaP
         }
-        ConLaw$Formula[j] <- sub("1[*]","",Formula)
+        ConLaw$Formula[j] <- gsub("1[*]","",Formula)
         message(LawText)
         message(sprintf("This will comment out compund %i («%s», initial value: %g), Conserved Constant = %f\n",k,CompoundName[k],InitialValue[k],Const))
     }
@@ -122,17 +122,20 @@ GetLawText <- function(Laws,CompoundName,InitialValue){
 
 PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ss <- Compound$SteadyState
-    
+    if (any(ss)){
     CName <- row.names(Compound)[ss]
     CID <- Compound$ID[ss]
     ODE <- ODE[ss]
-    
-    message(sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name))
-    message(sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula"))
+    header <- character()
+    header[1] <- sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name)
+    header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
     Id <- sprintf("YSS%s",CID)
     Name <- sprintf("%s_NetFlux",CName)
     ErrorName <- sprintf("GAMMA_%s",Id)        
-    message(sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Id,Name,ErrorName,ODE))
+    SuggestedMeasureOfEquilibrium <- c(header,sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Id,Name,ErrorName,ODE))
+    ssfname <- paste0(document.name,"_SteadyStateMetrics.tsv")
+    cat(SuggestedMeasureOfEquilibrium,sep="\n",file=ssfname)
+    }
 }
 
 GetLogical <- function(Column){
@@ -271,7 +274,7 @@ GetInputs <- function(SBtab){
     return(Input)
 }
 
-UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Sep){
+UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Input){
     l <- length(Term)
     J <- vector(mode="integer",len=l)
     C <- vector(mode="integer",len=l)
@@ -295,6 +298,9 @@ UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Sep){
         } else if (compound %in% row.names(Expression)){
             j <- (-1)
             message(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
+        }else if (compound %in% row.names(Input)){
+            j <- (-1)
+            message(sprintf("\t\t\t«%s» is an input parameter (a parameter that represents a constant concentration of a substance outside of the model's scope), it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))            
         } else if (compound %in% c("null","NULL","NIL","NONE","NA","Ø","[]","{}")) {
             message(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound))
             j <- (-2)
@@ -319,7 +325,7 @@ NFlux <- function(n,RName){
     return(NF)
 }
 
-ParseReactionFormulae <- function(Compound,Reaction,Expression){
+ParseReactionFormulae <- function(Compound,Reaction,Expression,Input){
     message(class(Reaction$Formula))
     lhs_rhs <- strsplit(as.vector(Reaction$Formula),"<=>")
 
@@ -357,7 +363,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
         ## 1
         message("Products:")
         L <- length(b);
-        Term <- UpdateODEandStoichiometry(b,Compound,RName[i],Expression)
+        Term <- UpdateODEandStoichiometry(b,Compound,RName[i],Expression,Input)
         for (k in 1:L){
             j <- Term$J[k]
             if (j>0){
@@ -368,7 +374,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
         ## 2
         message("Reactants:")        
         L <- length(a);
-        Term <- UpdateODEandStoichiometry(a,Compound,RName[i],Expression)        
+        Term <- UpdateODEandStoichiometry(a,Compound,RName[i],Expression,Input)        
         for (k in 1:L){
             j <- Term$J[k]
             if (j>0){
@@ -382,14 +388,22 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression){
     return(ModelStructure) 
 }
 
-PrintConLawInfo <- function(ConLaw,CompoundName){
+PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
     nLaws <- length(ConLaw$Text)
-    message(sprintf("!ID\t!Name\t!DefaultValue\t!Unit\t!ConservationLaw\t!Formula"))
-    message(sprintf("CLU%i\t%s\t%g\tnM\tTRUE\t%s",1:nLaws,ConLaw$ConstantName,ConLaw$Constant,ConLaw$Text))
-    message(sprintf("If you'd like to monitor omitted compounds, add this to the Output table:\n"))
-    message(sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula"))
+    header<-character(length=2)
+    header[1] <- sprintf("!!Sbtab\tDocument='%s' TableName='Suggested Input' TableTitle='The model has conservation laws that were automatically determined, these are the conserved constants' TableType='Quantity'",document.name)
+    header[2] <- sprintf("!ID\t!Name\t!DefaultValue\t!Unit\t!ConservationLaw\t!Comment")
+    SuggestedParameters <- c(header,sprintf("CLU%i\t%s\t%g\tnM\tTRUE\t%s",1:nLaws,ConLaw$ConstantName,ConLaw$Constant,ConLaw$Text))
+    infname <- paste0(document.name,"_SuggestedInput.tsv")
+    cat(SuggestedParameters,sep="\n",file=infname)
+
+    header[1] <- sprintf("!!Sbtab\tDocument='%s' TableName='Suggested Output' TableTitle='Automatically determined conservation laws remove state variables, these outputs make them observable' TableType='Quantity'",document.name)
+    header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
     k <- ConLaw$Eliminates
-    message(sprintf("YCL%i\t%s_mon\tmonitors implicit state\tSD_YCL%i\tnot applicable\tnM\tnone\t%s",1:nLaws,CompoundName[k],1:nLaws,CompoundName[k]))    
+    SuggestedOutput=c(header,sprintf("YCL%i\t%s_mon\tmonitors implicit state\tSD_YCL%i\tnot applicable\tnM\tnone\t%s",1:nLaws,CompoundName[k],1:nLaws,CompoundName[k]))
+    outfname <- paste0(document.name,"_SuggestedOutput.tsv")
+    cat(SuggestedOutput,sep="\n",file=outfname)
+    message(sprintf("If you'd like to monitor omitted compounds, add this to the Output table: %s\n",outfname))
 }
 
 make.vfgen <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
@@ -598,7 +612,7 @@ sbtab_to_vfgen <- function(SBtabDoc){
     Output <- GetOutputs(SBtab)
     Input <- GetInputs(SBtab)
 
-    ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression)
+    ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression,Input)
     ODE <- ModelStructure$ODE    
     Laws <- GetConservationLaws(ModelStructure$Stoichiometry)
     Reaction[["lhs"]] <- ModelStructure$lhs
@@ -618,7 +632,7 @@ sbtab_to_vfgen <- function(SBtabDoc){
         
         print(t(Laws))
         ConLaw <- GetLawText(Laws,row.names(Compound),Compound$InitialValue)
-        PrintConLawInfo(ConLaw,row.names(Compound))
+        PrintConLawInfo(ConLaw,row.names(Compound),document.name)
     }    
     PrintSteadyStateOutputs(Compound,ODE,document.name)
     H <- document.name
