@@ -115,7 +115,7 @@ GetLawText <- function(Laws,CompoundName,InitialValue){
         }
         ConLaw$Formula[j] <- gsub("1[*]","",Formula)
         message(LawText)
-        message(sprintf("This will comment out compund %i («%s», initial value: %g), Conserved Constant = %f\n",k,CompoundName[k],InitialValue[k],Const))
+        message(sprintf("This will comment out compound %i («%s», initial value: %g), Conserved Constant = %f\n",k,CompoundName[k],InitialValue[k],Const))
     }
     return(ConLaw)
 }
@@ -383,7 +383,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression,Input){
             }
         }
     }
-    message(sprintf("Number of compunds:\t%i\nNumber of Reactions:\t%i",nC[1],nR[1]))
+    message(sprintf("Number of compounds:\t%i\nNumber of Reactions:\t%i",nC[1],nR[1]))
     ModelStructure <- list(ODE=ODE,Stoichiometry=N,LHS=lhs,RHS=rhs)
     return(ModelStructure) 
 }
@@ -470,7 +470,7 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
                 flux="\t%s : a flux, for use in DERIVATIVE mechanism",
                 comment="\t: Compound %s with ID %s and initial condition %g had derivative %s, but is calculated by conservation law.",
                 state="\t%s : a state variable",
-                ode="\t%s' = %s : affects compund with ID %s",
+                ode="\t%s' = %s : affects compound with ID %s",
                 reaction="\t %s <-> %s (%s, %s)",
                 output="FUNCTION %s() {\n\t%s = %s : Output ID %s\n}",
                 assignment="\t%s = %s : assignment for expression %s")
@@ -593,7 +593,7 @@ sbtab_from_tsv <- function(tsv.file){
     return(list(Document=document.name,Table=SBtab))
 }
 
-sbtab_to_vfgen <- function(SBtabDoc){
+sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     ## message("The names of the SBtab list:")
     ## message(cat(names(SBtab),sep=", "))
     document.name <- SBtabDoc[["Document"]]
@@ -618,7 +618,7 @@ sbtab_to_vfgen <- function(SBtabDoc){
     Reaction[["lhs"]] <- ModelStructure$lhs
     Reaction[["rhs"]] <- ModelStructure$rhs
     
-    if (is.null(Laws)){
+    if (is.null(Laws) || cla==FALSE){
         nLaws <- 0
         ConLaw <- NULL
     } else {
