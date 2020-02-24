@@ -1,7 +1,9 @@
-## this function expects a model to be loaded from an ODS file using
-## read.ods or read_ods from the readODS package
-##
-##
+make.cnames <- function(Labels){
+    ## this makes names that work in C, where dots have special meanings.
+    Unique.Names <- gsub("[.]","_",make.names(trimws(Labels), unique = TRUE, allow_ = TRUE),useBytes=TRUE)
+    return(Unique.Names)
+}
+
 GetTableName <- function(sbtab){
     ## the table title has to be in either one of the columns of row 1
     N <- names(sbtab)
@@ -27,15 +29,10 @@ GetDocumentName <- function(sbtab){
     document.name <- "Model"
     for (i in c(1:lN)){
         if (length(match[[i]])>1){
-            document.name <- match[[i]][2] # so the first experssion in parentheses
+            document.name <- make.cnames(match[[i]][2]) # so the first experssion in parentheses
         } 
     }
     return(document.name)
-}
-
-make.cnames <- function(Labels){
-    Unique.Names <- gsub("[.]","_",make.names(trimws(Labels), unique = TRUE, allow_ = TRUE),useBytes=TRUE)
-    return(Unique.Names)
 }
 
 GetConservationLaws <- function(N){
@@ -154,9 +151,9 @@ GetReactions <- function(SBtab){
     Formula <- SBtab[["Reaction"]][["!ReactionFormula"]]
     Name <- make.cnames(SBtab[["Reaction"]][["!Name"]])
     Flux <- SBtab[["Reaction"]][["!KineticLaw"]]
-    kin <- strsplit(SBtab[["Reaction"]][["!KineticLaw"]],split="-")
-    KinMat <- matrix(trimws(unlist(kin)),ncol=2,byrow=TRUE)
-    Kinetic <- data.frame(forward=KinMat[,1],backward=KinMat[,2])
+    ##kin <- strsplit(SBtab[["Reaction"]][["!KineticLaw"]],split="-")
+    ##KinMat <- matrix(trimws(unlist(kin)),ncol=2,byrow=TRUE)
+    ##Kinetic <- data.frame(forward=KinMat[,1],backward=KinMat[,2])
     Reaction <- data.frame(ID,Formula,Flux,row.names=Name)
     return(Reaction)
 }
@@ -230,13 +227,12 @@ GetParameters <- function(SBtab){
         Value <- SBtab[["Parameter"]][["!Median"]]
     }
 
-    ##message("raw parameter values:")
+    message("raw parameter values:")
     ##print(Value)
-    ##message("---")
-    ##message("as.numeric:")
+    message("---")
     nValue <- as.double(gsub("−","-",Value));
-    ##print(nValue)
-    ##message("---")
+    print(nValue)
+    message("---")
     Value <- nValue
     if (any(Scale %in% c("log","log10","natural logarithm","decadic logarithm","base-10 logarithm","logarithm"))) {
         l <- Scale %in% c("log","logarithm","natural logarithm")
@@ -459,6 +455,18 @@ make.vfgen <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,O
     return(vfgen)
 }
 
+OneOrMoreLines <- function(Prefix,Table,Suffix){
+    if (nrow(Table)>0)
+        Names <- sprintf("%s %s %s",Prefix,paste0(row.names(Table),collapse=", "),Suffix)
+    else
+        return(character())
+
+    if (nchar(Names)<76)
+        return(Names)
+    else
+        return(sprintf("%s %s %s",Prefix,row.names(Table),Suffix))
+}
+
 make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
     Mod <- list()    
     fmt <- list(const="\t%s = %s : a constant",
@@ -477,16 +485,22 @@ make.mod <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Out
 ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
     Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautomatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
+
+    Range <- character()
+    Range <- c(Range,OneOrMoreLines("\tRANGE",Input,": input"))
+    Range <- c(Range,OneOrMoreLines("\tRANGE",Output,": output"))
+    Range <- c(Range,OneOrMoreLines("\tRANGE",Expression,": assigned"))
+
     Mod[["NEURON"]] <- c("NEURON {",
-                         sprintf("\tPOINT_PROCESS %s",H),
-                         sprintf("\tRANGE %s : inputs",paste0(row.names(Input),collapse=", ")),
-                         sprintf("\tRANGE %s : assigned",paste0(row.names(Expression),collapse=", ")),
-                         sprintf("\tRANGE %s : compounds",paste0(row.names(Compound),collapse=", ")),
-                         "USEION ca READ cai VALENCE 2","}")
+                         sprintf("\tSUFFIX %s : OR perhaps POINT_PROCESS ?",H),
+                         Range,
+                         ": USEION ca READ cai VALENCE 2 : sth. like this may be needed for ions you have in your model",
+                         "}")
+                         
     l <- grepl("0$",row.names(Compound))
     if (any(l)) {
-        message("possibly problematic names: %s.",paste0(Compound[l],collapse=", "));
-        warning("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will also create var10 and var100 from them, which will be in conflict with your names. ")
+        message(sprintf("possibly problematic names: %s.",paste0(row.names(Compound)[l],collapse=", ")))
+        stop("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will also create var10 and var100 from them, which will be in conflict with your names. Please choose different names in the source files (SBtab).")
     }
     ## Conservation Laws
     if (is.null(ConLaw)){
@@ -580,7 +594,7 @@ sbtab_from_tsv <- function(tsv.file){
     header <- readLines(tsv.file[1],n=1);
     mD <- regexec("Document='([^']+)'", header)
     match <- regmatches(header,mD)
-    document.name=match[[1]][2]
+    document.name=make.cnames(match[[1]][2])
     message(sprintf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name))
     
     for (f in tsv.file){
@@ -638,7 +652,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     H <- document.name
     H <- sub("-",'_',H)
     vfgen <- make.vfgen(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
-    fname<-sprintf("%s_vf.xml",H)
+    fname<-sprintf("%s.vf",H)
     cat(unlist(vfgen),sep="\n",file=fname)
     message(sprintf("The vf content was written to: %s\n",fname))
 
