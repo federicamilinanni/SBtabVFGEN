@@ -287,15 +287,12 @@ You can check your files for non-ascii characters like this:
 ```bash
 grep -P '[^[:ascii:]]' *.tsv
 #OR
-LC_ALL=C grep '[^ -~]' *.tsv
+grep -n '[^a-z_A-Z[:digit:][:punct:][:space:]]' *.tsv
 # automatic minus to hyphen replacement:
 sed -i 's/−/-/g' *.tsv
 ```
 
-The second option avoids the `-P` switch and uses the observation that
-printable ascii character start at ` ` (space) and end with `~`
-(tilde). It just uses the byte value of characters without caring about
-language properties.
+The second option avoids the `-P` switch.
 
 Neither `grep` nor `egrep` define the `[:ascii:]` character class
 without the `-P` option: perl regular expressions.
