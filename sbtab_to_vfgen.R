@@ -173,19 +173,25 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     return(Constant)
 }
 
+# this will at first be for logical vectors, not general yet
+.OptionalColumn <- function(SBtab,Name,mode="logical"){
+    n <- length(SBtab[["!ID"]])
+    if (Name %in% names(SBtab)){
+        Column <- .GetLogical(SBtab[["Compound"]][["!SteadyState"]][!IsInput])
+    } else {
+        Column <- vector(mode,length=n)
+    }
+    return(Column)
+}
+
 .GetCompounds <- function(SBtab){
     nComp <- length(SBtab[["Compound"]][["!ID"]])
-    if ("!IsInput" %in% names(SBtab[["Compound"]])){
-        IsInput <- .GetLogical(SBtab[["Compound"]][["!IsInput"]])
-        ##class(IsInput)
-        ##print(IsInput)
-        if (length(IsInput)>0){
-            message("These Compounds are really inputs and not subject to kinetic laws:")
-            print(SBtab[["Compound"]][["!Name"]][IsInput])
-            message("---")
-        }
-    } else {
-        IsInput <- vector(mode="logical",length=nComp)
+    IsInput <- .OptionalColumn(SBtab[["Compound"]],"!IsInput","logical")
+    #print(IsInput)
+    if (any(IsInput)){
+        message("These Compounds are really inputs and not subject to kinetic laws:")
+        print(SBtab[["Compound"]][["!Name"]][IsInput])
+        message("---")
     }
     ID <- SBtab[["Compound"]][["!ID"]][!IsInput]
     Name <- make.cnames(SBtab[["Compound"]][["!Name"]][!IsInput])
@@ -195,7 +201,8 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ## replace possible non-ascii "-"
     CleanIV <- gsub("−","-", SBtab[["Compound"]][["!InitialValue"]][!IsInput])
     InitialValue <- as.numeric(CleanIV);
-    SteadyState <- .GetLogical(SBtab[["Compound"]][["!SteadyState"]][!IsInput])
+    SteadyState <- .OptionalColumn(SBtab[["Compound"]],"!IsSteadyState","logical")
+    SteadyState <- SteadyState[!IsInput]
     Unit <- SBtab[["Compound"]][["!Unit"]][!IsInput]
     message("Units: ")
     print(Unit)
