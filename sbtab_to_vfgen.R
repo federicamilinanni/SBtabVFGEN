@@ -154,8 +154,8 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ##kin <- strsplit(SBtab[["Reaction"]][["!KineticLaw"]],split="-")
     ##KinMat <- matrix(trimws(unlist(kin)),ncol=2,byrow=TRUE)
     ##Kinetic <- data.frame(forward=KinMat[,1],backward=KinMat[,2])
-    Unit <- SBtab[["Reaction"]][["!Unit"]]
-    Reaction <- data.frame(ID,Formula,Flux,Unit,row.names=Name)
+    ##Unit <- SBtab[["Reaction"]][["!Unit"]]
+    Reaction <- data.frame(ID,Formula,Flux,row.names=Name)
     return(Reaction)
 }
 
@@ -177,7 +177,11 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
 .OptionalColumn <- function(SBtab,Name,mode="logical"){
     n <- length(SBtab[["!ID"]])
     if (Name %in% names(SBtab)){
-        Column <- .GetLogical(SBtab[["Compound"]][["!SteadyState"]][!IsInput])
+        Column <- switch(mode,
+                         logical=.GetLogical(SBtab[[Name]]),
+                         numeric=as.numeric(SBtab[[Name]]),
+                         as.character(SBtab[[Name]])
+                         )
     } else {
         Column <- vector(mode,length=n)
     }
@@ -201,7 +205,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ## replace possible non-ascii "-"
     CleanIV <- gsub("−","-", SBtab[["Compound"]][["!InitialValue"]][!IsInput])
     InitialValue <- as.numeric(CleanIV);
-    SteadyState <- .OptionalColumn(SBtab[["Compound"]],"!IsSteadyState","logical")
+    SteadyState <- .OptionalColumn(SBtab[["Compound"]],"!SteadyState","logical")
     SteadyState <- SteadyState[!IsInput]
     Unit <- SBtab[["Compound"]][["!Unit"]][!IsInput]
     message("Units: ")
