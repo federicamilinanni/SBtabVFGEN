@@ -5,21 +5,13 @@ Convert a Model written in [SBtab](https://www.sbtab.net/), saved as a series of
 As a byproduct, this script also produces a `mod` file intended as a starting point for use in [neuron](https://neuron.yale.edu/neuron/).
 
 The type of _systems biology_ models that we have in mind are
-autonomous ordinary differential equations (ODEs), while _neuron_ comprehensively models
-biochemistry and electrophysiology (action potentials etc.). These two different simulations
-have to be coupled (in neuron), so the produced `mod` file is really only
-an initial point; the user has to change thye file and make it work inside of
-neuron.
-
-## VFGEN
-
-[VFGEN](https://github.com/WarrenWeckesser/vfgen) is a very useful
-tool that can reformat an ODE (given in its custom xml format) and
-convert it into various programming languages, including right hand
-side functions for two `C` solvers of ODEs. While doing so, it uses
-[GiNaC](https://ginac.de/) to calculate the model's Jacobian. The R
-script `sbtab_to_vfgen.R` converts an SBtab model to vfgen's `xml`
-format.
+autonomous ordinary differential equations (ODEs), while _neuron_
+comprehensively models biochemistry and electrophysiology (action
+potentials etc.). These two different simulations have to be coupled
+(in neuron), so the produced `mod` file is really only an initial
+point; the user has to change the file and make it work inside of
+neuron. The user must also be aware of NEURONs units and make the
+necessary unit conversions.
 
 Here is an interactive example:
 ```R
@@ -41,6 +33,21 @@ Model <- sbtab_to_vfgen(SBtabDoc)
 ```
 
 
+## VFGEN
+
+[VFGEN](https://github.com/WarrenWeckesser/vfgen) is a very useful
+tool that can reformat an ODE (given in its custom `xml` format) and
+convert it into various programming languages, including right hand
+side functions for two ODE solvers in `C`:
+[gsl](https://www.gnu.org/software/gsl/doc/html/ode-initval.html) and
+[cvode](https://computing.llnl.gov/projects/sundials/cvode). While
+doing so, it uses [GiNaC](https://ginac.de/) to calculate the model's
+Jacobian analytically (among other things). The R script
+`sbtab_to_vfgen.R` converts an SBtab model to vfgen's `xml` format.
+
+Biological models don't necessarily map uniquely onto ODE models, a
+compound can be a state variable or an algebraic assignment or a
+constant, this has to be inferred a bit from the SBtab files.
 
 ## SBtab
 
@@ -97,7 +104,7 @@ conditions) should not be here.
 | !Scale | log, log10, linear | and some variants of these|
 | !InitialValue | a number | (per unit) in the above scale |
 | !Unit | the unit of the above number | as it would be in linear scale |
-| !SteadyState | `TRUE` | this compound should reach a steady state in at least onw scenario and you want to know whether this happened |
+| !SteadyState | `TRUE` | this compound should reach a steady state in at least one scenario and you want to know whether this happened |
 |              |`FALSE` | it is not important whether or not this compound reaches steady state|
 
 The conversion script will make a file called
@@ -114,12 +121,12 @@ Others columns are unused but may be informative to the user, or others.
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
 | !Scale | `log`, `log10`, `linear` | some aliases of these are possible (such as `base-10 logarithm`)|
-| !DefaultValue | a number | in above scale, normnalised to the unit of measurement, possibly subject to fitting/sampling |
+| !DefaultValue | a number | in above scale, normalized to the unit of measurement, possibly subject to fitting/sampling |
 | !Std | a number | standard deviation / uncertainty of this parameter |
 | !Min / !Max | numbers | respectively, used if !Std is not present |
 
 The columns `!Std` and `!Min/Max` are only used in
-sampling/optimisation, the model conversion is unaffected by them, the
+sampling/optimization, the model conversion is unaffected by them, the
 DefaultValue is passed on to the model files (if there is a place to
 put them).
 
@@ -134,7 +141,7 @@ reaction. Both er required and are standard columns in SBtab.
 | !KineticLaw | e.g. `kf*A*B-kr*AB` | the flux, as a math expression |
 | !ReactionFormula | e.g. `A+B<=>AB` | so, `AB` will increase and both `A` and `B` will decrease by this reaction whenever the flux is positive |
 
-Since the kinetic law dtermines the reversibility of the reaction, the
+Since the kinetic law determines the reversibility of the reaction, the
 column `!IsReversible` is not necessary, but if you determine the
 kinetics based on the law of mass action it may be important for you
 to have that column as a reminder (for when you are auto generating
@@ -144,7 +151,7 @@ the `!KineticLaw` column, which this script doesn't do).
 
 The input parameters to the model that distinguish different
 experiments. These quantities are known and can be influenced by the
-people who are performaing an experiment (or rather the real
+people who are performing an experiment (or rather the real
 counterparts of these quantities can be influenced). These play the
 roles of (additional) parameters, but a different kind of parameter
 than in the Parameter table. Experiments are supposed to have the same
@@ -168,8 +175,8 @@ the script runs (again), because the script creates those itself (every time it 
 ### Output
 
 The outputs are _observable quantities_ of this system; what is and
-isn't an output depends on what you can measure (or have knowlege
-about). Outputs are ususally converted to functions in the target
+isn't an output depends on what you can measure (or have knowledge
+about). Outputs are usually converted to functions in the target
 language. _Experimental Data_ and _Outputs_ are intimately related as
 the outputs are the model's equivalent of the data and in some way
 those can be compared to one another.
@@ -198,7 +205,7 @@ The data sheets are not used by this script, but they are used [here](https://gi
 ### Expression
 
 These will be local variables of the model. Expressions are
-assignments that are caculated repeatedly each time the ODEs right
+assignments that are calculated repeatedly each time the ODEs right
 hand side is called (before fluxes are calculated, fluxes are otherwise also a
 type of _expression_).
 
@@ -212,7 +219,7 @@ assignments have to happen before you call the model solver, so those
 are up to you use of the model in the language you had in mind.
 
 The only type of initial assignment that can be specified is the state
-variables' inital conditions.
+variables' initial conditions.
 
 ### Experiments
 
@@ -249,16 +256,49 @@ same sheet.
 
 Even though `.tsv` files are more fundamental types (have least amount
 of prerequisites), `.ods` files keep all the sheets in one file and
-are slightly more convenient.
+are slightly more convenient. [Gnumeric](http://www.gnumeric.org/) is
+a spreadsheet software that handles both `ods` and tsv files fairly
+well (it also has its own format `.gnumeric`)
 
 This `R` script can process such files directly, as mentioned, using
 the
 [readODS](https://cran.r-project.org/web/packages/readODS/index.html)
 package, but you can also convert between spreadsheet formats like
-`.ods`, `.gnumeric` and `tsv` files using `ssconvert`, a part of
+`.ods`, `.gnumeric` and `.tsv` files using `ssconvert`, a part of
 [gnumeric](http://www.gnumeric.org/). The shell scripts in this
 repository are an example of ssconvert usage.
 
-Other spreadsheet programs (like google spreadsheets and libreoffice)
-usually export to `tsv` _one sheet at a time_ and lack an option to
-export all sheets into as many files.
+Other spreadsheet programs such as _google spreadsheets_ and _libre
+office_ export to `tsv` _one sheet at a time_ (with no easy
+workarounds) and lack an option to export all sheets into as many
+files. Gnumeric's `ssconvert` command does.
+
+### Remarks
+
+Sometimes, spreadsheet software introduces Unicode characters such as
+`−` ('MINUS SIGN' U+2212, in html «\&minus;»). They should be replaced
+by the ascii character `-` ('HYPHEN-MINUS' U+002D). And similarly for
+other Unicode characters, unless they appear in comments (or generally
+unparsed content). Minus and Hyphen can look quite similar: `−-`
+(depending on font), but hyphen is the character that programming
+languages understand as subtraction.
+
+You can check your files for non-ascii characters like this:
+```bash
+grep -P '[^[:ascii:]]' *.tsv
+#OR
+LC_ALL=C grep '[^ -~]' *.tsv
+# automatic minus to hyphen replacement:
+sed -i 's/−/-/g' *.tsv
+```
+
+The second option avoids the `-P` switch and uses the observation that
+printable ascii character start at ` ` (space) and end with `~`
+(tilde). It just uses the byte value of characters without caring about
+language properties.
+
+Neither `grep` nor `egrep` define the `[:ascii:]` character class
+without the `-P` option: perl regular expressions.
+
+Of course you can use [perl](https://www.perl.org/) directly, or
+anything else that has regular expressions.
