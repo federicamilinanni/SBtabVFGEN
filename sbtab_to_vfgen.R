@@ -602,7 +602,7 @@ sbtab_from_tsv <- function(tsv.file){
         mTN <- regexec("TableName='([^']+)'", header)
         match <- regmatches(header,mTN)
         TableName=match[[1]][2]
-        SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE)
+        SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
     }
     return(list(Document=document.name,Table=SBtab))
 }
