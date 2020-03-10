@@ -593,7 +593,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                              "}") 
     Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     ## Output Functions
-    Mod[["FUNCTION"]] <- c("FUNCTION observables_func {",sprintf(fmt$output,row.names(Output),Output$Formula,Output$ID),"}")
+    Mod[["FUNCTION"]] <- c("PROCEDURE observables_func() {",sprintf(fmt$output,row.names(Output),Output$Formula,Output$ID),"}")
     return(Mod)
 }
 
