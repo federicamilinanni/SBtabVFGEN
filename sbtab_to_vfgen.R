@@ -493,7 +493,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                 total="\t%s = %g : the total amount of a conserved sub-set of states",
                 ConservationLaw="\t%s = %s : conservation law",
                 expression="\t%s : a pre-defined algebraic expression",
-                flux="\t%s (%s) : a flux, for use in DERIVATIVE mechanism",
+                flux="\t%s : a flux, for use in DERIVATIVE mechanism",
                 comment="\t: Compound %s with ID %s and initial condition %g had derivative %s, but is calculated by conservation law.",
                 state="\t%s (%s) : a state variable",
                 ode="\t%s' = %s : affects compound with ID %s",
@@ -534,9 +534,9 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         nLaws <- length(F)
         ConservationLaw <- sprintf(fmt$ConservationLaw,CName,F)
     }
-    Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value,Constant$Unit),"}")
+    Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value,gsub("^[ ]*1/","/",Constant$Unit)),"}")
     Mod[["PARAMETER"]] <- c("PARAMETER {",                            
-                            sprintf(fmt$par,row.names(Parameter),Parameter$Value,Parameter$Unit),
+                            sprintf(fmt$par,row.names(Parameter),Parameter$Value,gsub("^[ ]*1/","/",Parameter$Unit)),
                             ##sprintf(fmt$input,row.names(Input),Input$DefaultValue),
                             ConservationInput,
                             "}")
@@ -545,7 +545,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     # Expressions and Reaction Fluxes
     Mod[["ASSIGNED"]] <- c("ASSIGNED {",
                            sprintf(fmt$expression,row.names(Expression)),
-                           sprintf(fmt$flux,row.names(Reaction),Reaction$Unit),
+                           sprintf(fmt$flux,row.names(Reaction)),
                            sprintf("\t%s : computed from conservation law",CName),
                            sprintf(fmt$input,row.names(Input),Input$DefaultValue),
                            "}")
@@ -564,7 +564,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             DERIVATIVE[i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
             IVP[i] <- sprintf("\t: %s cannot have initial values as it is determined by conservation law",CName[i])
         }else{
-            STATE[i] <- sprintf(fmt$state,CName[i],Compound$Unit[i])
+            STATE[i] <- sprintf(fmt$state,CName[i],gsub("^[ ]*1/","/",Compound$Unit[i]))
             Right.Hand.Side <- sub("^[[:blank:]]*[+]","",ODE[i]) # remove leading plus signs, if present
             DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], Right.Hand.Side,Compound$ID[i])
             IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
