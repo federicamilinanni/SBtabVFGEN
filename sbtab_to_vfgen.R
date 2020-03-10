@@ -473,6 +473,13 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
     return(vfgen)
 }
 
+NeuronUnit<-function(unit){
+    unit <- gsub("^[ ]*1/","/",unit)
+    unit <- gsub("[()]","",unit)
+    unit <- gsub("[ ]*[*][ ]*","-",unit)
+    return(unit)
+}
+
 OneOrMoreLines <- function(Prefix,Table,Suffix){
     if (nrow(Table)>0)
         Names <- sprintf("%s %s %s",Prefix,paste0(row.names(Table),collapse=", "),Suffix)
@@ -534,9 +541,11 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         nLaws <- length(F)
         ConservationLaw <- sprintf(fmt$ConservationLaw,CName,F)
     }
-    Mod[["CONSTANT"]] <- c("CONSTANT {",sprintf(fmt$const,row.names(Constant),Constant$Value,gsub("^[ ]*1/","/",Constant$Unit)),"}")
+    Mod[["CONSTANT"]] <- c("CONSTANT {",
+                           sprintf(fmt$const,row.names(Constant),Constant$Value, NeuronUnit(Constant$Unit)),
+                           "}")
     Mod[["PARAMETER"]] <- c("PARAMETER {",                            
-                            sprintf(fmt$par,row.names(Parameter),Parameter$Value,gsub("^[ ]*1/","/",Parameter$Unit)),
+                            sprintf(fmt$par,row.names(Parameter),Parameter$Value, NeuronUnit(Parameter$Unit)),
                             ##sprintf(fmt$input,row.names(Input),Input$DefaultValue),
                             ConservationInput,
                             "}")
@@ -564,7 +573,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             DERIVATIVE[i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
             IVP[i] <- sprintf("\t: %s cannot have initial values as it is determined by conservation law",CName[i])
         }else{
-            STATE[i] <- sprintf(fmt$state,CName[i],gsub("^[ ]*1/","/",Compound$Unit[i]))
+            STATE[i] <- sprintf(fmt$state,CName[i],NeuronUnit(Compound$Unit[i]))
             Right.Hand.Side <- sub("^[[:blank:]]*[+]","",ODE[i]) # remove leading plus signs, if present
             DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], Right.Hand.Side,Compound$ID[i])
             IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
