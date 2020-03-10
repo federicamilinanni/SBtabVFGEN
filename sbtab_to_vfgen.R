@@ -505,7 +505,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                 state="\t%s (%s) : a state variable",
                 ode="\t%s' = %s : affects compound with ID %s",
                 reaction="\t %s <-> %s (%s, %s)",
-                output="FUNCTION %s_func() {\n\t%s = %s : Output ID %s\n}",
+                output="\t%s = %s : Output ID %s",
                 assignment="\t%s = %s : assignment for expression %s")
 ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
@@ -557,6 +557,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                            sprintf(fmt$flux,row.names(Reaction)),
                            sprintf("\t%s : computed from conservation law",CName),
                            sprintf(fmt$input,row.names(Input),Input$DefaultValue),
+                           sprintf("\t%s : an observable",row.names(Output)),
                            "}")
     Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,Expression$ID)
     ##Mod[["flux"]] <- c("KINETIC kin",sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
@@ -592,7 +593,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                              "}") 
     Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
     ## Output Functions
-    Mod[["FUNCTION"]] <- sprintf(fmt$output,row.names(Output),row.names(Output),Output$Formula,Output$ID)
+    Mod[["FUNCTION"]] <- c("FUNCTION observables_func {",sprintf(fmt$output,row.names(Output),Output$Formula,Output$ID),"}")
     return(Mod)
 }
 
