@@ -519,6 +519,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     Range <- c(Range,OneOrMoreLines("\tRANGE",Input,": input"))
     Range <- c(Range,OneOrMoreLines("\tRANGE",Output,": output"))
     Range <- c(Range,OneOrMoreLines("\tRANGE",Expression,": assigned"))
+    Range <- c(Range,OneOrMoreLines("\tRANGE",Compound,": compound"))
 
     Mod[["NEURON"]] <- c("NEURON {",
                          sprintf("\tSUFFIX %s : OR perhaps POINT_PROCESS ?",H),
