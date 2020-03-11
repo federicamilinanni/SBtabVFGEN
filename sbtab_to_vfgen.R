@@ -36,23 +36,27 @@ make.cnames <- function(Labels){
 }
 
 .GetConservationLaws <- function(N){
-    M <- pracma::null(t(N))
-    if (is.null(M)){
-        return(NULL)
-    } else if (all(dim(M)>1)){
-        M <- t(pracma::rref(t(M)))
+    if (require(pracma)){
+        M <- pracma::null(t(N))
+        if (is.null(M)){
+            return(NULL)
+        } else if (all(dim(M)>1)){
+            M <- t(pracma::rref(t(M)))
+        } else {
+            M <- M/max(M)
+        }
+        nr=M
+        count=0
+        f <- c(2,3,5,7)
+        while (norm(nr-round(nr),type="F") > 1e-6 && count<length(f)){
+            count <- count+1
+            message(sprintf("nullspace is not represented by integers. \nTo make the mass conservation more readable, we multiply them by %i and round.",f[count]))
+            nr <- nr*f[count]
+        }
+        Laws=round(nr)
     } else {
-        M <- M/max(M)
+        Laws=NULL;
     }
-    nr=M
-    count=0
-    f <- c(2,3,5,7)
-    while (norm(nr-round(nr),type="F") > 1e-6 && count<length(f)){
-        count <- count+1
-        message(sprintf("nullspace is not represented by integers. \nTo make the mass conservation more readable, we multiply them by %i and round.",f[count]))
-        nr <- nr*f[count]
-    }
-    Laws=round(nr)
     return(Laws)
 }
 
@@ -671,10 +675,26 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         message("---")
         message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]))
         message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"))
-        
-        print(t(Laws))
         ConLaw <- .GetLawText(Laws,row.names(Compound),Compound$InitialValue)
         PrintConLawInfo(ConLaw,row.names(Compound),document.name)
+        if (require("h5")){
+            f5 <- h5file("ConservationLaws.h5",mode="w")
+            f5["ConservationLaws"] <- t(Laws)
+            f5["/Stoichiometry"] <- N
+            f5["/Description"]<-ConLaw$Text
+            f5["/Document"]<-document.name
+            f5["/Constant"]<-ConLaw$Constant
+            f5["/ConstantName"]<-ConLaw$ConstantName
+            f5["/EliminatedCompounds"]<-ConLaw$Eliminates
+            h5close(f5)
+        } else {
+            rownames(Laws)<-rownames(Compound)
+            write.table(t(Laws),file="ConservationLaws.tsv",sep="\t",col.names=FALSE,row.names=FALSE)
+            colnames(N)<-rownames(Reaction)
+            rownames(N)<-rownames(Compound)
+            write.table(N,file="Stoichiometry.tsv",sep="\t",col.names=FALSE,row.names=FALSE)            
+        }
+        ##print(t(Laws))
     }    
     PrintSteadyStateOutputs(Compound,ODE,document.name)
     H <- document.name
