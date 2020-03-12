@@ -194,28 +194,22 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
 
 .GetCompounds <- function(SBtab){
     nComp <- length(SBtab[["Compound"]][["!ID"]])
-    IsInput <- .OptionalColumn(SBtab[["Compound"]],"!IsInput","logical")
-    #print(IsInput)
-    if (any(IsInput)){
-        message("These Compounds are really inputs and not subject to kinetic laws:")
-        print(SBtab[["Compound"]][["!Name"]][IsInput])
-        message("---")
-    }
-    ID <- SBtab[["Compound"]][["!ID"]][!IsInput]
-    Name <- make.cnames(SBtab[["Compound"]][["!Name"]][!IsInput])
-    nComp <- length(ID)
+    ID <- SBtab[["Compound"]][["!ID"]]
+    Name <- make.cnames(SBtab[["Compound"]][["!Name"]]
     message("compound names:")
     print(Name)
     ## replace possible non-ascii "-"
-    CleanIV <- gsub("−","-", SBtab[["Compound"]][["!InitialValue"]][!IsInput])
+    CleanIV <- gsub("−","-", SBtab[["Compound"]][["!InitialValue"]])
     InitialValue <- as.numeric(CleanIV);
     SteadyState <- .OptionalColumn(SBtab[["Compound"]],"!SteadyState","logical")
-    SteadyState <- SteadyState[!IsInput]
-    Unit <- SBtab[["Compound"]][["!Unit"]][!IsInput]
+    Unit <- SBtab[["Compound"]][["!Unit"]]
     message("Units: ")
     print(Unit)
     message("---")
-    Compound <- data.frame(ID,InitialValue,SteadyState,Unit,row.names=Name)
+    Assignment <- .OptionalColumn(SBtab[["Compound"]],"!Assignment","character")
+    IsConstant <- .OptionalColumn(SBtab[["Compound"]],"!IsConstant","logical")
+    Interpolation <- .OptionalColumn(SBtab[["Compound"]],"!Interpolation","logical")
+    Compound <- data.frame(ID,InitialValue,SteadyState,Unit,IsConstant,Assignment,Interpolation,row.names=Name)
     return(Compound)
 }
 
@@ -659,6 +653,22 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     Output <- .GetOutputs(SBtab)
     Input <- .GetInputs(SBtab)
 
+    ## some biological compounds are better represented as expressions/assignments or constants
+    ## most will be state variables
+    if ("!IsConstant" %in% names(Compound)){
+        IsConstant <- Compound$IsConstant
+        CC <- Compound[IsConstant,]
+        NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue)
+        Expression=rbind(Expression,NewExpression)
+        Compound <- Compound[!CC,]
+        print(rownames(Expression))
+    }
+    if ("!Assignment" %in% names(Compound)){
+        A <- Compound$Assignment
+        
+    }
+    
+    
     ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression,Input)
     ODE <- ModelStructure$ODE    
     Laws <- .GetConservationLaws(ModelStructure$Stoichiometry)
