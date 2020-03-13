@@ -195,7 +195,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
 .GetCompounds <- function(SBtab){
     nComp <- length(SBtab[["Compound"]][["!ID"]])
     ID <- SBtab[["Compound"]][["!ID"]]
-    Name <- make.cnames(SBtab[["Compound"]][["!Name"]]
+    Name <- make.cnames(SBtab[["Compound"]][["!Name"]])
     message("compound names:")
     print(Name)
     ## replace possible non-ascii "-"
@@ -635,6 +635,7 @@ sbtab_from_tsv <- function(tsv.file){
 }
 
 sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
+    options(stringsAsFactors = FALSE)
     ## message("The names of the SBtab list:")
     ## message(cat(names(SBtab),sep=", "))
     document.name <- SBtabDoc[["Document"]]
@@ -655,19 +656,51 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
 
     ## some biological compounds are better represented as expressions/assignments or constants
     ## most will be state variables
-    if ("!IsConstant" %in% names(Compound)){
+    if ("IsConstant" %in% names(Compound)){
         IsConstant <- Compound$IsConstant
+        message(sprintf("class(IsContsnta): %s.\n",class(IsConstant)))
         CC <- Compound[IsConstant,]
         NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue)
+        row.names(NewExpression) <- row.names(CC)
+        print(NewExpression)
         Expression=rbind(Expression,NewExpression)
-        Compound <- Compound[!CC,]
-        print(rownames(Expression))
+        print(Expression)
+        Compound <- Compound[!IsConstant,]
+        print(row.names(Expression))
     }
-    if ("!Assignment" %in% names(Compound)){
+    message("---")
+    if ("Assignment" %in% names(Compound)){
         A <- Compound$Assignment
+        print(A)
+        message(sprintf("class(A): %s\n",class(A)))
+        l <- vector(mode="logical",len=length(A))
+        F <- vector(mode="character",len=length(A))
+        for (i in 1:length(A)){
+            a <- A[i]
+            print(a)
+            ex <- charmatch(a,Expression$ID)
+            print(ex)
+            if (!is.na(ex)){
+                l[i] <- TRUE
+                F[i] <- row.names(Expression[ex,])
+                message(sprintf("Compound «%s» is mapped to expression %i «%s» (matched by ID).\n",a,ex,Expression[ex,"Name"]))
+            } else if (!is.na(Expression[a,"Formula"])){
+                l[i] <- TRUE
+                F[i] <- a
+                message(sprintf("Compound «%s» is mapped to expression «%s» (matched by Name).\n",a,Expression[a,"Name"]))
+            } else {
+                message(sprintf("«%s» is not an assignment.\n",a))
+            }
+        }
+        if (any(l)){
+            NewExpression <- data.frame(ID=Compound[l,"ID"],Formula=F[l])
+            row.names(NewExpression) <- row.names(Compound[l,])
+            print(NewExpression)
+            Expression <- rbind(Expression,NewExpression)
+            Compound <- Compound[!l,]
+        }
         
-    }
-    
+    }  
     
     ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression,Input)
     ODE <- ModelStructure$ODE    
