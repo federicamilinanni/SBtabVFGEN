@@ -671,15 +671,11 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     message("---")
     if ("Assignment" %in% names(Compound)){
         A <- Compound$Assignment
-        print(A)
-        message(sprintf("class(A): %s\n",class(A)))
         l <- vector(mode="logical",len=length(A))
         F <- vector(mode="character",len=length(A))
         for (i in 1:length(A)){
             a <- A[i]
-            print(a)
             ex <- charmatch(a,Expression$ID)
-            print(ex)
             if (!is.na(ex)){
                 l[i] <- TRUE
                 F[i] <- row.names(Expression[ex,])
@@ -688,9 +684,9 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
                 l[i] <- TRUE
                 F[i] <- a
                 message(sprintf("Compound «%s» is mapped to expression «%s» (matched by Name).\n",a,Expression[a,"Name"]))
-            } else {
-                message(sprintf("«%s» is not an assignment.\n",a))
-            }
+            } #else {
+            #    message(sprintf("«%s» is not an assignment.\n",a))
+            #}
         }
         if (any(l)){
             NewExpression <- data.frame(ID=Compound[l,"ID"],Formula=F[l])
@@ -698,8 +694,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
             print(NewExpression)
             Expression <- rbind(Expression,NewExpression)
             Compound <- Compound[!l,]
-        }
-        
+        }        
     }  
     
     ModelStructure <- ParseReactionFormulae(Compound,Reaction,Expression,Input)
