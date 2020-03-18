@@ -552,6 +552,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     
     # Expressions and Reaction Fluxes
     Mod[["ASSIGNED"]] <- c("ASSIGNED {",
+                           "\ttime (millisecond) : alias for t",
                            sprintf(fmt$expression,row.names(Expression)),
                            sprintf(fmt$flux,row.names(Reaction)),
                            sprintf("\t%s : computed from conservation law",CName),
@@ -580,6 +581,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         }
     }
     Mod[["EXPRESSION"]] <- c("PROCEDURE assign_calculated_values() {",
+                             "\ttime = t : an alias for the time variable, if needed.",
                              ConservationLaw,
                              Assignment,
                              sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,Reaction$ID),
@@ -675,7 +677,13 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         F <- vector(mode="character",len=length(A))
         for (i in 1:length(A)){
             a <- A[i]
-            ex <- charmatch(a,Expression$ID)
+            if (a==""){
+                ex<-NA
+            }else{
+                ex <- charmatch(a,Expression$ID)
+            }
+            ##print(a)
+            ##print(ex)
             if (!is.na(ex)){
                 l[i] <- TRUE
                 F[i] <- row.names(Expression[ex,])
