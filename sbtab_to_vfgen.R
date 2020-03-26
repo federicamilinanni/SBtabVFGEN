@@ -660,7 +660,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     ## most will be state variables
     if ("IsConstant" %in% names(Compound)){
         IsConstant <- Compound$IsConstant
-        message(sprintf("class(IsContsnta): %s.\n",class(IsConstant)))
+        message(sprintf("class(IsConstant): %s.\n",class(IsConstant)))
         CC <- Compound[IsConstant,]
         NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue)
         row.names(NewExpression) <- row.names(CC)
@@ -724,15 +724,15 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"))
         ConLaw <- .GetLawText(Laws,row.names(Compound),Compound$InitialValue)
         PrintConLawInfo(ConLaw,row.names(Compound),document.name)
-        if (require("h5")){
+        if (require("hdf5r")){
             f5 <- h5file("ConservationLaws.h5",mode="w")
-            f5["ConservationLaws"] <- t(Laws)
-            f5["/Stoichiometry"] <- N
-            f5["/Description"]<-ConLaw$Text
-            f5["/Document"]<-document.name
-            f5["/Constant"]<-ConLaw$Constant
-            f5["/ConstantName"]<-ConLaw$ConstantName
-            f5["/EliminatedCompounds"]<-ConLaw$Eliminates
+            f5[["ConservationLaws"]] <- t(Laws)
+            f5[["/Stoichiometry"]] <- N
+            f5[["/Description"]]<-ConLaw$Text
+            f5[["/Document"]]<-document.name
+            f5[["/Constant"]]<-ConLaw$Constant
+            f5[["/ConstantName"]]<-ConLaw$ConstantName
+            f5[["/EliminatedCompounds"]]<-ConLaw$Eliminates
             h5close(f5)
         } else {
             rownames(Laws)<-rownames(Compound)
