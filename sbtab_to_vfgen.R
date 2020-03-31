@@ -143,7 +143,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     n <- length(Column)
     LC <- vector(mode = "logical", length = n)
     l10 <- grepl("^1$|^0$",Column)
-    lTF <- grepl("^T(RUE)?$|^F(ALSE)?$",Column)
+    lTF <- grepl("^T(RUE)?$|^F(ALSE)?$",toupper(Column))
     LC[lTF] <- as.logical(Column[lTF])
     LC[l10] <- as.logical(as.numeric(Column[l10]))
     return(LC)
