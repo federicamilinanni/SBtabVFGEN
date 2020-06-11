@@ -53,10 +53,15 @@ make.cnames <- function(Labels){
             message(sprintf("nullspace is not represented by integers. \nTo make the mass conservation more readable, we multiply them by %i and round.",f[count]))
             nr <- nr*f[count]
         }
-        Laws=round(nr)
+        Laws <- round(nr)
+        n <- dim(Laws)[2]
+        if (n>1){
+            Laws <- Laws[,n:1] # reverse order of laws to avoid dependency issues between the laws.
+        }
     } else {
-        Laws=NULL;
+        Laws=NULL
     }
+    print(Laws)
     return(Laws)
 }
 
@@ -69,7 +74,9 @@ AppendAmounts <- function(S,Quantity,QuantityName,Separator){
 }
 
 .GetLawText <- function(Laws,CompoundName,InitialValue){
+    print(Laws)
     nLaws <- dim(Laws)[2]
+    print(nLaws)
     nC <- length(CompoundName)
     I <- 1:nC
     ConLaw <- list()
@@ -81,7 +88,7 @@ AppendAmounts <- function(S,Quantity,QuantityName,Separator){
     a <- vector(length=nC,mode="logical")
     a[] <- TRUE # allowed replacement index...everything that is TRUE may be replaced by a conservation law expression
     for (j in 1:nLaws){
-        l <- as.integer(round(Laws[,nLaws-j+1]))
+        l <- as.integer(round(Laws[,j]))
         p <- l>0
         n <- l<0
         LawTextP <- AppendAmounts("",l[p],CompoundName[p],"+")
@@ -725,13 +732,13 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         PrintConLawInfo(ConLaw,row.names(Compound),document.name)
         if (require("hdf5r")){
             f5 <- h5file("ConservationLaws.h5",mode="w")
-            f5[["ConservationLaws"]] <- t(Laws)
+            f5[["ConservationLaws"]] <- t(Laws); # hdf5 will transpose this matrix again
             f5[["/Stoichiometry"]] <- N
             f5[["/Description"]]<-ConLaw$Text
             f5[["/Document"]]<-document.name
             f5[["/Constant"]]<-ConLaw$Constant
             f5[["/ConstantName"]]<-ConLaw$ConstantName
-            f5[["/EliminatedCompounds"]]<-ConLaw$Eliminates
+            f5[["/EliminatedCompounds"]]<-(ConLaw$Eliminates-1); # this is intended for C
             h5close(f5)
         } else {
             rownames(Laws)<-rownames(Compound)
