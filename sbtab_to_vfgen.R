@@ -224,7 +224,8 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ID <- SBtab[["Expression"]][["!ID"]]    
     Name <- make.cnames(SBtab[["Expression"]][["!Name"]])
     Formula <- SBtab[["Expression"]][["!Formula"]]
-    Expression <- data.frame(ID,Formula,row.names=Name)
+    Unit <- SBtab[["Expression"]][["!Unit"]]
+    Expression <- data.frame(ID,Formula,Unit,row.names=Name)
     return(Expression)
 }
 
@@ -661,6 +662,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 
 .unit.id.from.string <- function(unit.str,prnt=FALSE){
     uid <- unit.str
+    uid <- sub("^1$","dimensionless",uid)
     uid <- gsub("1/","one_over_",uid)
     uid <- gsub("/","_per_",uid)
     uid <- gsub("[*[:blank:]]","_",uid)
@@ -779,35 +781,43 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     all.uid <- .unit.id.from.string(Parameter$Unit)
     num.parameters <- nrow(Parameter)
     Name <- row.names(Parameter)
+
+    if ("DefaultValue" %in% names(Parameter)){
+        Value <- as.numeric(Parameter$DefaultValue)
+    } else if ("Value" %in% names(Parameter)){
+        Value <- as.numeric(Parameter$Value)
+    } else {
+        stop("Parameters have no Value column")
+    }
+    
     for (i in 1:num.parameters){
         message(sprintf("adding SBtab parameter %i: «%s»",i,Name[i]))
         para <- Model_createParameter(sbml);
         Parameter_setId(para,Name[i]);
-        Parameter_setValue(para, Parameter$Value[i]);
+        Parameter_setName(para,Name[i]);
+        
+        Parameter_setValue(para,Value[i]);
         this.unit.id <- all.uid[i]
         message(sprintf("unit of parameter %i (%s): «%s»",i,Name[i],this.unit.id))
         Parameter_setUnits(para, this.unit.id);        
     }
 }
 
-
-.sbtab.compound.to.sbml <- function(sbml,Compound,comp){
+.sbtab.compound.to.sbml <- function(sbml,Compound,CompName){
     all.uid <- .unit.id.from.string(Compound$Unit)
     num.species <- nrow(Compound)
     Name <- row.names(Compound)
-    print(sbml)
     for (i in 1:num.species){
         print(Name[i])
         sp <- Model_createSpecies(sbml);
         this.unit.id <- all.uid[i]
         message(sprintf("unit of species %i (%s): «%s»",i,Name[i],this.unit.id))
         Species_setId(sp, Name[i]);
-        Species_setCompartment(sp, comp);
+        Species_setName(sp, Name[i]);
+        Species_setCompartment(sp, CompName);
         Species_setInitialConcentration(sp, Compound$InitialValue[i]);
     }
-
 }
-
 
 .sbtab.constant.to.sbml <- function(sbml,Constant){
     all.uid <- .unit.id.from.string(Constant$Unit)
@@ -819,6 +829,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         print(Name[i])
         const <- Model_createParameter(sbml);
         Parameter_setId(const,Name[i]);
+        Parameter_setName(const,Name[i]);
         Parameter_setValue(const, as.numeric(Constant$Value[i]));
         this.unit.id <- all.uid[i]
         message(sprintf("unit of constant %i (%s): «%s»",i,Name[i],this.unit.id))
@@ -831,14 +842,49 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     Name <- row.names(Reaction)
     for (i in 1:num.reactions){
         message(sprintf("adding reaction %i: «%s»",i,Name[i]))
-        print(Reaction$Flux[i])
         reaction <- Model_createReaction(sbml);
         Reaction_setId(reaction,Name[i]);
+        Reaction_setName(reaction,Name[i]);
         Reaction_setReversible(reaction, Reaction$IsReversible[i]);
         message(sprintf("converting flux to mathml: «%s»",Reaction$Flux[i]))
         kl <- Reaction_createKineticLaw(reaction);
         astMath <- parseFormula(Reaction$Flux[i]); # or: readMathMLFromString(mathXMLString);
         KineticLaw_setMath(kl, astMath);
+    }
+}
+
+.sbtab.expression.to.sbml <- function(sbml,Expression,CompartmentName){
+    all.uid <- .unit.id.from.string(Expression$Unit)
+    num.species <- nrow(Expression)
+    Name <- row.names(Expression)
+    for (i in 1:num.species){
+        print(Name[i])
+        this.unit.id <- all.uid[i]
+        message(sprintf("unit of expression %i (%s): «%s»",i,Name[i],this.unit.id))
+        F <- Expression$Formula[i]
+        if (grepl("^\\s*[+-]?[0-9]+\\s*$",F)){
+            message("this expression is a constant, mapping it to a parameter")
+            par <- Model_createParameter(sbml)
+            Parameter_setId(par,Name[i]);
+            Parameter_setName(par,Name[i]);
+            Parameter_setValue(par, as.numeric(F));
+            Parameter_setUnits(par, this.unit.id);        
+        } else {
+            sp <- Model_createSpecies(sbml);
+
+            Species_setId(sp, Name[i]);
+            Species_setName(sp, Name[i]);
+            Species_setCompartment(sp, CompartmentName);
+            
+            Species_setInitialConcentration(sp, 0.0);
+            astMath <- parseFormula(F);
+            print(F)
+            
+            rule <- Model_createAssignmentRule(sbml)
+            Rule_setVariable(rule,Name[i])
+            Rule_setMath(rule,astMath)
+            ##Rule_setFormula(rule, astMath)
+        }
     }
 }
 
@@ -860,17 +906,19 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     unit <- .interpret.unit.from.string("meter")
     .create.sbml.unit(sbml,unit,"length")
 
-    
-    u.units <- .unique.units(sbml,c(Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit))
+    u.units <- .unique.units(sbml,c(Expression$Unit,Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit))
 
     comp <- Model_createCompartment(sbml);
-    Compartment_setId(comp,'MonoCompartment'); # currently, just one compartment
+    CompName <- 'TheOnlyCompartmentWeHave'
+    Compartment_setId(comp,CompName); # currently, just one compartment
     Compartment_setSize(comp, 1.0); # litres, sbml default unit
 
     .sbtab.constant.to.sbml(sbml,Constant)
-    .sbtab.compound.to.sbml(sbml,Compound,comp)
+    .sbtab.compound.to.sbml(sbml,Compound,CompName)
     .sbtab.parameter.to.sbml(sbml,Parameter)
+    .sbtab.parameter.to.sbml(sbml,Input)
     .sbtab.reaction.to.sbml(sbml,Reaction)
+    .sbtab.expression.to.sbml(sbml,Expression,CompName)
     return(Doc)
 }
 
@@ -939,8 +987,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         IsConstant <- Compound$IsConstant
         message(sprintf("class(IsConstant): %s.\n",class(IsConstant)))
         CC <- Compound[IsConstant,]
-        NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue)
-        row.names(NewExpression) <- row.names(CC)
+        NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue,Unit=CC$Unit,row.names=row.names(CC))
         print(NewExpression)
         Expression=rbind(Expression,NewExpression)
         print(Expression)
@@ -950,9 +997,12 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     message("---")
     if ("Assignment" %in% names(Compound)){
         A <- Compound$Assignment
+        U <- Compound$Unit
         l <- vector(mode="logical",len=length(A))
         F <- vector(mode="character",len=length(A))
+        
         for (i in 1:length(A)){
+
             a <- A[i]
             if (a==""){
                 ex<-NA
@@ -974,8 +1024,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
             #}
         }
         if (any(l)){
-            NewExpression <- data.frame(ID=Compound[l,"ID"],Formula=F[l])
-            row.names(NewExpression) <- row.names(Compound[l,])
+            NewExpression <- data.frame(ID=Compound[l,"ID"],Formula=F[l],Unit=U[l],row.names=row.names(Compound[l,]))
             print(NewExpression)
             Expression <- rbind(Expression,NewExpression)
             Compound <- Compound[!l,]
@@ -1038,6 +1087,10 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         SBML <- .make.sbml(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE)
         file.xml <- sprintf("%s.xml",H)
         writeSBML(SBML,file.xml);
+        stopifnot(file.exists(file.xml))
+        sbml.text <- readLines(file.xml)
+        sbml.text <- gsub('<ci>\\s*t(ime)?\\s*</ci>','<csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>',sbml.text)
+        cat(sbml.text,sep="\n",file=file.xml)
         message(sprintf("The sbml file has been named «%s».",file.xml))
     }
     
