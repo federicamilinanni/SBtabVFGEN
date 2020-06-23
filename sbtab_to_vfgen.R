@@ -275,6 +275,16 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     return(Output)
 }
 
+.GetCompartments <- function(SBtab){
+    ID <- SBtab[["Compartment"]][["!ID"]]
+    Name <- make.cnames(SBtab[["Compartment"]][["!Name"]])
+    Size <-  SBtab[["Compartment"]][["!Size"]]
+    Unit <- SBtab[["Compartment"]][["!Unit"]]
+    Comp <- data.frame(ID,Size,Unit,row.names=Name)
+    return(Comp)
+}
+
+
 .GetInputs <- function(SBtab){
     if ("!ConservationLaw" %in% names(SBtab[["Input"]])){
         Disregard <- .GetLogical(SBtab[["Input"]][["!ConservationLaw"]])
@@ -293,6 +303,21 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     Input <- data.frame(ID,DefaultValue,Unit,row.names=Name)
     return(Input)
 }
+
+.GetDefaults <- function(SBtab){
+    if ("Defaults" %in% names(SBtab)){
+        ID <- SBtab[["Defaults"]][["!ID"]]
+        Name <- make.cnames(SBtab[["Defaults"]][["!Name"]])
+        Unit <-  SBtab[["Defaults"]][["!Unit"]]
+    } else {
+        ID <- c("time","substance","volume","area","length")
+        Name <- ID
+        Unit <- c("millisecond","millimole","liter","nanometer^22","nanometer")
+    }
+    Defaults <- data.frame(ID,Unit,row.names=Name)
+    return(Defaults)
+}
+
 
 UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Input){
     l <- length(Term)
@@ -698,25 +723,25 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     .multiplier <- NULL
     .scale <- NULL
     .exponent <- NULL
-    ##
-    ## phase 1: split at "/"
+    message(sprintf("---%11s---",unit.str))
+    print(unit.str)
+    a <- gsub("[()]","",unit.str)
     if (grepl("/",unit.str)){
-        a <- unlist(strsplit(unit.str,split="/",fixed=TRUE))
-        a <- gsub("[()]","",a)
+        a <- unlist(strsplit(a,split="/",fixed=TRUE))
         message(sprintf("«%s» is interpreted as:\n\tNumerator «%s»\n\tDenominator: «%s»\n",unit.str,a[1],a[2]))
-    }else{
-        a <- unit.str
     }
     n <- length(a)
-    ## phase 2: remove parentheses
+    stopifnot(n==1 || n==2)
+
     for (j in 1:n){
         b <- unlist(strsplit(a[j],split="[* ]"))
         for (u in b){
             pat <- paste0("^(G|giga|M|mega|k|kilo|c|centi|m|milli|u|μ|micro|n|nano|p|pico|f|femto)?",
                           "(l|L|liter|litre|g|gram|mole?|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere)",
-                          "\\^?([+-]?[0-9]+)?$")
+                          "\\^?([-+]?[0-9]+)?$")
             ##print(pat)
             r <- regexec(pattern=pat,text=u,perl=TRUE)
+
             if (u == "1"){
                 .u.s <- 0
                 .u.k <- "dimensionless"
@@ -729,7 +754,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                 if (nchar(m[4])>0){
                     x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
                 }else{
-                    x <- 1
+                    x <- switch(j,1,-1)
                 }
             } else {
                 warning(sprintf("unit «%s» didn't match any pre-defined unit, because of «%s». (According to the limited [dumb] rules defined in this R script)",unit.str,u))
@@ -745,8 +770,15 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             message(sprintf("«%s» has been interpreted as: (%s×10^(%i))^(%i)",u,.u.k,.u.s,x))
         }
     }
+    ## print(.multiplier)
+    ## print(.kind)
+    ## print(.scale)
+    ## print(.exponent)
+    
     unit <- data.frame(scale=.scale,multiplier=.multiplier,exponent=.exponent,kind=.kind)
     print(unit)
+    message(sprintf("---%-11s---","done"))
+
     return(unit)
 }
 
@@ -792,30 +824,31 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     
     for (i in 1:num.parameters){
         message(sprintf("adding SBtab parameter %i: «%s»",i,Name[i]))
-        para <- Model_createParameter(sbml);
-        Parameter_setId(para,Name[i]);
-        Parameter_setName(para,Name[i]);
+        para <- Model_createParameter(sbml)
+        Parameter_setId(para,Name[i])
+        Parameter_setName(para,Name[i])
         
-        Parameter_setValue(para,Value[i]);
         this.unit.id <- all.uid[i]
         message(sprintf("unit of parameter %i (%s): «%s»",i,Name[i],this.unit.id))
-        Parameter_setUnits(para, this.unit.id);        
+        Parameter_setUnits(para, this.unit.id)
+        Parameter_setValue(para,Value[i])
     }
 }
 
-.sbtab.compound.to.sbml <- function(sbml,Compound,CompName){
+.sbtab.compound.to.sbml <- function(sbml,Compound,CompName,SubstanceUnitID){
     all.uid <- .unit.id.from.string(Compound$Unit)
     num.species <- nrow(Compound)
     Name <- row.names(Compound)
     for (i in 1:num.species){
         print(Name[i])
-        sp <- Model_createSpecies(sbml);
+        sp <- Model_createSpecies(sbml)
         this.unit.id <- all.uid[i]
         message(sprintf("unit of species %i (%s): «%s»",i,Name[i],this.unit.id))
-        Species_setId(sp, Name[i]);
-        Species_setName(sp, Name[i]);
-        Species_setCompartment(sp, CompName);
-        Species_setInitialConcentration(sp, Compound$InitialValue[i]);
+        Species_setId(sp, Name[i])
+        Species_setName(sp, Name[i])
+        Species_setCompartment(sp, CompName)
+        Species_setUnits(sp,SubstanceUnitID)
+        Species_setInitialConcentration(sp, Compound$InitialValue[i])
     }
 }
 
@@ -827,13 +860,13 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     for (i in 1:num.constants){
         message(sprintf("adding SBtab Constant %i: «%s»",i,Name[i]))
         print(Name[i])
-        const <- Model_createParameter(sbml);
-        Parameter_setId(const,Name[i]);
-        Parameter_setName(const,Name[i]);
-        Parameter_setValue(const, as.numeric(Constant$Value[i]));
+        const <- Model_createParameter(sbml)
+        Parameter_setId(const,Name[i])
+        Parameter_setName(const,Name[i])
         this.unit.id <- all.uid[i]
         message(sprintf("unit of constant %i (%s): «%s»",i,Name[i],this.unit.id))
-        Parameter_setUnits(const, this.unit.id);        
+        Parameter_setUnits(const, this.unit.id)
+        Parameter_setValue(const, as.numeric(Constant$Value[i]))
     }
 }
 
@@ -919,37 +952,36 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     }
 }
 
-.make.sbml <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE){
+.make.sbml <- function(H,Defaults,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,Comp){
     Doc <- SBMLDocument(2,4); # (LEVEL,VERSION)
     sbml  <-  SBMLDocument_createModel(Doc);
     Model_setId(sbml,H);
     ## default units
     ## substance
-    unit <- .interpret.unit.from.string(Compound$Unit[1])
-    .create.sbml.unit(sbml,unit,"substance")
+    for (i in 1:nrow(Defaults)){
+        message(sprintf("default unit «%s» (%s)",Defaults$ID[i],Defaults$Unit[i]))
+        unit <- .interpret.unit.from.string(Defaults$Unit[i])
+        .create.sbml.unit(sbml,unit,Defaults$ID[i])
+    }
 
-    unit <- .interpret.unit.from.string("liter")
-    .create.sbml.unit(sbml,unit,"volume")
-
-    unit <- .interpret.unit.from.string("millisecond")
-    .create.sbml.unit(sbml,unit,"time")
-
-    unit <- .interpret.unit.from.string("meter")
-    .create.sbml.unit(sbml,unit,"length")
-
-    u.units <- .unique.units(sbml,c(Expression$Unit,Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit))
-
-    comp <- Model_createCompartment(sbml);
-    CompName <- 'TheOnlyCompartmentWeHave'
-    Compartment_setId(comp,CompName); # currently, just one compartment
-    Compartment_setSize(comp, 1.0); # litres, sbml default unit
+    u.units <- .unique.units(sbml,c(Expression$Unit,Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit,Comp$Unit))
+    CompName <- row.names(Comp)
+    print(CompName)
+    for (i in 1:nrow(Comp)){
+        this.unit.id <- .unit.id.from.string(Comp$Unit[i])
+        comp <- Model_createCompartment(sbml)
+        Compartment_setId(comp,Comp$ID[i])
+        Compartment_setName(comp,CompName[i])
+        Compartment_setUnits(comp,this.unit.id)
+        Compartment_setVolume(comp,as.numeric(Comp$Size[i]))
+    }
 
     .sbtab.constant.to.sbml(sbml,Constant)
-    .sbtab.compound.to.sbml(sbml,Compound,CompName)
+    .sbtab.compound.to.sbml(sbml,Compound,Comp$ID[1],"substance")
     .sbtab.parameter.to.sbml(sbml,Parameter)
     .sbtab.parameter.to.sbml(sbml,Input)
     .sbtab.reaction.to.sbml(sbml,Reaction)
-    .sbtab.expression.to.sbml(sbml,Expression,CompName)
+    .sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1])
     return(Doc)
 }
 
@@ -1011,10 +1043,11 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     Parameter <- .GetParameters(SBtab)
     Output <- .GetOutputs(SBtab)
     Input <- .GetInputs(SBtab)
-
+    Defaults <- .GetDefaults(SBtab)
+    Comp  <- .GetCompartments(SBtab)
     if (require(libSBML)){
         ## definitely without conservation laws
-        SBML <- .make.sbml(document.name,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE)
+        SBML <- .make.sbml(document.name,Defaults,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,Comp)
         file.xml <- sprintf("%s.xml",document.name)
         writeSBML(SBML,file.xml);
         stopifnot(file.exists(file.xml))
