@@ -840,9 +840,12 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 .sbtab.reaction.to.sbml <- function(sbml,Reaction){
     num.reactions <- nrow(Reaction)
     Name <- row.names(Reaction)
+
+    AB <- strsplit(Reaction$Formula,split="<=>")
     for (i in 1:num.reactions){
         message(sprintf("adding reaction %i: «%s»",i,Name[i]))
         reaction <- Model_createReaction(sbml);
+
         Reaction_setId(reaction,Name[i]);
         Reaction_setName(reaction,Name[i]);
         Reaction_setReversible(reaction, Reaction$IsReversible[i]);
@@ -850,6 +853,34 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         kl <- Reaction_createKineticLaw(reaction);
         astMath <- parseFormula(Reaction$Flux[i]); # or: readMathMLFromString(mathXMLString);
         KineticLaw_setMath(kl, astMath);
+
+        A <- trimws(strsplit(AB[[i]][1],"+",fixed=TRUE)[[1]])
+        B <- trimws(strsplit(AB[[i]][2],"+",fixed=TRUE)[[1]])
+        message("Reactants: ")
+        print(A)
+        message("Products: ")
+        print(B)
+        message("---")
+        for (a in A){
+            r<-regexec(pattern="([0-9]*)\\s*(\\w+)",text=a)
+            m <- unlist(regmatches(a,r))
+            RefName <- m[3]
+            spr  <-  Reaction_createReactant(reaction)
+            SimpleSpeciesReference_setSpecies(spr, RefName)
+            if (nchar(m[2])>0){
+                SpeciesReference_setStoichiometry(spr,as.numeric(m[2]))
+            }
+        }
+        for (b in B){
+            r<-regexec(pattern="([0-9]*)\\s*(\\w+)",text=b)
+            m <- unlist(regmatches(b,r))
+            RefName <- m[3]
+            spr  <-  Reaction_createProduct(reaction)
+            SimpleSpeciesReference_setSpecies(spr, RefName)
+            if (nchar(m[2])>0){
+                SpeciesReference_setStoichiometry(spr,as.numeric(m[2]))
+            }
+        }
     }
 }
 
@@ -981,6 +1012,19 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     Output <- .GetOutputs(SBtab)
     Input <- .GetInputs(SBtab)
 
+    if (require(libSBML)){
+        ## definitely without conservation laws
+        SBML <- .make.sbml(document.name,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE)
+        file.xml <- sprintf("%s.xml",document.name)
+        writeSBML(SBML,file.xml);
+        stopifnot(file.exists(file.xml))
+        sbml.text <- readLines(file.xml)
+        sbml.text <- gsub('<ci>\\s*t(ime)?\\s*</ci>','<csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>',sbml.text)
+        cat(sbml.text,sep="\n",file=file.xml)
+        message(sprintf("The sbml file has been named «%s».",file.xml))
+    }
+
+    
     ## some biological compounds are better represented as expressions/assignments or constants
     ## most will be state variables
     if ("IsConstant" %in% names(Compound)){
@@ -1082,17 +1126,6 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     cat(unlist(Mod),sep="\n",file=fname)
     message(sprintf("The mod content was written to: %s\n",fname))
 
-    if (require(libSBML)){
-        ## definitely without conservation laws
-        SBML <- .make.sbml(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE)
-        file.xml <- sprintf("%s.xml",H)
-        writeSBML(SBML,file.xml);
-        stopifnot(file.exists(file.xml))
-        sbml.text <- readLines(file.xml)
-        sbml.text <- gsub('<ci>\\s*t(ime)?\\s*</ci>','<csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>',sbml.text)
-        cat(sbml.text,sep="\n",file=file.xml)
-        message(sprintf("The sbml file has been named «%s».",file.xml))
-    }
     
     return(vfgen)
 }
