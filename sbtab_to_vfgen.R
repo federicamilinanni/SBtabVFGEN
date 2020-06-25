@@ -131,18 +131,18 @@ AppendAmounts <- function(S,Quantity,QuantityName,Separator){
 PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     ss <- Compound$SteadyState
     if (any(ss)){
-    CName <- row.names(Compound)[ss]
-    CID <- Compound$ID[ss]
-    ODE <- ODE[ss]
-    header <- character()
-    header[1] <- sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name)
-    header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
-    Id <- sprintf("YSS%s",CID)
-    Name <- sprintf("%s_NetFlux",CName)
-    ErrorName <- sprintf("GAMMA_%s",Id)        
-    SuggestedMeasureOfEquilibrium <- c(header,sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Id,Name,ErrorName,ODE))
-    ssfname <- paste0(document.name,"_SteadyStateMetrics.tsv")
-    cat(SuggestedMeasureOfEquilibrium,sep="\n",file=ssfname)
+        CName <- row.names(Compound)[ss]
+        CID <- Compound$ID[ss]
+        ODE <- ODE[ss]
+        header <- character()
+        header[1] <- sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name)
+        header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
+        Id <- sprintf("YSS%s",CID)
+        Name <- sprintf("%s_NetFlux",CName)
+        ErrorName <- sprintf("GAMMA_%s",Id)        
+        SuggestedMeasureOfEquilibrium <- c(header,sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Id,Name,ErrorName,ODE))
+        ssfname <- paste0(document.name,"_SteadyStateMetrics.tsv")
+        cat(SuggestedMeasureOfEquilibrium,sep="\n",file=ssfname)
     }
 }
 
@@ -184,7 +184,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
     return(Constant)
 }
 
-# this will at first be for logical vectors, not general yet
+                                        # this will at first be for logical vectors, not general yet
 .OptionalColumn <- function(SBtab,Name,mode="logical"){
     n <- length(SBtab[["!ID"]])
     if (Name %in% names(SBtab)){
@@ -484,10 +484,10 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
         nLaws <- length(F)
         vfgen[["ConservationLaw"]] <- sprintf(fmt$ConservationLaw,CName,c(1:nLaws),F)
     }
-    # Expressions and Reaction Fluxes
+                                        # Expressions and Reaction Fluxes
     vfgen[["expression"]] <- sprintf(fmt$expression,row.names(Expression),Expression$ID,Expression$Formula)
     vfgen[["flux"]] <- sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
-    # ODE right-hand-sides
+                                        # ODE right-hand-sides
     nC <- dim.data.frame(Compound)
     CName <- row.names(Compound)
     for (i in 1:nC[1]){
@@ -538,7 +538,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                 reactigon="\t %s <-> %s (%s, %s)",
                 output="\t%s = %s : Output ID %s",
                 assignment="\t%s = %s : assignment for expression %s")
-##    Mod[["header"]] <- "TITLE Mod file for componen"
+    ##    Mod[["header"]] <- "TITLE Mod file for componen"
     Mod[["TITLE"]] <- sprintf("TITLE %s",H)
     Mod[["COMMENT"]] <- sprintf("COMMENT\n\tautomatically generated from an SBtab file\n\tdate: %s\nENDCOMMENT",date())
 
@@ -553,7 +553,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                          Range,
                          ": USEION ca READ cai VALENCE 2 : sth. like this may be needed for ions you have in your model",
                          "}")
-                         
+    
     l <- grepl("0$",row.names(Compound))
     if (any(l)) {
         message(sprintf("possibly problematic names: %s.",paste0(row.names(Compound)[l],collapse=", ")))
@@ -583,7 +583,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                             "}")
 
     
-    # Expressions and Reaction Fluxes
+                                        # Expressions and Reaction Fluxes
     Mod[["ASSIGNED"]] <- c("ASSIGNED {",
                            "\ttime (millisecond) : alias for t",
                            sprintf(fmt$expression,row.names(Expression)),
@@ -593,7 +593,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                            "}")
     Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,Expression$ID)
     ##Mod[["flux"]] <- c("KINETIC kin",sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
-    # ODE right-hand-sides
+                                        # ODE right-hand-sides
     nC <- dim.data.frame(Compound)
     CName <- row.names(Compound)
     STATE=vector(mode="character",length=nC[1])
@@ -845,10 +845,17 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         this.unit.id <- all.uid[i]
         message(sprintf("unit of species %i (%s): «%s»",i,Name[i],this.unit.id))
         Species_setId(sp, Name[i])
-        Species_setName(sp, Name[i])
+
         Species_setCompartment(sp, CompName)
         Species_setUnits(sp,SubstanceUnitID)
         Species_setInitialConcentration(sp, Compound$InitialValue[i])
+        Ai <- Compound$Assignment[i]
+        if (!grepl("^(0|F(ALSE)?)?$",Ai)){
+            Species_setBoundaryCondition(sp,"true")
+            Species_setName(sp, Ai)
+        } else {
+            Species_setName(sp, Name[i])
+        }
     }
 }
 
@@ -917,36 +924,52 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     }
 }
 
-.sbtab.expression.to.sbml <- function(sbml,Expression,CompartmentName){
+.sbtab.expression.to.sbml <- function(sbml,Expression,CompartmentName,Compound){
     all.uid <- .unit.id.from.string(Expression$Unit)
     num.species <- nrow(Expression)
-    Name <- row.names(Expression)
+    ExpressionName <- row.names(Expression)
     for (i in 1:num.species){
-        print(Name[i])
+        print(ExpressionName[i])
         this.unit.id <- all.uid[i]
-        message(sprintf("unit of expression %i (%s): «%s»",i,Name[i],this.unit.id))
+        message(sprintf("unit of expression %i (%s): «%s»",i,ExpressionName[i],this.unit.id))
         F <- Expression$Formula[i]
         if (grepl("^\\s*[+-]?[0-9]+\\s*$",F)){
             message("this expression is a constant, mapping it to a parameter")
             par <- Model_createParameter(sbml)
-            Parameter_setId(par,Name[i]);
-            Parameter_setName(par,Name[i]);
+            Parameter_setId(par,ExpressionName[i]);
+            Parameter_setName(par,ExpressionName[i]);
             Parameter_setValue(par, as.numeric(F));
             Parameter_setUnits(par, this.unit.id);        
         } else {
-            sp <- Model_createSpecies(sbml);
-
-            Species_setId(sp, Name[i]);
-            Species_setName(sp, Name[i]);
-            Species_setCompartment(sp, CompartmentName);
-            
-            Species_setInitialConcentration(sp, 0.0);
+            pat <- paste0("^",ExpressionName[i],"$")
+            if (any(grepl(pat,Compound$Assignment))){
+                j <- grep(pat,Compound$Assignment)
+                stopifnot(length(j)==1)
+                VarName <- row.names(Compound)[j]
+                if (is.na(VarName)) {
+                    print(ExpressionName[i])
+                    print(pat)
+                    print(j)
+                    print(row.names(Compound)[j])
+                    print(row.names(Compound))
+                    stop("Assignment not understood correctly.")
+                }
+            } else {
+                sp <- Model_createSpecies(sbml);
+                Species_setId(sp, ExpressionName[i]);
+                Species_setName(sp, ExpressionName[i]);
+                Species_setCompartment(sp, CompartmentName);
+                Species_setBoundaryCondition(sp, "true")
+                VarName <- ExpressionName[i]
+            }
             astMath <- parseFormula(F);
-            print(F)
+            ##print(F)
             
             rule <- Model_createAssignmentRule(sbml)
-            Rule_setVariable(rule,Name[i])
+            Rule_setVariable(rule,VarName)
             Rule_setMath(rule,astMath)
+            ## Rule_setName(rule,ExpressionName[i])
+            ## Rule_setId(rule,ExpressionName[i])
             ##Rule_setFormula(rule, astMath)
         }
     }
@@ -963,7 +986,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         unit <- .interpret.unit.from.string(Defaults$Unit[i])
         .create.sbml.unit(sbml,unit,Defaults$ID[i])
     }
-
+    
     u.units <- .unique.units(sbml,c(Expression$Unit,Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit,Comp$Unit))
     CompName <- row.names(Comp)
     print(CompName)
@@ -975,13 +998,13 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         Compartment_setUnits(comp,this.unit.id)
         Compartment_setVolume(comp,as.numeric(Comp$Size[i]))
     }
-
+    
     .sbtab.constant.to.sbml(sbml,Constant)
     .sbtab.compound.to.sbml(sbml,Compound,Comp$ID[1],"substance")
     .sbtab.parameter.to.sbml(sbml,Parameter)
     .sbtab.parameter.to.sbml(sbml,Input)
     .sbtab.reaction.to.sbml(sbml,Reaction)
-    .sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1])
+    .sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1],Compound)
     return(Doc)
 }
 
@@ -998,7 +1021,7 @@ sbtab_from_ods <- function(ods.file){
         SBtab[[i]] <- M[[i]][-c(1,2),]
         names(SBtab[[i]]) <- M[[i]][2,]
     }
-
+    
     names(SBtab) <- table.name
     print(names(SBtab))
     message(table.name)
@@ -1097,8 +1120,8 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
                 F[i] <- a
                 message(sprintf("Compound «%s» is mapped to expression «%s» (matched by Name).\n",a,Expression[a,"Name"]))
             } #else {
-            #    message(sprintf("«%s» is not an assignment.\n",a))
-            #}
+                                        #    message(sprintf("«%s» is not an assignment.\n",a))
+                                        #}
         }
         if (any(l)){
             NewExpression <- data.frame(ID=Compound[l,"ID"],Formula=F[l],Unit=U[l],row.names=row.names(Compound[l,]))
