@@ -20,13 +20,14 @@ point; the user has to change the file and make it work inside of
 neuron. The user must also be aware of NEURONs units and make the
 necessary unit conversions.
 
-Here is an interactive example:
+Here is an example:
 ```R
 tsv.files <- dir(pattern=".*[.]tsv");
 source("sbtab_to_vfgen.R")
 SBtabDoc <- sbtab_from_tsv(tsv.files)
 Model <- sbtab_to_vfgen(SBtabDoc)
 ```
+of the code in this repository, as it is used in R.
 
 Alternatively, the document can be imported from `ods` using the
 [readODS](https://cran.r-project.org/web/packages/readODS/index.html)
@@ -257,7 +258,8 @@ model generation.
 
 If an ID is not unique (but is in a different sheet), new entries from
 the new sheet override old entries. IDs have to be unique inside the
-same sheet.
+same sheet. Generally, it doesn't make sense to have the same ID for two 
+rows, other than to override a general entry by a more specific entry.
 
 ## Open Document Format, Gnumeric and Spreadsheets in General
 
