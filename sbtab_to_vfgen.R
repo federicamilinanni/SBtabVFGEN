@@ -231,9 +231,11 @@ PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
 
 .GetParameters <- function(SBtab){
     ID <- SBtab[["Parameter"]][["!ID"]]
+    nPar <- length(ID);
     if ("!Scale" %in% names(SBtab[["Parameter"]])){
         Scale <- SBtab[["Parameter"]][["!Scale"]]        
     }else{
+        
         Scale <- vector(mode="character",len=nPar)
         Scale[] <- "log"
     }
