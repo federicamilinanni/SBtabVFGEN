@@ -104,8 +104,7 @@ The names of all tables must be unique.
 
 This table defines the compounds that are supposed to be modeled bu
 state variables and are subject to change by the reactions in the
-systems. Currently, compounds that are unchangeable (fixed by external
-conditions) should not be here.
+systems. 
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
@@ -114,6 +113,7 @@ conditions) should not be here.
 | !Unit | the unit of the above number | as it would be in linear scale |
 | !SteadyState | `TRUE` | this compound should reach a steady state in at least one scenario and you want to know whether this happened |
 |              |`FALSE` | it is not important whether or not this compound reaches steady state|
+| !Assignment| `Name` or `ID`| this field will assign a pre-defined algebraic expression to the compound|
 
 The conversion script will make a file called
 `[…]SuggestedOutput.tsv`, it will have lines that can be used to check
@@ -123,6 +123,56 @@ is close to `0`, then steady state was reached (it's the sum of all
 fluxes for the compound in question).
 
 Others columns are unused but may be informative to the user, or others.
+
+#### Compound Assignments
+
+In some cases, a compound's amount or concentration is not supposed to
+be governed by reactions (kinetic laws, stoichiometry) but rather by a
+fixed (time-dependant) value. In SBML this is called a boundary
+condition. If the species is supposed to be constant, the field
+`!IsConstant` can be set to `TRUE`; otherwise, you can assign the
+value of an expression, listed in the `Expression` table to this
+compound. The `!Assignment` field can contain the name of an
+`Expression`. In SBML, a rule will be created in the `listOfRules`,
+that rule will target the boundary condition species:
+
+```xml
+      <species    id="PKC_active" 
+                name="PKC_active_value" 
+         compartment="Comp1" 
+initialConcentration="0" 
+      substanceUnits="substance" 
+   boundaryCondition="true"/>
+<!-- ......... -->
+<!-- and later -->
+<!-- ......... -->
+      <assignmentRule variable="PKC_active">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <plus/>
+            <ci> PKC_DAG_AA_p </ci>
+            <ci> PKC_Ca_memb_p </ci>
+            <ci> PKC_Ca_AA_p </ci>
+            <ci> PKC_DAG_memb_p </ci>
+            <ci> PKC_basal_p </ci>
+            <ci> PKC_AA_p </ci>
+          </apply>
+        </math>
+      </assignmentRule>
+
+```
+
+In the other formats, `vf` and `mod`, the relationship is much simpler:
+```xml
+<Expression Name="PKC_active_value" Description="defined expression Ex0" Formula="PKC_DAG_AA_p+PKC_Ca_memb_p+PKC_Ca_AA_p+PKC_DAG_memb_p+PKC_basal_p+PKC_AA_p"/>
+<Expression Name="PKC_active" Description="defined expression S11" Formula="PKC_active_value"/>
+```
+which wil lead to code such as:
+```matlab
+PKC_active_value = PKC_DAG_AA_p+PKC_Ca_memb_p+PKC_Ca_AA_p+PKC_DAG_memb_p+PKC_basal_p+PKC_AA_p;
+PKC_active = PKC_active_value;
+```
+
 
 ### Parameters
 
