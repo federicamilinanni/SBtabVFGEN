@@ -867,7 +867,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         Species_setUnits(sp,SubstanceUnitID)
         Species_setInitialConcentration(sp, Compound$InitialValue[i])
         Ai <- Compound$Assignment[i]
-        if (!grepl("^(0|F(ALSE)?)?$",Ai)){
+        if (!grepl("^(0|F(ALSE)?|NO(NE)?)?$",Ai)){
             Species_setBoundaryCondition(sp,"true")
             Species_setName(sp, Ai)
         } else {
