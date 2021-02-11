@@ -128,7 +128,7 @@ Others columns are unused but may be informative to the user, or others.
 
 In some cases, a compound's amount or concentration is not supposed to
 be governed by reactions (kinetic laws, stoichiometry) but rather by a
-fixed (time-dependant) value. In SBML this is called a boundary
+fixed (time-dependent) value. In SBML this is called a boundary
 condition. If the species is supposed to be constant, the field
 `!IsConstant` can be set to `TRUE`; otherwise, you can assign the
 value of an expression, listed in the `Expression` table to this
@@ -174,7 +174,7 @@ PKC_active = PKC_active_value;
 ```
 
 A blank value, `NONE`, `FALSE`, or `NO` means that there is no
-Assignment for this species. Emprt cells can be tricky if export or
+Assignment for this species. Empty cells can be tricky if export or
 import functions merge multiple delimiters (so `\t\t` is not
 recognized as an empty cell).
 
@@ -409,12 +409,12 @@ Other units can be derived using products of these base units, `liter/(nanomole 
 In _SBtab_ files, units are written in a human readable form (`!Unit`
 column) and it is not always easy to interpret those units. The `R`
 program in this repository attempts to read the units using a
-regularexpression with sub-groups. To make it somewhat doable, we have
+regular expression with sub-groups. To make it somewhat doable, we have
 additional rules on unit-strings:
 
 1. Only SI base units are allowed for now
    - derived units such as `Newton` or `Hz` are not understood (liter is the only exception)
-   - not all SI prefixes are understood, but the most commonones are (G,M,k,c,m,µ,n,p,f)
+   - not all SI prefixes are understood, but the most common ones are (G,M,k,c,m,µ,n,p,f)
 1. Only one slash is allowed (the slash has the lowest precedence)
    - `liter / mole second` is ok 
    - `1/((mole/liter) * second)` is not ok (because it has two slashes)
@@ -428,7 +428,7 @@ additional rules on unit-strings:
    - `s2` is ok and means the same thing
    - `kg m s^(-2)` is ok and the same as `kg m s^-2`
    - `kg m s-2` is also ok and means the same as `kg m s^-2`
-   - `cm2` is ok and means square cenitmeters
+   - `cm2` is ok and means square centimeters
    - `kg m s^( -2 )` is not ok (spaces)
 1. The literal `1` is interpreted as: this quantity is dimensionless (in sbml this is actually called `dimensionless`)
    - a `1` in a unit will reappear in sbml, even if unnecessary
@@ -476,7 +476,7 @@ Note that `kHz` is a bit unusual as Hertz is reciprocal to a base unit (second),
 ## Final Remarks on LIBSBML
 
 The libSBML R bindings are not documented and there is some guesswork
-involved here. The code in thei repository is not yet tested very
+involved here. The code in the repository is not yet tested very
 thoroughly, so some what cryptic errors may occur. Most recently we
 have used the `.tsv` form of sbml, not direct `.ods` input.
 
