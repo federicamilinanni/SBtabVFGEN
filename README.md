@@ -167,12 +167,19 @@ In the other formats, `vf` and `mod`, the relationship is much simpler:
 <Expression Name="PKC_active_value" Description="defined expression Ex0" Formula="PKC_DAG_AA_p+PKC_Ca_memb_p+PKC_Ca_AA_p+PKC_DAG_memb_p+PKC_basal_p+PKC_AA_p"/>
 <Expression Name="PKC_active" Description="defined expression S11" Formula="PKC_active_value"/>
 ```
-which wil lead to code such as:
+which will lead to code such as:
 ```matlab
 PKC_active_value = PKC_DAG_AA_p+PKC_Ca_memb_p+PKC_Ca_AA_p+PKC_DAG_memb_p+PKC_basal_p+PKC_AA_p;
 PKC_active = PKC_active_value;
 ```
 
+A blank value, `NONE`, `FALSE`, or `NO` means that there is no
+Assignment for this species. Emprt cells can be tricky if export or
+import functions merge multiple delimiters (so `\t\t` is not
+recognized as an empty cell).
+
+A `TRUE` value in `!IsConstant` and meaningful assignments are
+mutually exclusive and may lead to weird results.
 
 ### Parameters
 
