@@ -696,6 +696,8 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         s <- -9
     } else if (grepl("p|pico",prefix)){
         s <- -12
+    } else if (grepl("f|femto",prefix)){
+        s <- -15
     } else {
         s <- 0
     }
@@ -743,6 +745,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     message(sprintf("---%11s---",unit.str))
     print(unit.str)
     a <- gsub("[()]","",unit.str)
+    a <- gsub("molarity","mol l^-1",a);
     if (grepl("/",unit.str)){
         a <- unlist(strsplit(a,split="/",fixed=TRUE))
         message(sprintf("«%s» is interpreted as:\n\tNumerator «%s»\n\tDenominator: «%s»\n",unit.str,a[1],a[2]))
@@ -757,7 +760,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                           "(l|L|liter|litre|g|gram|mole?|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere)",
                           "\\^?([-+]?[0-9]+)?$")
             ##print(pat)
-            r <- regexec(pattern=pat,text=u,perl=TRUE)
+            r <- regexec(pattern=pat,text=u) #,perl=TRUE)
 
             if (u == "1"){
                 .u.s <- 0
