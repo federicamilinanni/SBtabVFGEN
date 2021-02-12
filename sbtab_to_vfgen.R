@@ -676,27 +676,27 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 
 .unit.scale <- function(prefix){
     stopifnot(is.character(prefix) && length(prefix)==1)
-    if (grepl("^G|giga$",prefix)){
+    if (grepl("^G$|^giga$",prefix)){
         s <- 9
-    } else if (grepl("^M|mega$",prefix)){
+    } else if (grepl("^M$|^mega$",prefix)){
         s <- 6
-    } else if (grepl("^k|kilo$",prefix)){
+    } else if (grepl("^k$|^kilo$",prefix)){
         s <- 3
-    } else if (grepl("^h|hecto$",prefix)){
+    } else if (grepl("^h$|^hecto$",prefix)){
         s <- 2
-    } else if (grepl("^d|deci$",prefix)){
+    } else if (grepl("^d$|^deci$",prefix)){
         s <- -1
-    } else if (grepl("^c|centi$",prefix)){
+    } else if (grepl("^c$|^centi$",prefix)){
         s <- -2
-    } else if (grepl("^m|milli$",prefix)){
+    } else if (grepl("^m$|^milli$",prefix)){
         s <- -3
-    } else if (grepl("^u|µ|micro$",prefix)){
+    } else if (grepl("^u$|^µ$|^micro$",prefix)){
         s <- -6
-    } else if (grepl("^n|nano$",prefix)){
+    } else if (grepl("^n$|^nano$",prefix)){
         s <- -9
-    } else if (grepl("^p|pico$",prefix)){
+    } else if (grepl("^p$|^pico$",prefix)){
         s <- -12
-    } else if (grepl("^f|femto$",prefix)){
+    } else if (grepl("^f$|^femto$",prefix)){
         s <- -15
     } else {
         s <- 0
