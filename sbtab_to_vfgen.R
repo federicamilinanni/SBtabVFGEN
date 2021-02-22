@@ -897,10 +897,13 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     }
 }
 
-.sbtab.reaction.to.sbml <- function(sbml,Reaction){
+.sbtab.reaction.to.sbml <- function(sbml,Reaction,Compartment){
     num.reactions <- nrow(Reaction)
     Name <- row.names(Reaction)
-
+    OneCompartmentModel=FALSE;
+    if (is.na(Compartment) || length(Compartment$ID==1)){
+        OneCompartmentModel=TRUE;
+    }
     AB <- strsplit(Reaction$Formula,split="<=>")
     for (i in 1:num.reactions){
         message(sprintf("adding reaction %i: «%s»",i,Name[i]))
@@ -909,9 +912,16 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         Reaction_setId(reaction,Name[i]);
         Reaction_setName(reaction,Name[i]);
         Reaction_setReversible(reaction, Reaction$IsReversible[i]);
+        
         message(sprintf("converting flux to mathml: «%s»",Reaction$Flux[i]))
         kl <- Reaction_createKineticLaw(reaction);
-        astMath <- parseFormula(Reaction$Flux[i]); # or: readMathMLFromString(mathXMLString);
+        Flux <- Reaction$Flux[i]
+        if (OneCompartmentModel){
+            Flux <- sprintf("(%s)*%s",Flux,Compartment$ID[1]);
+            message("reaction rates in SBML need to have the unit «substance/time» rather than «concentration/time».\nSo conventional kinetics need to be multiplied by compartment volumes.");
+            message("Since this model has only one Compartment, all kinetics will be multiplied by its volume for the SBML model.");
+        }
+        astMath <- parseFormula(Flux); # or: readMathMLFromString(mathXMLString);
         KineticLaw_setMath(kl, astMath);
 
         A <- trimws(strsplit(AB[[i]][1],"+",fixed=TRUE)[[1]])
@@ -1026,7 +1036,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     if (!is.null(Input)){
         .sbtab.parameter.to.sbml(sbml,Input)
     }
-    .sbtab.reaction.to.sbml(sbml,Reaction)
+    .sbtab.reaction.to.sbml(sbml,Reaction,Comp)
     if (!is.null(Expression)){
         .sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1],Compound)
     }
