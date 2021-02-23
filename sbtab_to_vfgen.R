@@ -870,7 +870,10 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         Species_setUnits(sp,SubstanceUnitID)
         Species_setInitialConcentration(sp, Compound$InitialValue[i])
         Ai <- Compound$Assignment[i]
-        if (!grepl("^(0|F(ALSE)?|NO(NE)?)?$",Ai)){
+        if (Compound$IsConstant[i]){
+            Species_setBoundaryCondition(sp,"true")
+            Species_setName(sp, Name[i])
+        } else if (!grepl("^(0|FALSE|NONE|NULL)?$",Ai)){
             Species_setBoundaryCondition(sp,"true")
             Species_setName(sp, Ai)
         } else {
@@ -994,16 +997,44 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             }
             astMath <- parseFormula(F);
             ##print(F)
-            
+
             rule <- Model_createAssignmentRule(sbml)
             Rule_setVariable(rule,VarName)
             Rule_setMath(rule,astMath)
-            ## Rule_setName(rule,ExpressionName[i])
-            ## Rule_setId(rule,ExpressionName[i])
-            ##Rule_setFormula(rule, astMath)
         }
     }
 }
+
+.sbtab.output.to.sbml <- function(sbml,Output,CompName,OutputUnitID){
+    all.uid <- .unit.id.from.string(Output$Unit)
+    num.species <- nrow(Output)
+    Name <- row.names(Output)
+    for (i in 1:num.species){
+        message(sprintf("output %i:",i))
+        print(Name[i])
+        sp <- Model_createSpecies(sbml)
+        this.unit.id <- all.uid[i]
+        message(sprintf("unit of output %i (%s): «%s»",i,Name[i],this.unit.id))
+        Species_setId(sp, Name[i])
+        
+        Species_setCompartment(sp, CompName)
+        Species_setUnits(sp,OutputUnitID)
+        Species_setInitialConcentration(sp, 0.0)
+        Species_setBoundaryCondition(sp,"true")
+        Species_setName(sp, Name[i])
+        SBase_appendAnnotation(sp,"<annotation>Output</annotation>")
+
+        F <- Output$Formula[i]
+        astMath <- parseFormula(F);
+        message(sprintf("output %i has formula:",i))
+        print(F)
+        
+        rule <- Model_createAssignmentRule(sbml)
+        Rule_setVariable(rule,Name[i])
+        Rule_setMath(rule,astMath)
+    }
+}
+
 
 .make.sbml <- function(H,Defaults,Constant=NULL,Parameter,Input=NULL,Expression=NULL,Reaction,Compound,Output,ODE,Comp){
     Doc <- SBMLDocument(2,4); # (LEVEL,VERSION)
@@ -1040,6 +1071,10 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     if (!is.null(Expression)){
         .sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1],Compound)
     }
+    if (!is.null(Output)){
+        .sbtab.output.to.sbml(sbml,Output,Comp$ID[1],"substance")
+    }
+
     return(Doc)
 }
 
