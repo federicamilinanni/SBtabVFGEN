@@ -128,12 +128,19 @@ AppendAmounts <- function(S,Quantity,QuantityName,Separator){
     return(ConLaw)
 }
 
-PrintSteadyStateOutputs <- function(Compound,ODE,document.name){
+PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
     ss <- Compound$SteadyState
+    RN <- row.names(Reaction)
+    N <- length(RN)
     if (any(ss)){
         CName <- row.names(Compound)[ss]
         CID <- Compound$ID[ss]
         ODE <- ODE[ss]
+        ## for working SBML, replace all flux names with the actual flux expressions:
+        for (j in 1:N){
+            ODE <- gsub(sprintf("\\<%s\\>",RN[j]),sprintf("(%s)",Reaction$Flux[j]),ODE)
+        }
+        ## ODE <- gsub("^[+]","",ODE)
         header <- character()
         header[1] <- sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name)
         header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
@@ -924,7 +931,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             message("reaction rates in SBML need to have the unit «substance/time» rather than «concentration/time».\nSo conventional kinetics need to be multiplied by compartment volumes.");
             message("Since this model has only one Compartment, all kinetics will be multiplied by its volume for the SBML model.");
         }
-        astMath <- parseFormula(Flux); # or: readMathMLFromString(mathXMLString);
+        astMath <- parseL3Formula(Flux); # or: readMathMLFromString(mathXMLString);
         KineticLaw_setMath(kl, astMath);
 
         A <- trimws(strsplit(AB[[i]][1],"+",fixed=TRUE)[[1]])
@@ -935,8 +942,9 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         print(B)
         message("---")
         for (a in A){
-            r<-regexec(pattern="([0-9]*)\\s*(\\w+)",text=a)
+            r<-regexec(pattern="([0-9]*)\\s*[*]?\\s*(\\w+)",text=a)
             m <- unlist(regmatches(a,r))
+            print(m)
             RefName <- m[3]
             spr  <-  Reaction_createReactant(reaction)
             SimpleSpeciesReference_setSpecies(spr, RefName)
@@ -945,8 +953,9 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
             }
         }
         for (b in B){
-            r<-regexec(pattern="([0-9]*)\\s*(\\w+)",text=b)
+            r<-regexec(pattern="([0-9]*)\\s*[*]?\\s*(\\w+)",text=b)
             m <- unlist(regmatches(b,r))
+            print(m)
             RefName <- m[3]
             spr  <-  Reaction_createProduct(reaction)
             SimpleSpeciesReference_setSpecies(spr, RefName)
@@ -995,7 +1004,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
                 Species_setBoundaryCondition(sp, "true")
                 VarName <- ExpressionName[i]
             }
-            astMath <- parseFormula(F);
+            astMath <- parseL3Formula(F);
             ##print(F)
 
             rule <- Model_createAssignmentRule(sbml)
@@ -1022,13 +1031,14 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         Species_setInitialConcentration(sp, 0.0)
         Species_setBoundaryCondition(sp,"true")
         Species_setName(sp, Name[i])
-        SBase_appendAnnotation(sp,"<annotation>Output</annotation>")
+##        SBase_appendAnnotation(sp,"<annotation>Output</annotation>")
 
         F <- Output$Formula[i]
-        astMath <- parseFormula(F);
+        astMath <- parseL3Formula(F)
+        #print(astMath)
         message(sprintf("output %i has formula:",i))
         print(F)
-        
+        message(formulaToString(astMath))
         rule <- Model_createAssignmentRule(sbml)
         Rule_setVariable(rule,Name[i])
         Rule_setMath(rule,astMath)
@@ -1239,7 +1249,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         }
         ##print(t(Laws))
     }    
-    PrintSteadyStateOutputs(Compound,ODE,document.name)
+    PrintSteadyStateOutputs(Compound,ODE,Reaction,document.name)
     H <- document.name
     H <- sub("-",'_',H)
     vfgen <- .make.vfgen(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
