@@ -169,11 +169,12 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
     Formula <- SBtab[["Reaction"]][["!ReactionFormula"]]
     Name <- make.cnames(SBtab[["Reaction"]][["!Name"]])
     Flux <- SBtab[["Reaction"]][["!KineticLaw"]]
+    IsReversible <- SBtab[["Reaction"]][["!IsReversible"]]
     ##kin <- strsplit(SBtab[["Reaction"]][["!KineticLaw"]],split="-")
     ##KinMat <- matrix(trimws(unlist(kin)),ncol=2,byrow=TRUE)
     ##Kinetic <- data.frame(forward=KinMat[,1],backward=KinMat[,2])
     ##Unit <- SBtab[["Reaction"]][["!Unit"]]
-    Reaction <- data.frame(ID,Formula,Flux,row.names=Name)
+    Reaction <- data.frame(ID,Formula,Flux,IsReversible,row.names=Name)
     return(Reaction)
 }
 
@@ -256,14 +257,17 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
         Scale[] <- "log"
     }
     Name <- make.cnames(SBtab[["Parameter"]][["!Name"]])
-    if (length(grep("!DefaultValue",colnames(SBtab[["Parameter"]])))>0){
+    if ("!DefaultValue" %in% colnames(SBtab[["Parameter"]])){
         Value <- SBtab[["Parameter"]][["!DefaultValue"]]
-    } else if (length(grep("!Value",colnames(SBtab[["Parameter"]])))>0){
+    } else if ("!Value" %in% colnames(SBtab[["Parameter"]])){
         Value <- SBtab[["Parameter"]][["!Value"]]
-    } else if (length(grep("!Mean",colnames(SBtab[["Parameter"]])))>0){
+    } else if ("!Mean" %in% colnames(SBtab[["Parameter"]])){
         Value <- SBtab[["Parameter"]][["!Mean"]]
-    } else if (length(grep("!Median",colnames(SBtab[["Parameter"]])))>0){
+    } else if ("!Median" %in% colnames(SBtab[["Parameter"]])){
         Value <- SBtab[["Parameter"]][["!Median"]]
+    } else {
+        print(colnames(SBtab[["Parameter"]]))
+        stop("no usable Value column for Parameters found")
     }
 
     message("raw parameter values:")
@@ -841,14 +845,11 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     num.parameters <- nrow(Parameter)
     Name <- row.names(Parameter)
 
-    if ("DefaultValue" %in% names(Parameter)){
-        Value <- as.numeric(Parameter$DefaultValue)
-    } else if ("Value" %in% names(Parameter)){
+    if ("Value" %in% names(Parameter)){
         Value <- as.numeric(Parameter$Value)
     } else {
         stop("Parameters have no Value column")
-    }
-    
+    }    
     for (i in 1:num.parameters){
         message(sprintf("adding SBtab parameter %i: «%s»",i,Name[i]))
         para <- Model_createParameter(sbml)
@@ -857,7 +858,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         
         this.unit.id <- all.uid[i]
         message(sprintf("unit of parameter %i (%s): «%s»",i,Name[i],this.unit.id))
-        Parameter_setUnits(para, this.unit.id)
+        Parameter_setUnits(para,this.unit.id)
         Parameter_setValue(para,Value[i])
     }
 }
