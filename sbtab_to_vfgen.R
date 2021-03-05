@@ -604,6 +604,11 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     Mod[["CONSTANT"]] <- c("CONSTANT {",
                            sprintf(fmt$const,row.names(Constant),Constant$Value, NeuronUnit(Constant$Unit)),
                            "}")
+    l=grepl("\\<second\\>",Parameter$Unit)
+    if (any(l)){
+        Parameter$Unit[l] <- gsub("\\<second\\>","millisecond",Parameter$Unit[l])
+        Parameter$Value[l] <- Parameter$Value[l]/1e3;
+    }
     Mod[["PARAMETER"]] <- c("PARAMETER {",                            
                             sprintf(fmt$par,row.names(Parameter),Parameter$Value, NeuronUnit(Parameter$Unit)),
                             sprintf(fmt$input,row.names(Input),Input$DefaultValue, NeuronUnit(Input$Unit)),
