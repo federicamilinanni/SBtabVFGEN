@@ -284,7 +284,8 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
         Value[l]<-10^Value[l]
     }
     Unit <- SBtab[["Parameter"]][["!Unit"]]
-    Parameter <- data.frame(ID,Value,Unit,row.names=Name)
+    Parameter <- data.frame(ID=ID,Value=Value,Unit=Unit,row.names=Name)
+    print(names(Parameter))
     return(Parameter)
 }
 
@@ -849,9 +850,11 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     all.uid <- .unit.id.from.string(Parameter$Unit)
     num.parameters <- nrow(Parameter)
     Name <- row.names(Parameter)
-    print(names(Parameter))
+    
     if ("Value" %in% names(Parameter)){
         Value <- as.numeric(Parameter$Value)
+    } else if ("DefaultValue" %in% names(Parameter)) {
+        Value <- as.numeric(Parameter$DefaultValue)
     } else {
         stop("Parameters have no Value column")
     }    
