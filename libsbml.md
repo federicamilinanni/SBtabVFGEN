@@ -14,29 +14,9 @@ The model is written to file by
 writeSBML(model, "sthsthsth.xml");
 ```
 
-In General, math expressions can be written directly as mathml, or in infix notation strings:
-```R
-x <- parseFormula("k1*x1*x2")
-formulaToString(x)
-[1] "k1 * x1 * x2"
+### MathML
 
-## or
-
-xmlns <- '<math xmlns="http://www.w3.org/1998/Math/MathML">'
-mathXMLString <- paste0(xmlns,
-                        "<apply>",
-                        " <times/>",
-                        "  <ci> k1 </ci>",
-                        "  <ci> x1 </ci>",
-                        "  <ci> x2 </ci>",
-                        " </apply>",
-                        "</math>");
-y <- readMathMLFromString(mathXMLString);
-formulaToString(y)
-[1] "k1 * x1 * x2"
-```
-
-The MathML form of a formula can be displayed using 
+In General, math expressions can be written directly as Mathml, or in infix notation strings and then converted to MathML. Probably the most convenient way is to use the functions `parseL3Formula` and `writeMathMLToString(F)` to inspect the results.
 
 ```R
 > F<-parseL3Formula("exp(-time)")
@@ -56,11 +36,37 @@ like this:
 </math>
 ```
 
-The functions `parse[L3]Formula` are by far the most important in
-this Document. Most of the sbml file can be written without using
-libsbml, but converting infix math strings to MathML is not trivial.
+The function `parseL3Formula` is hard to replace, very useful. Most of
+the sbml file could be written without using libsbml (using normal
+print functions [it would get tedious]), but converting infix math
+strings to SBML conformant MathML is not trivial to say the least (so
+this functions carries most of the weight here).
 
-Formulae should probably be parsed exclusively using `parseL3Formula()` because it correctly detects the `time` variable, `parseFormula` does not:
+### The reverse of parseFormula
+
+This is pribably a rare case, but a formula given in MathML can also be used directly, given a file with MathML content
+```xml formula.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <apply>
+    <times/>
+    <ci> k1 </ci>
+    <ci> x1 </ci>
+    <ci> x2 </ci>
+  </apply>
+</math>
+```
+a formula object can be created via:
+```R
+> formula.xml<-paste0(readLines("formula.xml"),collapse="\n")
+> F<-readMathMLFromString(formula.xml)
+> formulaToString(F)
+[1] "k1 * x1 * x2"
+```
+
+### Legacy Functions
+
+NOTE: Formulae should probably be parsed exclusively using `parseL3Formula()` because it correctly detects the `time` variable, the older `parseFormula` does not:
 
 |parse function|input|output|
 |-------------:|:---:|:-----|
