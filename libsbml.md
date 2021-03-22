@@ -36,9 +36,36 @@ formulaToString(y)
 [1] "k1 * x1 * x2"
 ```
 
-The function `parseFormula` is by far the most important function in
+The MathML form of a formula can be displayed using 
+
+```R
+> F<-parseL3Formula("exp(-time)")
+> message(writeMathMLToString(F))
+```
+like this:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <apply>
+    <exp/>
+    <apply>
+      <minus/>
+      <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+    </apply>
+  </apply>
+</math>
+```
+
+The functions `parse[L3]Formula` are by far the most important in
 this Document. Most of the sbml file can be written without using
 libsbml, but converting infix math strings to MathML is not trivial.
+
+Formulae should probably be parsed exclusively using `parseL3Formula()` because it correctly detects the `time` variable, `parseFormula` does not:
+
+|parse function|input|output|
+|-------------:|:---:|:-----|
+|`parseFormula`|`"time"`|`<ci> time </ci>`|
+|`parseL3Formula`|`"time"`|`<csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>`|
 
 ### Unit Definitions
 
