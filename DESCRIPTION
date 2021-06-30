@@ -12,8 +12,6 @@ Description: Converts models in the SBtab format to vfgen's vf format,
 License: What license it uses
 Depends: 
     hdf5r,
-    libSBML,
     pracma,
-    readODS
 Encoding: UTF-8
 LazyData: true
