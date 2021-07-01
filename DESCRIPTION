@@ -9,7 +9,7 @@ Authors@R:
            email = "andrei.kramer@scilifelab.se")
 Description: Converts models in the SBtab format to vfgen's vf format,
     sbml, and NEURON's mod format.
-License: What license it uses
+License: GNU GPLv3
 Depends: 
     hdf5r,
     pracma,
