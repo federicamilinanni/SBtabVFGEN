@@ -10,52 +10,68 @@ Spreadsheet](https://www.documentfoundation.org/) `ods` to a
 [VFGEN](https://warrenweckesser.github.io/vfgen/) vector field file
 `vf`.
 
-As a byproduct, this script also produces a `mod` file intended as a
+An R script that canbe called from the commandline uses the `sbtab_to_vfgen.R` script, but has a more convenient interface for those who are unfamiliar with `R`:
+```bash
+$ ./sbtab_to_vfgen *.tsv
+```
+will work if the tsv files have acceptable SBtab content.
+
+As a by-product, this script also produces a `mod` file intended as a
 starting point for use in [neuron](https://neuron.yale.edu/neuron/).
+
 If _libSBML_ is installed and R bindings available, an attempt will be
 made to produce an SBML file (see further below).
 
 The type of _systems biology_ models that we have in mind are
-autonomous ordinary differential equations (ODEs), while _neuron_
-comprehensively models biochemistry and electrophysiology (action
-potentials etc.). These two different simulations have to be coupled
-(in neuron), so the produced `mod` file is really only an initial
-point; the user has to change the file and make it work inside of
-neuron. The user must also be aware of NEURONs units and make the
-necessary unit conversions.
+(plain) ordinary differential equations (ODEs). 
 
-Here is an example:
+_NEURON_ comprehensively models biochemistry and electrophysiology
+(e.g. membrane action potentials). These two different simulations
+have to be coupled (neuron does that). This aspect is missing from the
+SBtab files we typically use, so the produced `mod` file is really
+only an initial point; the user has to change adapt the file and make
+it work inside of neuron. The user must also be aware of NEURONs units
+and make the necessary unit conversions. 
+
+There is no automatic
+conversion of units (yet).
+
+Here is a usage example:
 ```R
-tsv.files <- dir(pattern=".*[.]tsv");
+model.tsv <- dir(pattern=".*[.]tsv$");
 source("sbtab_to_vfgen.R")
-SBtabDoc <- sbtab_from_tsv(tsv.files)
-Model <- sbtab_to_vfgen(SBtabDoc)
+mode.sbtab <- sbtab_from_tsv(model.tsv)
+# mode.sbtab <- sbtab_from_ods("model.ods")
+sbtab_to_vfgen(model.sbtab)
 ```
-of the code in this repository, as it is used in R.
 
-Alternatively, the document can be imported from `ods` using the
+An SBtab document can be imported from an open document spreadsheet (`.ods`) using the
 [readODS](https://cran.r-project.org/web/packages/readODS/index.html)
 package:
 
 ```R
-ods.file <- "examplemodel.ods" 
+model.ods <- "examplemodel.ods" 
 source("sbtab_to_vfgen.R")
-SBtabDoc <- sbtab_from_ods(ods.file)
-Model <- sbtab_to_vfgen(SBtabDoc)
+if (file.exists(model.ods){)
+ model.sbtab <- sbtab_from_ods(model.ods)
+ sbtab_to_vfgen(model.sbtab)
+}
 ```
-
+The result is written to files (`.vf`,`.mod`, and `.xml`).
 
 ## VFGEN
 
 [VFGEN](https://github.com/WarrenWeckesser/vfgen) is a very useful
-tool that can reformat an ODE (given in its custom `xml` format) and
+tool that reformats an ODE (given in vfgen's `xml` format) and
 convert it into various programming languages, including right hand
 side functions for two ODE solvers in `C`:
 [gsl](https://www.gnu.org/software/gsl/doc/html/ode-initval.html) and
 [cvode](https://computing.llnl.gov/projects/sundials/cvode). While
 doing so, it uses [GiNaC](https://ginac.de/) to calculate the model's
-Jacobian analytically (among other things). The R script
-`sbtab_to_vfgen.R` converts an SBtab model to vfgen's `xml` format.
+Jacobian analytically (among other things). 
+
+The R script [sbtab_to_vfgen.R](./sbtab_to_vfgen.R) converts an SBtab model to vfgen's
+`xml` format, among others.
 
 Biological models don't necessarily map uniquely onto ODE models, a
 compound can be a state variable or an algebraic assignment or a
@@ -65,9 +81,9 @@ constant, this has to be inferred a bit from the SBtab files.
 
 [SBtab](https://www.sbtab.net/) is a tabular format for biochemical
 models (as in Systems Biology). It is ~perhaps~ easier to understand
-than `sbml` and can be parsed via shell scripts (e.g. with line
+than `sbml` and can be parsed/worked via shell scripts (e.g. with line
 oriented tools such as `sed` and `awk`) due to its tabular nature
-(e.g. tsv files).
+(stored as e.g. tab separated value text files).
 
 We use this format mostly because it can be extended to contain
 additional information more easily (such as experimental data, and
@@ -78,10 +94,15 @@ tables (some specified by `TableName` some also by `TableType`
 according to the official specification) which have to be present for
 the conversion to work.
 
-In contrast to the official documentation, all tables must be kept in
-their own `tsv` file, or different sheets of the same `ods` file. The
-following Sections have more information on specific tables and their
-required columns (in addition to the obvious `!ID` and `!Name`
+In contrast to the [official
+documentation](https://www.sbtab.net/sbtab/default/documentation.html),
+we need all tables to be kept in their own `.tsv` file (not all tables
+in one huge tsv file), or different sheets of the same `ods` file (the
+official SBtab project uses `.xlsx`). But, we don't use any of the
+code from theoriginal [SBtab authors](https://www.sbtab.net/sbtab/default/team.html).
+
+The following Sections have more information on specific tables and
+their required columns (in addition to the obvious `!ID` and `!Name`
 columns).
 
 All tables require a unique `!ID` column (the ID can be seen as a key
@@ -96,17 +117,16 @@ variable names, not in `R` though).
 Many numbers can be given in a specified scale (like `log`), these
 numbers will be converted to linear scale when a model file is written
 to file. Let a quantity `y` be measured in unit `M` (y is a number
-followed by a unit, y/m is just a number), and !Scale be set to
-`log10`, then the number you write in the ![Default]Value column is
-`z=log10(y/M)`. The script will do the inverse to generate the model and pass the unit on to `.mod` files.
+followed by a unit, y/M is just a number), and `!Scale` be set to
+`log10`, then the number you write in the `![Default]Value` column is
+`z=log10(y/M)`. The script will do the inverse to generate the model
+and pass the unit on to `.mod` files.
 
-No unit conversion is attempted here.
-
-The names of all tables must be unique.
+The Names of all tables must be unique.
 
 ### Compound
 
-This table defines the compounds that are supposed to be modeled bu
+This table defines the compounds that are supposed to be modeled by
 state variables and are subject to change by the reactions in the
 systems. 
 
@@ -177,8 +197,8 @@ PKC_active_value = PKC_DAG_AA_p+PKC_Ca_memb_p+PKC_Ca_AA_p+PKC_DAG_memb_p+PKC_bas
 PKC_active = PKC_active_value;
 ```
 
-A blank value, `NONE`, `FALSE`, or `NO` means that there is no
-Assignment for this species. Empty cells can be tricky if export or
+A blank cell, `NONE`, `FALSE`, or `NO` means that there is no
+Assignment for this species/compound. Empty cells can be tricky if export or
 import functions merge multiple delimiters (so `\t\t` is not
 recognized as an empty cell).
 
@@ -189,12 +209,12 @@ mutually exclusive and may lead to weird results.
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
-| !Scale | `log`, `log10`, `linear` | some aliases of these are possible (such as `base-10 logarithm`)|
-| !DefaultValue | a number | in above scale, normalized to the unit of measurement, possibly subject to fitting/sampling |
-| !Std | a number | standard deviation / uncertainty of this parameter |
-| !Min / !Max | numbers | respectively, used if !Std is not present |
+| `!Scale` | `log`, `log10`, `linear` | some aliases of these are possible (such as `base-10 logarithm`)|
+| `!DefaultValue` | a number | in above scale, normalized to the unit of measurement, possibly subject to fitting/sampling |
+| `!Std` | a number | standard deviation / uncertainty of this parameter |
+| `!Min` and `!Max` | numbers | respectively, used if `!Std` is not present |
 
-The columns `!Std` and `!Min/Max` are only used in
+The columns `!Std` and `!Min`/`!Max` are only used in
 sampling/optimization, the model conversion is unaffected by them, the
 DefaultValue is passed on to the model files (if there is a place to
 put them).
@@ -229,8 +249,8 @@ kind.
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
-| !DefaultValue | number | same as with normal parameters, but these are set to known values during an _experiment_ (these have to be known values) |
-| !ConservationLaw | `TRUE`| the parameter is the result of an earlier run of the conversion script|
+| `!DefaultValue` | number | same as with normal parameters, but these are set to known values during an _experiment_ (these have to be known values) |
+| `!ConservationLaw` | `TRUE`| the parameter is the result of an earlier run of the conversion script|
 ||`FALSE` | this parameter is unrelated to conservation laws |
 
 The `!ConservationLaw` column will eventually be obsolete and the
@@ -259,10 +279,10 @@ error.
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
-| !ErrorName | a string | indicates the column in data sheets that hold the measurement error of an observable |
-| !ErrorType | not used | this is for the user |
-| !ProbDist  | a string | the probability distribution of the noise model (currently unused); this is for humans to read |
-| !Formula   | a math expression | the right hand side of the assignment |
+| `!ErrorName` | a string | indicates the column in data sheets that hold the measurement error of an observable |
+| `!ErrorType` | not used | this is for the user |
+| `!ProbDist`  | a string | the probability distribution of the noise model (currently unused); this is for humans to read |
+| `!Formula`   | a math expression | the right hand side of the assignment |
 
 Many data columns may share the same Error column. This is useful if
 you have only a very rough estimate of the noise anyway, and the
@@ -280,7 +300,7 @@ type of _expression_).
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
-| !Formula | a math expression | right hand side of assignment|
+| `!Formula` | a math expression | right hand side of assignment|
 
 Currently, there is no way to formally write something like _initial
 assignments_, as those don't go into the model files, these
@@ -298,10 +318,10 @@ replicated using the model.
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
-| !Type | `Time␣Series` |  indicates that the data is a `t->output` mapping |
+| `!Type` | `Time␣Series` |  indicates that the data is a `t->output` mapping |
 |       | `Dose␣Response` | data sheet is an input/output curve, i.e. `input->output` mapping |
 | `>some_id` | a number | sets the input parameters for this experiment |
-|!Event| a table name | the name of an event table that holds time instantaneous model state changes |
+|`!Event`| a table name | the name of an event table that holds time instantaneous model state changes |
 
 This is not used by this converter, but useful for parameter fitting
 and interpretation of _the input_ and _output_ concepts.
@@ -372,14 +392,14 @@ anything else that has regular expressions.
 
 # Systems Biology Markup Language (SBML level 2 version 4)
 
-The program `sbtab_to_vfgen.R` also produces an `.xml` file in the _Systems Biology Markup Language_ .
+The program `sbtab_to_vfgen.R` also produces an `.xml` file in the _Systems Biology Markup Language_ (SBML).
 This is only done, if _libsbml_ is installed with `R` bindings, like this:
 
 ```bash
 $ R CMD INSTALL libSBML_5.18.0.tar.gz
 ```
 
-*REMARK*: I don't know how to do that on _MS Windows_ systems.
+*REMARK*: I don't know how to do that on _MS Windows_ systems exactly.
 
 If this check: `if (require(libSBML))` succeeds, then the scripts attempts to make an sbml file.
 
@@ -479,10 +499,13 @@ Note that `kHz` is a bit unusual as Hertz is reciprocal to a base unit (second),
 
 ## Final Remarks on LIBSBML
 
-The libSBML R bindings are not documented and there is some guesswork
-involved here. The code in the repository is not yet tested very
-thoroughly, so some what cryptic errors may occur. Most recently we
-have used the `.tsv` form of sbml, not direct `.ods` input.
+The libSBML R bindings are not documented yet and there is some
+guesswork involved (on our side). The code in the repository is not
+yet tested very thoroughly, so somewhat cryptic errors may occur. Most
+recently we have used the `.tsv` form of sbml, not direct `.ods`
+input. Content such as comments, colors, may make the parsing more
+difficult. TSV files don't have such _extra_ content, so they have
+been more easy to process.
 
 [Here](libsbml.md) is a small (incomplete) list of libsbml functions
 in R (that we used).
