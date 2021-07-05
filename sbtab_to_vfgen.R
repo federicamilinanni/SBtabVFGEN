@@ -944,7 +944,12 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
         KineticLaw_setMath(kl, astMath);
 
         A <- trimws(strsplit(AB[[i]][1],"+",fixed=TRUE)[[1]])
+        l <- grepl("^\\s*(NULL|NIL|Ø)\\s*$",A)
+        A <- A[!l]
         B <- trimws(strsplit(AB[[i]][2],"+",fixed=TRUE)[[1]])
+        l <- grepl("^\\s*(NULL|NIL|Ø)\\s*$",B)
+        B <- B[!l]
+
         message("Reactants: ")
         print(A)
         message("Products: ")
