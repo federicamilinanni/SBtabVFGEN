@@ -1,0 +1,26 @@
+#!/usr/bin/env Rscript
+
+source('~/Documents/SBtabVFGEN/sbtab_to_vfgen.R')
+args <- commandArgs(TRUE)
+
+if (length(args)>0){
+    f <- file.exists(args)
+    tsv <- grepl('.*[.]tsv$',args[f])
+    ods <- grepl('.*[.]ods$',args[f])
+    model.tsv <- args[f & tsv]
+    model.ods <- args[f & ods]
+} else {
+    model.tsv<-dir(pattern='.*[.]tsv$')
+    message('without any command line arguments, I will use all tsv file in this folder: ')
+    message(sprintf("«%s»",model.tsv))
+}
+
+if (length(model.tsv)>0){
+    model.sbtab<-sbtab_from_tsv(model.tsv)
+    sbtab_to_vfgen(model.sbtab,cla=FALSE)
+}
+
+if (length(model.ods)>0){
+    model.sbtab<-sbtab_from_ods(model.tsv)
+    sbtab_to_vfgen(model.sbtab,cla=FALSE)
+}
