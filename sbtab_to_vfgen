@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-source('~/Documents/SBtabVFGEN/sbtab_to_vfgen.R')
+library(SBtabVFGEN)
 args <- commandArgs(TRUE)
 
 if (length(args)>0){
