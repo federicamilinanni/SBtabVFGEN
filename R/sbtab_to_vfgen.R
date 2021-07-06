@@ -1102,7 +1102,23 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
     return(Doc)
 }
 
-
+#' A parser for .ods files with SBtab document structure
+#'
+#' This uses the readODS package to read the file.
+#' SBtab sheets are themselves tables dedicated to a specific type of
+#' model property: Reaction, Compound, Parameter, etc.
+#'
+#' The SBtab content is not interpreted in any way.
+#' @param ods.file a string (file's name)
+#' @return L
+#' a list with two elements:
+#' L[['Document']] is the document name
+#' L[['Table']] is a list with one entry per SBtab sheet
+#
+#' @keywords import
+#' @examples
+#' model.sbtab<-sbtab_from_ods('model.ods')
+#' 
 sbtab_from_ods <- function(ods.file){
     M <- readODS::read.ods(ods.file)    
     lM <- length(M)
@@ -1122,25 +1138,57 @@ sbtab_from_ods <- function(ods.file){
     return(list(Document=document.name,Table=SBtab))
 }
 
+#' A parser for a bunch of .tsv files with SBtab document content
+#'
+#' This function reads the files (not using any package).
+#' SBtab sheets are themselves tables dedicated to a specific type of
+#' model property: Reaction, Compound, Parameter, etc.
+#'
+#' The SBtab content is not interpreted in any way.
+#' @param tsv.file a character vector (file names, one per sheet)
+#' @return L
+#' a list with two elements:
+#' L[['Document']] is the document name
+#' L[['Table']] is a list with one entry per SBtab sheet
+#
+#' @keywords import
+#' @examples
+#' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
+#' 
 sbtab_from_tsv <- function(tsv.file){
     SBtab=list();
     
     header <- readLines(tsv.file[1],n=1);
     mD <- regexec("Document='([^']+)'", header)
     match <- regmatches(header,mD)
-    document.name=make.cnames(match[[1]][2])
+    document.name <- make.cnames(match[[1]][2])
     message(sprintf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name))
     
     for (f in tsv.file){
         header <- readLines(f,n=1);
         mTN <- regexec("TableName='([^']+)'", header)
         match <- regmatches(header,mTN)
-        TableName=match[[1]][2]
+        TableName <- match[[1]][2]
         SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
     }
     return(list(Document=document.name,Table=SBtab))
 }
 
+#' SBtab content exporter
+#'
+#' This function interprets the SBtab content and exports it to three
+#' possible formats: (1) vfgen's `vf` format (xml); (2) NEURON's mod
+#' file; (3) SBML if the libSBML package can be loaded.
+#' 
+#' @param SBtabDoc a list as returned from any of the import functions
+#'     [sbtab_from_tsv()] or [sbtab_from_ods()]
+#' @param cla a logical value that determines whether conservation law
+#'     analysis should be performed. If this is TRUE (default) the
+#'     resulting ODE model will be reduced to a state variable sub-set
+#'     that is independent in the sense of linear algebraic
+#'     relationships.
+#' @return the text (as a character array) that was also written to
+#'     the .vf file
 sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     options(stringsAsFactors = FALSE)
     ## message("The names of the SBtab list:")

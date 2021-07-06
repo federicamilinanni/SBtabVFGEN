@@ -1,5 +1,5 @@
 Type: Compendium
-Package: SBtab to vfgen converter
+Package: SBtabVFGEN
 Title: Converts from SBtab to vf,mod,[sbml]
 Version: 0.0.1
 Authors@R: 
@@ -9,9 +9,10 @@ Authors@R:
            email = "andrei.kramer@scilifelab.se")
 Description: Converts models in the SBtab format to vfgen's vf format,
     sbml, and NEURON's mod format.
-License: GNU GPLv3
+License: GPL (>= 3)
 Depends: 
     hdf5r,
     pracma,
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.1
