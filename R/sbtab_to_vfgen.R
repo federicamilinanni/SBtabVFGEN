@@ -299,10 +299,17 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 }
 
 .GetCompartments <- function(SBtab){
-    ID <- SBtab[["Compartment"]][["!ID"]]
-    Name <- make.cnames(SBtab[["Compartment"]][["!Name"]])
-    Size <-  SBtab[["Compartment"]][["!Size"]]
-    Unit <- SBtab[["Compartment"]][["!Unit"]]
+    if ("Compartment" %in% names(SBtab)){
+        ID <- SBtab[["Compartment"]][["!ID"]]
+        Name <- make.cnames(SBtab[["Compartment"]][["!Name"]])
+        Size <-  SBtab[["Compartment"]][["!Size"]]
+        Unit <- SBtab[["Compartment"]][["!Unit"]]
+    } else {
+        ID <- 'Compartment'
+        Name <- 'Compartment'
+        Size <- 1.0
+        Unit <- 'liter'
+    }
     Comp <- data.frame(ID,Size,Unit,row.names=Name)
     return(Comp)
 }
@@ -1290,7 +1297,7 @@ sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
         print(N)
         message("---")
         message(sprintf("Conservation Law dimensions:\t%i × %i\n",dim(Laws)[1],dim(Laws)[2]))
-        message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws),type="F"))
+        message(sprintf("To check that the conservation laws apply: norm(t(StoichiometryMatrix) * ConservationLaw == %6.5f)",norm(t(N) %*% Laws,type="F")))
         ConLaw <- .GetLawText(Laws,row.names(Compound),Compound$InitialValue)
         PrintConLawInfo(ConLaw,row.names(Compound),document.name)
         if (require("hdf5r")){
