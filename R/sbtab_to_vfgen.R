@@ -1118,7 +1118,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 #' @keywords import
 #' @examples
 #' model.sbtab<-sbtab_from_ods('model.ods')
-#' 
+#' @export
 sbtab_from_ods <- function(ods.file){
     M <- readODS::read.ods(ods.file)    
     lM <- length(M)
@@ -1154,7 +1154,7 @@ sbtab_from_ods <- function(ods.file){
 #' @keywords import
 #' @examples
 #' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
-#' 
+#' @export
 sbtab_from_tsv <- function(tsv.file){
     SBtab=list();
     
@@ -1189,6 +1189,7 @@ sbtab_from_tsv <- function(tsv.file){
 #'     relationships.
 #' @return the text (as a character array) that was also written to
 #'     the .vf file
+#' @export
 sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
     options(stringsAsFactors = FALSE)
     ## message("The names of the SBtab list:")

@@ -25,6 +25,5 @@ The SBtab content is not interpreted in any way.
 }
 \examples{
 model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
-
 }
 \keyword{import}
