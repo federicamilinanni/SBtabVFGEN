@@ -1140,9 +1140,10 @@ sbtab_from_ods <- function(ods.file){
     }
     
     names(SBtab) <- table.name
-    print(names(SBtab))
+    #print(names(SBtab))
     message(table.name)
-    return(list(Document=document.name,Table=SBtab))
+    comment(SBtab) <- document.name
+    return(SBtab)
 }
 
 #' A parser for a bunch of .tsv files with SBtab document content
@@ -1178,7 +1179,8 @@ sbtab_from_tsv <- function(tsv.file){
         TableName <- match[[1]][2]
         SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
     }
-    return(list(Document=document.name,Table=SBtab))
+    comment(SBtab) <- document.name
+    return(SBtab)
 }
 
 #' SBtab content exporter
@@ -1197,14 +1199,13 @@ sbtab_from_tsv <- function(tsv.file){
 #' @return the text (as a character array) that was also written to
 #'     the .vf file
 #' @export
-sbtab_to_vfgen <- function(SBtabDoc,cla=TRUE){
+sbtab_to_vfgen <- function(SBtab,cla=TRUE){
     options(stringsAsFactors = FALSE)
     ## message("The names of the SBtab list:")
     ## message(cat(names(SBtab),sep=", "))
-    document.name <- SBtabDoc[["Document"]]
+    document.name <- comment(SBtab)
     message(sprintf("Document Name: %s.",document.name))
     
-    SBtab <- SBtabDoc[["Table"]]
     cat(sprintf("SBtab has %i tables.\n",length(SBtab)))
     
     message("The names of SBtab[[1]]:")
