@@ -39,9 +39,9 @@ $ ./sbtab_to_vfgen *.tsv
 ```
 This will work if the `.tsv` files have acceptable SBtab content.
 
-## Other Spreadsheet Formats for SBtab
+## Other Output Formats 
 
-As a by-product, [sbtab_to_vfgen()][./R/sbtab_to_vfgen] also produces
+As a by-product, [sbtab_to_vfgen()](./R/sbtab_to_vfgen.R) also produces
 a `mod` file intended as a starting point for use in
 [neuron](https://neuron.yale.edu/neuron/). This is not the primary
 purpose of this function.
@@ -63,18 +63,6 @@ conversions at some point.
 
 There is no automatic conversion of units (yet).
 
-An SBtab document can be imported from an open document spreadsheet (`.ods`) using the
-[readODS](https://cran.r-project.org/web/packages/readODS/index.html)
-package directly:
-```R
-library("SBtabVFGEN")
-model.ods <- "examplemodel.ods" 
-if (file.exists(model.ods){
- model.sbtab <- sbtab_from_ods(model.ods)
- sbtab_to_vfgen(model.sbtab)
-}
-```
-The result is written to files (`.vf`,`.mod`, and `.xml`). In either case, whether TSV or ODS was used, `model.sbtab` will be a list of `data.frame`s.
 
 ## VFGEN Output
 
@@ -112,13 +100,26 @@ are slightly more convenient. [Gnumeric](http://www.gnumeric.org/) is
 a spreadsheet software that handles both `ods` and tsv files fairly
 well (it also has its own format `.gnumeric`)
 
-This `R` script can process such files directly, as mentioned, using
-the
-[readODS](https://cran.r-project.org/web/packages/readODS/index.html)
-package, but you can also convert between spreadsheet formats like
-`.ods`, `.gnumeric` and `.tsv` files using `ssconvert`, a part of
-[gnumeric](http://www.gnumeric.org/). The shell scripts in this
+Conversion between spreadsheet formats like `.ods`, `.gnumeric` and
+`.tsv` files is very convenient using `ssconvert`, a part of
+[gnumeric](http://www.gnumeric.org/). The shell scripts [ods_to_tsv.sh](./ods_to_tsv.sh) and [tsv_to_ods.sh](./tsv_to_ods.sh) in this
 repository are an example of `ssconvert` usage.
+
+An SBtab document can be imported from an open document spreadsheet (`.ods`) directly using the
+[readODS](https://cran.r-project.org/web/packages/readODS/index.html)
+package:
+```R
+library("SBtabVFGEN")
+model.ods <- "examplemodel.ods" 
+if (file.exists(model.ods){
+ model.sbtab <- sbtab_from_ods(model.ods)
+ sbtab_to_vfgen(model.sbtab)
+}
+```
+The result is written to several files (`.vf`,`.mod`, and `.xml`). Some other results with additional information are also created. 
+
+In either case, whether TSV or ODS was used, `model.sbtab` will be a
+list of `data.frame`s.
 
 Other spreadsheet programs such as _google spreadsheets_ and _libre
 office_ export to `tsv` _one sheet at a time_ (with no easy
