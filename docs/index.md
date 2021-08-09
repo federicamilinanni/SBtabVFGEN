@@ -26,3 +26,7 @@ model.tsv <- dir(pattern=".*[.]tsv$");
 model.sbtab <- sbtab_from_tsv(model.tsv)
 sbtab_to_vfgen(model.sbtab)
 ```
+
+## SBtab
+
+This format is human readable and writable. We use the standard as we understand it, but use our own code to process the files, using a [subset of named columns](./sbtab.md). These files can hold a great variety of content. 
