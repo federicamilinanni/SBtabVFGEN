@@ -90,7 +90,7 @@ than `sbml` and can be parsed/worked via shell scripts (e.g. with line
 oriented tools such as `sed` and `awk`) due to its tabular nature
 (stored as e.g. tab separated value text files).
 
-In addition to the official upstream documentation, we have summarised the SBtab entries that this script can use in [sbtab.md](./sbtab.md) 
+In addition to the official upstream documentation, we have summarised the SBtab entries that this script can use in [sbtab.md](./docs/sbtab.md) 
 
 ## Open Document Format, Gnumeric and Spreadsheets in General
 
@@ -164,7 +164,7 @@ $ R CMD INSTALL libSBML_5.18.0.tar.gz
 ```
 If this check: `if (require(libSBML))` succeeds, then the scripts attempts to make an sbml file. SBML is a format that has units, and the units defined in SBtab are forwarded to SBML. The formats are very different with regard to unit handling and math generally. The method we use to parse human readble text units is described in [units.md](./units.md).
 
-[Here](libsbml.md) is a small (incomplete) list of libsbml functions
+[Here](./docs/libsbml.md) is a small (incomplete) list of libsbml functions
 in R (that we used).
 
 ## Some Remarks on LIBSBML
