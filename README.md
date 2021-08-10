@@ -167,13 +167,4 @@ If this check: `if (require(libSBML))` succeeds, then the scripts attempts to ma
 [Here](./docs/libsbml.md) is a small (incomplete) list of libsbml functions
 in R (that we used).
 
-## Some Remarks on LIBSBML
-
-The libSBML R bindings are not documented yet and there is some
-guesswork involved (on our side). The code in the repository is not
-yet tested very thoroughly, so somewhat cryptic errors may occur. Most
-recently we have used the `.tsv` form of sbml, not direct `.ods`
-input. Content such as comments, colors, may make the parsing more
-difficult. TSV files don't have such _extra_ content, so they have
-been more easy to process.
 

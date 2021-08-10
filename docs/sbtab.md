@@ -1,6 +1,6 @@
 # SBtab
 
-We use this format mostly because it can be extended to contain
+We use this format because it can be extended to contain
 additional information more easily (such as experimental data, and
 conditions under which data was measured).
 
@@ -11,33 +11,59 @@ the conversion to work.
 
 In contrast to the [official
 documentation](https://www.sbtab.net/sbtab/default/documentation.html),
-we need all tables to be kept in their own `.tsv` file (not all tables
-in one huge tsv file), or different sheets of the same `ods` file (the
-official SBtab project uses `.xlsx`). But, we don't use any of the
-code from theoriginal [SBtab authors](https://www.sbtab.net/sbtab/default/team.html).
+we need all tables to be kept in their own respective `.tsv` file (not
+all tables in one huge tsv file), or different sheets of the same
+`ods` file (the official SBtab project uses `.xlsx`). 
+
+We don't use any of the code from the original [SBtab
+authors](https://www.sbtab.net/sbtab/default/team.html).
 
 The following Sections have more information on specific tables and
 their required columns (in addition to the obvious `!ID` and `!Name`
 columns).
 
+## ID and Name of Quantites
+
 All tables require a unique `!ID` column (the ID can be seen as a key
 for associative arrays aka _dictionaries_ or _hash tables_). The
 `!Name` column must be unique as well and the entries should work as
-variable names in the language that you plan to convert the model
-to. The script in this repository uses the `make.names()` function on
-this column (which will make them unique, but break reactions) and
-also replaces `.` with `_` in all names (dots are often illegal in
-variable names, not in `R` though).
+variable names in the language that you plan to convert the model to
+(in some formats the rules for `Name` entries are more lenient than
+`ID` strings). We see no good reason to have both IDs and Names, so
+using the same string for both is fine.
+
+The script in this repository uses the `make.names()` function on this
+column. This will make them unique, but almost certainly break the
+model, the reason is that human error will lead to infromative error
+messages later on instead of wrong simulation results. Using the same
+ID multiple times may otherwise go unnoticed and merge two distinct
+entities (species/parameters/erc.). This will also replace `.` with
+`_` in all names (dots are allowed in R variable names, but often
+illegal in other languages).
+
+## Scale
 
 Many numbers can be given in a specified scale (like `log`), these
 numbers will be converted to linear scale when a model file is written
-to file. Let a quantity `y` be measured in unit `M` (y is a number
-followed by a unit, y/M is just a number), and `!Scale` be set to
+to file. 
+
+Let a quantity `y` be measured in unit `M` (`y` is a number
+followed by a unit, `y/M` is just a number), and `!Scale` be set to
 `log10`, then the number you write in the `![Default]Value` column is
 `z=log10(y/M)`. The script will do the inverse to generate the model
-and pass the unit on to `.mod` files.
+and pass the unit on to `.mod` files. Here are some examples:
 
-The Names of all tables must be unique.
+| z | y | scale indicator |
+|-----:|:---:|:-----|
+|`-5`|10¯⁵|`log10`|
+||1.0E-5|`base-10 logarithm`|
+|---|---|---|
+|`1.2`|3.32|`log`|
+||3.32|`ln`|
+||3.32|`natural logarithm`|
+|---|---|---|
+|`1.6`|1.6|`lin`|
+||1.6|`linear`|
 
 ### Compound
 
@@ -162,19 +188,9 @@ than in the Parameter table. Experiments are supposed to have the same
 parameters of the normal kind and different parameters of the input
 kind.
 
-| Column | Values  | Comment |
-| -----: | :-----: | :------ |
-| `!DefaultValue` | number | same as with normal parameters, but these are set to known values during an _experiment_ (these have to be known values) |
-| `!ConservationLaw` | `TRUE`| the parameter is the result of an earlier run of the conversion script|
-||`FALSE` | this parameter is unrelated to conservation laws |
-
-The `!ConservationLaw` column will eventually be obsolete and the
-numbers in that column will be determined by the _experiment-specific_
-initial conditions. Currently there is only one _initial condition_ vector for
-_all_ experiments.
-
-At this moment, a conservation law parameter will be ignored whenever
-the script runs (again), because the script creates those itself (every time it runs).
+The `!DefaultValue` column serves the same role as with normal
+parameters, but these are set to known values during an _experiment_
+(these have to be known values).
 
 ### Output
 
@@ -204,26 +220,20 @@ you have only a very rough estimate of the noise anyway, and the
 outputs are in the same number range so using the same standard
 deviation (etc.) for all data points seems good enough.
 
-The data sheets are not used by this script, but they are used [here](https://github.com/a-kramer/mcmc_clib).
+The data sheets are not used by `sbtab_to_vfgen()`, but they are used for Parameter Estimation, e.g. via
+[MCMC](https://github.com/a-kramer/mcmc_clib).
 
 ### Expression
 
-These will be local variables of the model. Expressions are
-assignments that are calculated repeatedly each time the ODEs right
-hand side is called (before fluxes are calculated, fluxes are otherwise also a
-type of _expression_).
+These will be local variables of the model. These variables store a
+one line mathematical expression for reusability of the resulting
+value. 
 
-| Column | Values  | Comment |
-| -----: | :-----: | :------ |
-| `!Formula` | a math expression | right hand side of assignment|
+Expressions are assignments that are calculated repeatedly each
+time the ODEs right hand side is called (before fluxes are calculated).
 
-Currently, there is no way to formally write something like _initial
-assignments_, as those don't go into the model files, these
-assignments have to happen before you call the model solver, so those
-are up to you use of the model in the language you had in mind.
-
-The only type of initial assignment that can be specified is the state
-variables' initial conditions.
+The `!Formula` column stores a string math expression that will serve
+as the right hand side of the assignment.
 
 ### Experiments
 
@@ -240,19 +250,3 @@ replicated using the model.
 
 This is not used by this converter, but useful for parameter fitting
 and interpretation of _the input_ and _output_ concepts.
-
-### Remarks about `!ID`s and `!Name`s
-
-A long term goal is that IDs can be used everywhere in the rest of the
-document to reference the row in question (but it's not guaranteed
-yet) and doesn't yet work in the kinetic law / Reaction Formulas
-(names are used there). In reference headers `>ID`, the ID must be
-used.
-
-The experimental measurement data portion of the files is ignored for
-model generation.
-
-If an ID is not unique (but is in a different sheet), new entries from
-the new sheet override old entries. IDs have to be unique inside the
-same sheet. Generally, it doesn't make sense to have the same ID for two 
-rows, other than to override a general entry by a more specific entry.

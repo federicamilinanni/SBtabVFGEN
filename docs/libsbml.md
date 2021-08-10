@@ -11,12 +11,17 @@ unit definitions, and functions (λ expressions).
 
 The model is written to file by
 ```R
-writeSBML(model, "sthsthsth.xml");
+writeSBML(model, "sthsth.xml");
 ```
 
 ### MathML
 
-In General, math expressions can be written directly as Mathml, or in infix notation strings and then converted to MathML. Probably the most convenient way is to use the functions `parseL3Formula` and `writeMathMLToString(F)` to inspect the results.
+In General, math expressions for use in SBML can be written directly
+as MathML, or starting with infix notation strings which are converted to
+MathML. 
+
+Probably the most convenient way is to use the functions
+`parseL3Formula` and `writeMathMLToString` to inspect the results.
 
 ```R
 > F<-parseL3Formula("exp(-time)")

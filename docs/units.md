@@ -8,7 +8,7 @@ These unit attributes are interpreted like this:
 ```
 or, if you prefer: 
 ```
-power(prod(multiplier,kind,power(10,scale)),exponent)
+power(prod(multiplier,kind,power(10.0,scale)),exponent)
 ``` 
 
 The `kind` can be any [SI](https://en.wikipedia.org/wiki/International_System_of_Units) base unit, e.g. `second`.
@@ -25,8 +25,8 @@ Other units can be derived using products of these base units, `liter/(nanomole 
 
 ```
 
-In _SBtab_ files, units are written in a human readable form (`!Unit`
-column) and it is not always easy to interpret those units. The `R`
+In _SBtab_ files, units are written in a more human readable form (`!Unit`
+column) and it is not always trivial to interpret those units. The `R`
 program in this repository attempts to read the units using a
 regular expression with sub-groups. To make it somewhat doable, we have
 additional rules on unit-strings:
@@ -49,7 +49,7 @@ additional rules on unit-strings:
    - `kg m s-2` is also ok and means the same as `kg m s^-2`
    - `cm2` is ok and means square centimeters
    - `kg m s^( -2 )` is not ok (spaces)
-1. The literal `1` is interpreted as: this quantity is dimensionless (in sbml this is actually called `dimensionless`)
+1. The literal `"1"` is interpreted as: this quantity is dimensionless (in sbml this is actually called `dimensionless`)
    - a `1` in a unit will reappear in sbml, even if unnecessary
    - `1 m / 1 s` will have 4 entries in the sbml unit definition, with two unnecessary `dimensionless` units
    - `1/s` will be the same as `s^-1` in effect, but `1/s` will have an unnecessary `dimensionless` unit entry in the definition
@@ -58,16 +58,14 @@ additional rules on unit-strings:
    - `millisecond` is ok
    - `ms` is also ok
    - `msecond` (probably) also ok (but weird)
-1. multipliers are always `1` (we don't have a system for
-   multipliers). They are used to convert to and from non SI systems
-   (imperial and so forth)
-   - inches and feet are not multiples of powers of ten of SI base units.
-   - `inches` are not parsed by the regular expression anyway (and we don't plan to ever support non SI units)
-   - the only hope for _non SI_ units would be the _natural units_
+1. we don't have a system for _multipliers_. They are used to convert to and from non SI systems
+   (imperial)
+   - inches and feet are not multiples of SI base units, so are not processed by this parser.
+   - we don't plan to support non SI units later, unless it becomes necessary
 1. The units that are not understood, but don't lead to a crash/error in the R code are interpreted as `1`
-   - the user can then correct those definitions in the sbml file by hand (using a normal text editor [but please not notepad, treat yourself])
+   - the user can later correct those definitions in the output (sbml) file by hand (using a normal text editor)
 
-Because we use a quite simple regular expression to parse units, the base unit for mass is `g` (not `kg`, it's a bit of an exception in the SI world). Here is the regular expression, possibly not up to date:
+Because we use a simple regular expression to parse units, the base unit for mass is `g` (not `kg`, it's a bit of an exception in the _système international_). Here is the regular expression, possibly not up to date:
 ```R
 pat <- paste0("^(G|giga|M|mega|k|kilo|c|centi|m|milli|u|μ|micro|n|nano|p|pico|f|femto)?",
 	          "(l|L|liter|litre|g|gram|mole?|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere)",
@@ -89,5 +87,27 @@ Newton, Hertz and M are not parsed automatically, use the long form in column 2.
 ||| `"litre"` |  1 | -1 |
 |kHz| `ms^-1`| `"second"` | -3 | -1 |
 
-However, the units are not always interpreted right by importers (in other software).
-Note that `kHz` is a bit unusual as Hertz is reciprocal to a base unit (second), so `kHz` is  `1000/s = 1/0.001 s = ms^-1`. 
+Please be aware that the SBML units themselves are not always
+interpreted right by SBML importers (in other software). So, not always is it an error of this script if a different software displays a different unit than was intended.
+
+Note that kHz is a bit unusual as Hertz is reciprocal to a base unit (second),
+so `kHz` is written as `1000/s = 1/0.001 s = ms^-1` once broken down to base units.
+
+
+## NEURON
+
+Some software, including NEURON has units imposed by the environment
+in which the subcellular model is embedded. So the units are expected
+to be compaible to the simulator. 
+
+In this case the user must write a
+model file using those imposed units.
+
+Of course, this becomes impossible, once a second simulator imposes a
+different set of units. To maintain compatibilty between the two,
+using only one model file, it is perhaps possible to use the
+Expression mechanism. But the model will become a lot less readable.
+
+So, it would be better, if an output unit could be requested (for
+autmoatic transformation). This is not easy and currently not
+implemented.
