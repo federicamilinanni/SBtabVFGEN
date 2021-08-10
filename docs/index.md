@@ -1,14 +1,15 @@
 # SBtabVFGEN
 
-Convert a Model written in [SBtab](https://www.sbtab.net/), saved as a
-series of `tsv` files or alternatively an [Open Document
+This is an R package which converts a Model written in
+[SBtab](https://www.sbtab.net/), saved as a series of `tsv` files or
+alternatively an [Open Document
 Spreadsheet](https://www.documentfoundation.org/) `ods` to a
 [VFGEN](https://warrenweckesser.github.io/vfgen/) vector field file
 `vf`.
 
 ## Install
 
-Using `remotes`:
+Using `remotes` (R):
 ```R
 remotes::install_github("a-kramer/SBtabVFGEN")
 ```
