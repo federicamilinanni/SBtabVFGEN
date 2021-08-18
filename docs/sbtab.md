@@ -1,8 +1,8 @@
 # SBtab
 
-We use this format because it can be extended to contain
-additional information more easily (such as experimental data, and
-conditions under which data was measured).
+We use _Systems Biology tables_ (SBtab) because this format can be
+extended to contain additional information more easily (such as
+experimental data, and conditions under which data was measured).
 
 To make a conversion feasible, we decided on a set of columns and
 tables (some specified by `TableName` some also by `TableType`
@@ -21,6 +21,34 @@ authors](https://www.sbtab.net/sbtab/default/team.html).
 The following Sections have more information on specific tables and
 their required columns (in addition to the obvious `!ID` and `!Name`
 columns).
+
+## Text files, Unicode and ASCII
+
+Sometimes, spreadsheet software introduces non-ascii Unicode characters such as
+`−` ('MINUS SIGN' U+2212, in html this is «\&minus;») into the
+document. They should be replaced by the ascii character `-`
+('HYPHEN-MINUS' U+002D) after export to text-based formats. And
+similarly for other Unicode characters, unless they appear in comments
+(or generally unparsed content). _Minus_ and _Hyphen_ can look quite
+similar: `−-` (depending on the chosedn font), but the ascii _hyphen_ is the
+character that programming languages understand as _subtraction_.
+
+You can check your files for non-ascii characters like this:
+```bash
+grep -P '[^[:ascii:]]' *.tsv
+#OR
+grep -n '[^a-z_A-Z[:digit:][:punct:][:space:]]' *.tsv
+# automatic minus to hyphen replacement:
+sed -i 's/−/-/g' *.tsv
+```
+Neither `grep` nor `egrep` define the `[:ascii:]` character class
+without the `-P` option for _perl regular expressions_. If such
+characters appear outside of Formulas and IDs, they may be harmless.
+
+Of course you can use [perl](https://www.perl.org/) directly, or
+anything else that has regular expressions.
+
+
 
 ## ID and Name of Quantites
 
@@ -65,7 +93,7 @@ and pass the unit on to `.mod` files. Here are some examples:
 |`1.6`|1.6|`lin`|
 ||1.6|`linear`|
 
-### Compound
+## Compound
 
 This table defines the compounds that are supposed to be modeled by
 state variables and are subject to change by the reactions in the
@@ -89,7 +117,7 @@ fluxes for the compound in question).
 
 Others columns are unused but may be informative to the user, or others.
 
-#### Compound Assignments
+### Compound Assignments
 
 In some cases, a compound's amount or concentration is not supposed to
 be governed by reactions (kinetic laws, stoichiometry) but rather by a
@@ -146,7 +174,7 @@ recognized as an empty cell).
 A `TRUE` value in `!IsConstant` and meaningful assignments are
 mutually exclusive and may lead to weird results.
 
-### Parameters
+## Parameters
 
 | Column | Values  | Comment |
 | -----: | :-----: | :------ |
@@ -160,7 +188,7 @@ sampling/optimization, the model conversion is unaffected by them, the
 DefaultValue is passed on to the model files (if there is a place to
 put them).
 
-### Reactions
+## Reactions
 
 The column `!ReactionFormula` determines the stoichiometry of the
 model, the `!KineticLaw` column determines the flux of the given
@@ -177,7 +205,7 @@ kinetics based on the law of mass action it may be important for you
 to have that column as a reminder (for when you are auto generating
 the `!KineticLaw` column, which this script doesn't do).
 
-### Input
+## Input
 
 The input parameters to the model that distinguish different
 experiments. These quantities are known and can be influenced by the
@@ -192,7 +220,7 @@ The `!DefaultValue` column serves the same role as with normal
 parameters, but these are set to known values during an _experiment_
 (these have to be known values).
 
-### Output
+## Output
 
 The outputs are _observable quantities_ of this system; what is and
 isn't an output depends on what you can measure (or have knowledge
@@ -223,7 +251,7 @@ deviation (etc.) for all data points seems good enough.
 The data sheets are not used by `sbtab_to_vfgen()`, but they are used for Parameter Estimation, e.g. via
 [MCMC](https://github.com/a-kramer/mcmc_clib).
 
-### Expression
+## Expression
 
 These will be local variables of the model. These variables store a
 one line mathematical expression for reusability of the resulting
@@ -235,18 +263,38 @@ time the ODEs right hand side is called (before fluxes are calculated).
 The `!Formula` column stores a string math expression that will serve
 as the right hand side of the assignment.
 
-### Experiments
+## Experiments
 
 This table holds the mapping between input parameters and data
 sheets. It determines the conditions under which a data set should be
-replicated using the model.
+replicated using the model. The _conditions_ als include _events_ that
+need to happen to replicate an experiment. 
 
-| Column | Values  | Comment |
-| -----: | :-----: | :------ |
-| `!Type` | `Time␣Series` |  indicates that the data is a `t->output` mapping |
-|       | `Dose␣Response` | data sheet is an input/output curve, i.e. `input->output` mapping |
-| `>some_id` | a number | sets the input parameters for this experiment |
-|`!Event`| a table name | the name of an event table that holds time instantaneous model state changes |
+|   Column | Values        | Comment |
+| -------: | :-----------: | :------ |
+|  `!Type` | `Time␣Series` |  indicates that the data is a `t->output` mapping |
+|          | `Dose␣Response`| data sheet is an input/output curve, i.e. `input->output` mapping |
+|`>some_id`| a number      | sets the input parameters for this experiment |
+| `!Event` | a table name  | the name of an event table that holds time instantaneous model state changes |
 
 This is not used by this converter, but useful for parameter fitting
 and interpretation of _the input_ and _output_ concepts.
+
+## Events
+
+Events are instantaneous
+changes in state variables or inputs at speciefied points in time
+(events with complex triggers are not supported by any f our code yet).
+
+Eventtables have a `!Time` column and an effect column, where the
+header combines a target and operation: `>OPERATION:TARGET`. An example:
+
+|!TimePoint|!Time|>ADD:Ca|
+|---:|:---:|:----|
+|TP0|100|1e3|
+|TP0|200|1e3|
+|TP0|300|1e3|
+
+
+In this example, we add 1000 units of Ca, every 100 time-units. The
+possible operations are: `SET`,`ADD`,`SUB`,`MUL`,`DIV`.

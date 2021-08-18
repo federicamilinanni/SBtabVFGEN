@@ -126,34 +126,6 @@ office_ export to `tsv` _one sheet at a time_ (with no easy
 workarounds) and lack an option to export _N_ sheets into _N_
 files. Gnumeric's `ssconvert` command does.
 
-### Text files, Unicode and ASCII
-
-Sometimes, spreadsheet software introduces Unicode characters such as
-`−` ('MINUS SIGN' U+2212, in html this is «\&minus;») into the
-document. They should be replaced by the ascii character `-`
-('HYPHEN-MINUS' U+002D) after export to text-based formats. And
-similarly for other Unicode characters, unless they appear in comments
-(or generally unparsed content). _Minus_ and _Hyphen_ can look quite
-similar: `−-` (depending on the chosedn font), but the ascii _hyphen_ is the
-character that programming languages understand as _subtraction_.
-
-You can check your files for non-ascii characters like this:
-```bash
-grep -P '[^[:ascii:]]' *.tsv
-#OR
-grep -n '[^a-z_A-Z[:digit:][:punct:][:space:]]' *.tsv
-# automatic minus to hyphen replacement:
-sed -i 's/−/-/g' *.tsv
-```
-
-The second option avoids the `-P` switch.
-
-Neither `grep` nor `egrep` define the `[:ascii:]` character class
-without the `-P` option for _perl regular expressions_.
-
-Of course you can use [perl](https://www.perl.org/) directly, or
-anything else that has regular expressions.
-
 # Systems Biology Markup Language (SBML level 2 version 4)
 
 The program `sbtab_to_vfgen.R` also produces an `.xml` file in the _Systems Biology Markup Language_ (SBML).
@@ -162,7 +134,7 @@ This is only done, if _libsbml_ is installed with `R` bindings, like this:
 ```bash
 $ R CMD INSTALL libSBML_5.18.0.tar.gz
 ```
-If this check: `if (require(libSBML))` succeeds, then the scripts attempts to make an sbml file. SBML is a format that has units, and the units defined in SBtab are forwarded to SBML. The formats are very different with regard to unit handling and math generally. The method we use to parse human readble text units is described in [units.md](./units.md).
+If this check: `if (require(libSBML))` succeeds, then the scripts attempts to make an sbml file. SBML is a format that has units, and the units defined in SBtab are forwarded to SBML. The formats are very different with regard to unit handling and math generally. The method we use to parse human readble text units is described in [units.md](./docs/units.md).
 
 [Here](./docs/libsbml.md) is a small (incomplete) list of libsbml functions
 in R (that we used).
