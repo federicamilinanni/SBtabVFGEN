@@ -53,11 +53,11 @@ common (human readble) text units is described in [units.md](./units.md).
 
 There is an official
 [guide](http://sbml.org/Software/libSBML/libSBML_R_Example_Programs)
-on [libsbml.org](libsbml.org) that we used to write the SBML output
+on [sbml.org](http://sbml.org/Software/libSBML) that we used to write the SBML output
 part of this program. The guide contains some examples.
 But, the libSBML R bindings are not documented yet and there is some
 guesswork involved (on our side). 
 
-[Here](./docs/libsbml.md) is a small (incomplete) list of libsbml functions
+[Here](./libsbml.md) is a small (incomplete) list of libsbml functions
 in R that we use to create SBML files.
 
