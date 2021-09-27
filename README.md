@@ -10,6 +10,12 @@ Spreadsheet](https://www.documentfoundation.org/) `ods` to a
 [VFGEN](https://warrenweckesser.github.io/vfgen/) vector field file
 `vf`.
 
+This project is supported by [EBRAINS](https://ebrains.eu)
+infrastructure and the [Human Brain
+Project](https://www.humanbrainproject.eu).
+
+![EBRAINS](./EBRAINS.svg)
+
 ## Install
 
 Using `remotes`:
