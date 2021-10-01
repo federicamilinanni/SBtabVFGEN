@@ -14,7 +14,7 @@ This project is supported by [EBRAINS](https://ebrains.eu)
 infrastructure and the [Human Brain
 Project](https://www.humanbrainproject.eu).
 
-![EBRAINS](./EBRAINS-Mono-Inverted-tight-small.svg)
+[![EBRAINS](./EBRAINS-Mono-Inverted-tight-small.svg)](https://ebrains.eu)
 
 ## Install
 
@@ -25,6 +25,44 @@ remotes::install_github("a-kramer/SBtabVFGEN")
 You may have to check `.libPaths()` to verify that it includes a path
 that you have permission to write to (this is just generally the case,
 not just for this package).
+
+Currently, this will work on platforms that have
+[R](https://www.r-project.org/). But, any user who needs sbml output
+must install the libsbml package for R.
+
+## Purpose
+
+This model conversion tool can be used by scientists working in the
+field of _systems biology_ and all adjacent fields that work with
+_ordinary differential equation_ (ODE) models. 
+
+It can be helpful when collaborating with other researchers as it keeps
+the model separate from any programming language choice. The user writes the model
+in SBtab form, a simple, human readable format; afterwards this SBtab
+model can be converted to an ODE and further processed via `vfgen`.
+
+The final result is code for the ODE _right hand side_ function and
+analytical _jacobian function_ (among other things) in the chosen
+programming language.
+
+This tool prepares a model _M_ for use in numerical analysis application
+such as parameter estimation:
+
+```
+  User written:                           generated
+  +-----------+      +-----------+      +------------+      +----------+
+  |           |      |           |      |  (CVODE)   |      |          |
+  | SBtab (M) +--+-->+   VFGEN   +----->+  ODE code  +----->+   MCMC   |
+  |           |  |   |           |      | +jacobian  |      |  (e.g.)  |
+  +-----------+  |   +-----------+      +------------+      +----------+
+                 |
+            +----+--------------+
+            |                   |
+            | sbtab_to_vfgen()  |
+            |                   |
+            +-------------------+
+```
+The above sketch is an illustration of this tools location within a larger workflow (context).
 
 ## Usage Example
 
