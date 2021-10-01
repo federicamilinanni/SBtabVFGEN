@@ -14,7 +14,7 @@ This project is supported by [EBRAINS](https://ebrains.eu)
 infrastructure and the [Human Brain
 Project](https://www.humanbrainproject.eu).
 
-![EBRAINS](./EBRAINS-Mono-Inverted-tight.svg)
+![EBRAINS](./EBRAINS-Mono-Inverted-tight-small.svg)
 
 ## Install
 
