@@ -12,9 +12,7 @@ Spreadsheet](https://www.documentfoundation.org/) `ods` to a
 
 This project is supported by [EBRAINS](https://ebrains.eu)
 infrastructure and the [Human Brain
-Project](https://www.humanbrainproject.eu).
-
-[![EBRAINS](./EBRAINS-Mono-Inverted-tight-small.svg)](https://ebrains.eu)
+Project](https://www.humanbrainproject.eu), with more detail in [acknowledgements](./ACKNOWLEDGEMENTS.md).
 
 ## Install
 
