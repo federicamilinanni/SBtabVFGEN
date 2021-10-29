@@ -2,4 +2,6 @@
 
 export(sbtab_from_ods)
 export(sbtab_from_tsv)
+export(sbtab_quantity)
 export(sbtab_to_vfgen)
+export(update_from_table)

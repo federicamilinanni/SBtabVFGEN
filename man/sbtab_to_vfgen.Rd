@@ -4,17 +4,17 @@
 \alias{sbtab_to_vfgen}
 \title{SBtab content exporter}
 \usage{
-sbtab_to_vfgen(SBtabDoc, cla = TRUE)
+sbtab_to_vfgen(SBtab, cla = TRUE)
 }
 \arguments{
-\item{SBtabDoc}{a list as returned from any of the import functions
-[sbtab_from_tsv()] or [sbtab_from_ods()]}
-
 \item{cla}{a logical value that determines whether conservation law
 analysis should be performed. If this is TRUE (default) the
 resulting ODE model will be reduced to a state variable sub-set
 that is independent in the sense of linear algebraic
 relationships.}
+
+\item{SBtabDoc}{a list as returned from any of the import functions
+[sbtab_from_tsv()] or [sbtab_from_ods()]}
 }
 \value{
 the text (as a character array) that was also written to
