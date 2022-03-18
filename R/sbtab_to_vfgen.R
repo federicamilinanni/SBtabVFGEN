@@ -1110,20 +1110,22 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 .write.txt <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
 	write.table(Constant$Value,row.names=TRUE,col.names=FALSE,sep='\t',file="Constant.txt")
 	write.table(Parameter$Value,row.names=TRUE,col.names=FALSE,sep='\t',file="Parameter.txt")
-	if (!is.null)(Expression){
+	if (!is.null(Expression)){
 		write.table(Expression$Formula,row.names=TRUE,col.names=FALSE,sep='\t',file="Expression.txt")
 	}
 	##
-	if (!is.null(ConLaw) {
+	if (!is.null(ConLaw)) {
+		ConLaw <- as.data.frame(ConLaw)
 		k <- ConLaw$Eliminates
 		CName <- row.names(Compound)[k]
-		write.table(ConLaw[,c(ConLaw$ConstantName,ConLaw$Constant)],row.names=FALSE,col.names=FALSE,sep='\t',append=TRUE,file="Parameter.txt")
+		write.table(ConLaw[,c('ConstantName','Constant')],row.names=FALSE,col.names=FALSE,sep='\t',append=TRUE,file="Parameter.txt")
 		F <- sprintf("(%s - (%s))",ConLaw$ConstantName,ConLaw$Formula)
 		names(F) <- CName
 		write.table(F,row.names=TRUE,col.names=FALSE,sep='\t',append=TRUE,file="Expression.txt")
 	}
 	write.table(Compound[-k,'InitialValue'],row.names=TRUE,col.names=FALSE,sep='\t',file="InitialValue.txt")
 	write.table(Reaction[-k,'Flux'],row.names=TRUE,col.names=FALSE,sep='\t',file="Flux.txt")
+	ODE<-data.frame(rhs=ODE,row.names=row.names(Compound))
 	write.table(ODE[-k,],row.names=FALSE,col.names=FALSE,sep='\t',file="ODE")
 }
 
