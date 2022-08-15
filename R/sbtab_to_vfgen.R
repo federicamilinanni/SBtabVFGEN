@@ -1114,6 +1114,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 		write.table(Expression$Formula,row.names=TRUE,col.names=FALSE,sep='\t',file="Expression.txt")
 	}
 	##
+	N <- dim(Compound)[1]
 	if (!is.null(ConLaw)) {
 		ConLaw <- as.data.frame(ConLaw)
 		k <- ConLaw$Eliminates
@@ -1122,11 +1123,14 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 		F <- sprintf("(%s - (%s))",ConLaw$ConstantName,ConLaw$Formula)
 		names(F) <- CName
 		write.table(F,row.names=TRUE,col.names=FALSE,sep='\t',append=TRUE,file="Expression.txt")
+		i <- (-k)
+	} else {
+		i <- seq(N)
 	}
-	write.table(Compound[-k,'InitialValue'],row.names=TRUE,col.names=FALSE,sep='\t',file="InitialValue.txt")
-	write.table(Reaction[-k,'Flux'],row.names=TRUE,col.names=FALSE,sep='\t',file="Flux.txt")
+	write.table(Compound[i,'InitialValue'],row.names=TRUE,col.names=FALSE,sep='\t',file="InitialValue.txt")
+	write.table(Reaction[i,'Flux'],row.names=TRUE,col.names=FALSE,sep='\t',file="Flux.txt")
 	ODE<-data.frame(rhs=ODE,row.names=row.names(Compound))
-	write.table(ODE[-k,],row.names=FALSE,col.names=FALSE,sep='\t',file="ODE")
+	write.table(ODE[i,],row.names=FALSE,col.names=FALSE,sep='\t',file="ODE")
 }
 
 #' A parser for .ods files with SBtab document structure
