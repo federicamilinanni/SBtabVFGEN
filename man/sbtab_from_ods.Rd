@@ -10,10 +10,10 @@ sbtab_from_ods(ods.file)
 \item{ods.file}{a string (file's name)}
 }
 \value{
-L
-a list with two elements:
-L[['Document']] is the document name
-L[['Table']] is a list with one entry per SBtab sheet
+SBtab
+a list of tables (data.frames), one per ods sheet
+SBtab[['TableName']] retrives a data.frame
+comment(SBtab) is the name of the document
 }
 \description{
 This uses the readODS package to read the file.

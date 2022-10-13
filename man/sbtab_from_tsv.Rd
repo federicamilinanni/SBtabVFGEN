@@ -10,10 +10,10 @@ sbtab_from_tsv(tsv.file)
 \item{tsv.file}{a character vector (file names, one per sheet)}
 }
 \value{
-L
-a list with two elements:
-L[['Document']] is the document name
-L[['Table']] is a list with one entry per SBtab sheet
+SBtab
+a list of tables, one per file in tsv.file list
+SBtab[['Reaction']] retrieves the table of reactions, a data.frame
+comment(SBtab) retrieves the SBtab document name
 }
 \description{
 This function reads the files (not using any package).
