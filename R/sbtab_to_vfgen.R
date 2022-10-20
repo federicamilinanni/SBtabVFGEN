@@ -1110,6 +1110,7 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 .write.txt <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
 	write.table(Constant$Value,row.names=row.names(Constant),col.names=FALSE,sep='\t',file="Constants.txt",quote=FALSE)
 	write.table(Parameter$Value,row.names=row.names(Parameter),col.names=FALSE,sep='\t',file="Parameters.txt",quote=FALSE)
+	write.table(Input$DefaultValue,row.names=row.names(Input),col.names=FALSE,sep='\t',append=TRUE,file="Parameters.txt",quote=FALSE)
 	if (!is.null(Expression)){
 		write.table(Expression$Formula,row.names=row.names(Expression),col.names=FALSE,sep='\t',file="Expressions.txt",quote=FALSE)
 	}
