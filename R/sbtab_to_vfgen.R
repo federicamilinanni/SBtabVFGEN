@@ -1108,11 +1108,18 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 }
 
 .write.txt <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
-	write.table(Constant$Value,row.names=row.names(Constant),col.names=FALSE,sep='\t',file="Constants.txt",quote=FALSE)
+	files<-c("StateVariables.txt","Parameters.txt","ODE.txt")
+	if (!is.null(Constant)) {
+		write.table(Constant$Value,row.names=row.names(Constant),col.names=FALSE,sep='\t',file="Constants.txt",quote=FALSE)
+		files<-c(files,"Constants.txt")
+	}
 	write.table(Parameter$Value,row.names=row.names(Parameter),col.names=FALSE,sep='\t',file="Parameters.txt",quote=FALSE)
-	write.table(Input$DefaultValue,row.names=row.names(Input),col.names=FALSE,sep='\t',append=TRUE,file="Parameters.txt",quote=FALSE)
+	if (!is.null(Input)){
+		write.table(Input$DefaultValue,row.names=row.names(Input),col.names=FALSE,sep='\t',append=TRUE,file="Parameters.txt",quote=FALSE)
+	}
 	if (!is.null(Expression)){
 		write.table(Expression$Formula,row.names=row.names(Expression),col.names=FALSE,sep='\t',file="Expressions.txt",quote=FALSE)
+		files<-c(files,"Expressions.txt")
 	}
 	##
 	N <- dim(Compound)[1]
@@ -1124,15 +1131,23 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 		F <- sprintf("(%s - (%s))",ConLaw$ConstantName,ConLaw$Formula)
 		names(F) <- CName
 		write.table(F,row.names=TRUE,col.names=FALSE,sep='\t',append=TRUE,file="Expressions.txt",quote=FALSE)
+		if (!("Expressions.txt" %in% files)){
+			files<-c(files,"Expressions.txt")
+		}
 		i <- (-k)
 	} else {
 		i <- seq(N)
 	}
 	write.table(Compound[i,c('InitialValue','Unit')],row.names=row.names(Compound),col.names=FALSE,sep='\t',file="StateVariables.txt",quote=FALSE)
 	write.table(Reaction[i,'Flux'],row.names=row.names(Reaction),col.names=FALSE,sep='\t',append=TRUE,file="Expressions.txt",quote=FALSE)
-	write.table(Output[,'Formula'],row.names=FALSE,col.names=FALSE,sep='\t',file="OutputFunctions.txt",quote=FALSE)
+	if (!is.null(Output)) {
+		write.table(Output[,'Formula'],row.names=FALSE,col.names=FALSE,sep='\t',file="OutputFunctions.txt",quote=FALSE)
+		files<-c(files,"OutputFunctions.txt")
+	}
 	ODE<-data.frame(rhs=ODE,row.names=row.names(Compound))
 	write.table(ODE[i,],row.names=FALSE,col.names=FALSE,sep='\t',file="ODE.txt",quote=FALSE)
+	tar(paste0(H,".tar.gz"),files=files,compression="gzip")
+	zip(paste0(H,".zip"),files=files)
 }
 
 #' A parser for .ods files with SBtab document structure
