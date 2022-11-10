@@ -1138,8 +1138,10 @@ OneOrMoreLines <- function(Prefix,Table,Suffix){
 	} else {
 		i <- seq(N)
 	}
-	write.table(Compound[i,c('InitialValue','Unit')],row.names=row.names(Compound),col.names=FALSE,sep='\t',file="StateVariables.txt",quote=FALSE)
-	write.table(Reaction[i,'Flux'],row.names=row.names(Reaction),col.names=FALSE,sep='\t',append=TRUE,file="Expressions.txt",quote=FALSE)
+	CNames<-row.names(Compound)
+	RNames<-row.names(Reaction)
+	write.table(Compound[i,c('InitialValue','Unit')],row.names=CNames[i],col.names=FALSE,sep='\t',file="StateVariables.txt",quote=FALSE)
+	write.table(Reaction[i,'Flux'],row.names=RNames[i],col.names=FALSE,sep='\t',append=TRUE,file="Expressions.txt",quote=FALSE)
 	if (!is.null(Output)) {
 		write.table(Output[,'Formula'],row.names=row.names(Output),col.names=FALSE,sep='\t',file="OutputFunctions.txt",quote=FALSE)
 		files<-c(files,"OutputFunctions.txt")
