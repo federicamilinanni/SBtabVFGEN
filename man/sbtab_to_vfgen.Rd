@@ -16,10 +16,6 @@ resulting ODE model will be reduced to a state variable sub-set
 that is independent in the sense of linear algebraic
 relationships.}
 }
-\value{
-the text (as a character array) that was also written to
-    the .vf file
-}
 \description{
 This function interprets the SBtab content and exports it to three
 possible formats: (1) vfgen's `vf` format (xml); (2) NEURON's mod
