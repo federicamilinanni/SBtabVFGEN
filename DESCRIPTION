@@ -10,7 +10,7 @@ Authors@R:
 Description: Converts models in the SBtab format to vfgen's vf format,
     sbml, and NEURON's mod format.
 License: GPL (>= 3)
-Depends:
+Imports:
     pracma
 Encoding: UTF-8
 LazyData: true
