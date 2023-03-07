@@ -666,8 +666,6 @@ sbtab_from_tsv <- function(tsv.file){
 #'     resulting ODE model will be reduced to a state variable sub-set
 #'     that is independent in the sense of linear algebraic
 #'     relationships.
-#' @return the text (as a character array) that was also written to
-#'     the .vf file
 #' @export
 sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 	options(stringsAsFactors = FALSE)
@@ -798,5 +796,4 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 	cat(unlist(Mod),sep="\n",file=fname)
 	message(sprintf("The mod content was written to: %s\n",fname))
 ##
-	return(vfgen)
 }
