@@ -2,27 +2,52 @@
 % Please edit documentation in R/sbtab_utilities.R
 \name{update_from_table}
 \alias{update_from_table}
-\title{copy vector n times and change the columns according to (n×m) Table}
+\title{Update a named vector with values from a table}
 \usage{
 update_from_table(v, Table)
 }
 \arguments{
-\item{v}{a vector with named elements}
+\item{v}{the vector to update}
 
-\item{Table}{an sbtab table with columns that reference members of
-v via the ">" prefix (e.g. the column ">ATP" will change the
-v['ATP'] value)}
+\item{Table}{a table with column names partially matching those in
+v}
 }
 \value{
-M, a matrix with n columns, where n is the number of rows
-    in Table.
+a matrix with various versions of v (columns) one per
+    setting described in data.frame Table. The names can have a ">"
+    prefix in the names (see SBtab rules)
 }
 \description{
-Update a vector v to a matrix M with several copies of that vector
+This function can be used in the circumstance that you already have
+a default vector and want to update some of its entries from a
+data.frame with more specific values. The table describes the
+circumstamces of these more specific values and has columns named
+like the vector elements. The function returns a matrix with one
+column per scenario, updated using the table. This is used while
+parsing SBtab tables.
+}
+\details{
+The returned value M has several copies of vector v
 with some values changed accoring to a table (Qantity Matrix) If
 the table has columns that name members of v (also named) they will
 be used. The M will have as many columns as the table has rows.
 }
-\keyword{matrix}
-\keyword{quantity}
-\keyword{sbtab}
+\examples{
+> v<-c(1,2,3)
+> names(v)<-c('a','b','c')
+
+> data<-data.frame(row.names=c('low','med','high'),
+                 b=c(0.5,2.5,5.5),
+                 comment=c('b < 1','close to default','b > 2×default'))
+
+       b          comment
+low  0.5            b < 1
+med  2.5 close to default
+high 5.5    b > 2×default
+
+> update_from_table(v,data)
+  low med high
+a   1   1    1
+b   2   2    2
+c   3   3    3
+}
