@@ -36,6 +36,8 @@ unit.kind <- function(kind){
 		k <- "second"
 	} else if (grepl("^(K|kelvin)$",kind)){
 		k <- "kelvin"
+	} else if (grepl("^(N|[Nn]ewton)$",kind)){
+		k <- "newton"
 	} else if (grepl("^(h|hour)$",kind)){
 		k <- "hour"
 	} else if (grepl("^(M|molarity)$",kind)){
@@ -127,6 +129,51 @@ unit.id <- function(unit.str,prnt=FALSE){
 	return(uid)
 }
 
+#' Simple unit from string
+#'
+#' This function takes a simple, human readable unit (without '*' or '/'), from a string
+#' and returns a data.frame with the unit's meaning.
+#'
+#' In this context, a simple unit is just a prefix, a unit kind, and an exponent, e.g. cm^2
+#' A not-simple unit is: m/s, kg*m/s^2, kg*h
+#' @param u a unit with no fractions or products
+#' @return a data.frame with the unit's properties
+simple.unit <- function(u){
+	prefix.pattern <- "(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\xCE\xBC|\xc2\xb5|micro|n|nano|p|pico|f|femto)?"
+	unit.name.pattern <- "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity|N|[Nn]ewton)"
+	exponent.pattern <- "\\^?([-+]?[0-9]+)?"
+	pat <- paste0("^",prefix.pattern,unit.name.pattern,exponent.pattern,"$")
+	## defaults
+	u.m <- 1
+	u.x <- 1
+	u.s <- 0
+	u.k <- "dimensionless"
+	## um, actually, kg is an SI unit "kind", but doesn't take other prefixes
+	if (grepl("^kg$",u)){
+		u.k <- "kilogram"
+		u.s <- 0
+		u.x <- 1
+	} else {
+		m <- unlist(u %~% pat)
+		if (length(m) > 0){
+			u.s <- unit.scale(m[2])
+			u.k <- unit.kind(m[3])
+			if (nchar(m[4])>0) u.x <- as.numeric(m[4])
+		}
+	}
+	## some special units that need fixing
+	if (u.k == "hour") {
+		u.k  <- unit.kind("s")
+		u.m <- 60
+	} else if (u.k == "molarity") {
+		u.k <- c(unit.kind("mole"),unit.kind("litre"))
+		u.m <- c(u.m,1)
+		u.x <- rep(u.x,2)
+		u.s <- c(u.s,1)
+	}
+	return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
+}
+
 #' Unit Interpreter
 #'
 #' This function will try its best to interpret strings like
@@ -169,15 +216,7 @@ unit.id <- function(unit.str,prnt=FALSE){
 #' 1    -6          1        1 molarity
 unit.from.string <- function(unit.str,verbose=FALSE){
 	stopifnot(length(unit.str)==1)
-	.kind <- NULL
-	.multiplier <- NULL
-	.scale <- NULL
-	.exponent <- NULL
-	prefix.pattern <- "(G|giga|M|mega|k|kilo|h|hecto|c|centi|m|milli|u|\xCE\xBC|\xc2\xb5|micro|n|nano|p|pico|f|femto)?"
-	unit.name.pattern <- "(l|L|liter|litre|g|gram|mole?|h|hour|s|second|m|meter|metre|K|kelvin|cd|candela|A|ampere|M|molarity)"
-	exponent.pattern <- "\\^?([-+]?[0-9]+)?"
-	pat <- paste0("^",prefix.pattern,unit.name.pattern,exponent.pattern,"$")
-
+	unit <- NULL
 	if (verbose) message(sprintf("unit: %11s",unit.str))
 	a <- gsub("[()]","",unit.str)
 	a <- gsub("molarity","mol l^-1",a);
@@ -187,49 +226,28 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 	}
 	n <- length(a)
 	stopifnot(n==1 || n==2)
-
 	for (j in 1:n){
 		b <- ftsplit(a[j],"[* ]",re=TRUE)
 		for (u in b){
-			.u.m <- 1.0
-			if (grepl("^kg$",u)){
-				.u.k <- "kilogram"
-				.u.s <- 0
-				.u.x <- 1
-			} else {
-			m <- unlist(u %~% pat)
-			if (verbose) {print(pat); print(m)}
-			if (u == "1"){
-				.u.s <- 0
-				.u.k <- "dimensionless"
-				.u.x <- 1
-			} else if (length(m) > 0){
-				if(verbose) print(m)
-				.u.s <- unit.scale(m[2])
-				.u.k <- unit.kind(m[3])
-				if (nchar(m[4])>0){
-					.u.x <- switch(j,as.numeric(m[4]),-as.numeric(m[4]))
-				} else {
-					.u.x <- switch(j,1,-1)
-				}
-			} else {
-				warning(sprintf("unit «%s» didn't match any pre-defined unit, because of «%s». (According to the limited [dumb] rules defined in this R script)",unit.str,u))
-				.u.s <- 0
-				.u.k <- "dimensionless"
-				.u.x <- 1
-			}
-			if (.u.k == "hour") {
-				.u.k  <- unit.kind("s")
-				.u.m <- 60
-			}
-			}
-			.scale <- c(.scale,.u.s)
-			.kind <- c(.kind,.u.k)
-			.exponent <- c(.exponent,.u.x)
-			.multiplier <- c(.multiplier,.u.m)
-			if (verbose) message(sprintf("«%s» has been interpreted as: (%g × %s×10^(%i))^(%i)",u,.u.m,.u.k,.u.s,.u.x))
+			su <- simple.unit(u)
+			if (j>1) su$exponent <- -su$exponent
+			unit <- rbind(unit,su)
 		}
 	}
-	unit <- data.frame(scale=.scale,multiplier=.multiplier,exponent=.exponent,kind=.kind)
 	return(unit)
 }
+
+#' Prints an interpretation string of a unit
+#'
+#' given a string describing a unit of measurement, this function
+#' prints the interpretation on screen, rather than returning it as a
+#' data.frame
+#'
+#' @param unit.str unit string
+#' @param unit optionally, the data.frame that describes the unit
+#' @export
+unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
+	printf("«%s» has been interpreted as: \n",unit.str)
+	printf("\t(%g × %s×10^(%i))^(%i)\n",unit$multiplier,unit$kind,unit$scale,unit$exponent)
+}
+
