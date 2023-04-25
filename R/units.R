@@ -214,15 +214,13 @@ simple.unit <- function(u){
 #' > unit.from.string("µM")
 #'   scale multiplier exponent     kind
 #' 1    -6          1        1 molarity
-unit.from.string <- function(unit.str,verbose=FALSE){
+unit.from.string <- function(unit.str){
 	stopifnot(length(unit.str)==1)
 	unit <- NULL
-	if (verbose) message(sprintf("unit: %11s",unit.str))
 	a <- gsub("[()]","",unit.str)
 	a <- gsub("molarity","mol l^-1",a);
 	if (grepl("/",unit.str)){
 		a <- ftsplit(a,"/")
-		if (verbose) message(sprintf("«%s» is interpreted as:\n\tNumerator «%s»\n\tDenominator: «%s»\n",unit.str,a[1],a[2]))
 	}
 	n <- length(a)
 	stopifnot(n==1 || n==2)
@@ -234,6 +232,7 @@ unit.from.string <- function(unit.str,verbose=FALSE){
 			unit <- rbind(unit,su)
 		}
 	}
+	comment(unit) <- unit.id(unit.str)
 	return(unit)
 }
 
