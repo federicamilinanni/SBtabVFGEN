@@ -4,16 +4,16 @@
 \alias{sbtab_from_tsv}
 \title{A parser for a bunch of .tsv files with SBtab document content}
 \usage{
-sbtab_from_tsv(tsv.file)
+sbtab_from_tsv(tsv.file = dir(pattern = "[.]tsv$"))
 }
 \arguments{
-\item{tsv.file}{a character vector (file names, one per sheet)}
+\item{tsv.file}{a character vector (file names, one per sheet),
+defaults to all tsv files in the current directory.}
 }
 \value{
-SBtab
-a list of tables, one per file in tsv.file list
-SBtab[['Reaction']] retrieves the table of reactions, a data.frame
-comment(SBtab) retrieves the SBtab document name
+SBtab a list of tables, one per file in tsv.file list
+    SBtab[['Reaction']] retrieves the table of reactions, a
+    data.frame comment(SBtab) retrieves the SBtab document name
 }
 \description{
 This function reads the files (not using any package).

@@ -38,17 +38,17 @@ denominator, so: l/mol s is the same as (l)/(mol s) Remark: not all
 units are understood.
 }
 \examples{
-> .interpret.unit.from.string("m/s")
+> unit.from.string("m/s")
   scale multiplier exponent   kind
 1     0          1        1  metre
 2     0          1       -1 second
 
-> .interpret.unit.from.string("micromolarity")
+> unit.from.string("micromolarity")
   scale multiplier exponent  kind
 1    -6          1        1  mole
 2     0          1       -1 litre
 
-> .interpret.unit.from.string("µM")
+> unit.from.string("µM")
   scale multiplier exponent     kind
 1    -6          1        1 molarity
 }

@@ -1,40 +1,3 @@
-make.cnames <- function(Labels){
-	## this makes names that work in C, where dots have special meanings.
-	Unique.Names <- gsub("[.]","_",make.names(trimws(Labels), unique = TRUE, allow_ = TRUE),useBytes=TRUE)
-	return(Unique.Names)
-}
-
-.GetTableName <- function(sbtab){
-	## the table title has to be in either one of the columns of row 1
-	N <- names(sbtab)
-	lN <- length(N)
-	pattern <- "TableName='([^']+)'"
-	m <- regexec(pattern, sbtab[1,], useBytes=TRUE)
-	match <- regmatches(sbtab[1,],m)
-	table.name <- ""
-	for (i in c(1:lN)){
-		if (length(match[[i]])>1){
-			table.name <- match[[i]][2] # so the first experssion in parentheses
-		}
-	}
-	return(table.name)
-}
-
-.GetDocumentName <- function(sbtab){
-	N <- names(sbtab)
-	lN <- length(N)
-	pattern <- "Document='([^']+)'"
-	m <- regexec(pattern, sbtab[1,], useBytes=TRUE)
-	match <- regmatches(sbtab[1,],m)
-	document.name <- "Model"
-	for (i in c(1:lN)){
-		if (length(match[[i]])>1){
-			document.name <- make.cnames(match[[i]][2]) # so the first experssion in parentheses
-		}
-	}
-	return(document.name)
-}
-
 .GetConservationLaws <- function(N){
 	if (requireNamespace("pracma",quietly=TRUE)){
 		M <- pracma::null(t(N))
@@ -162,7 +125,6 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 	LC[l10] <- as.logical(as.numeric(Column[l10]))
 	return(LC)
 }
-
 
 .GetReactions <- function(SBtab){
 	ID <- SBtab[["Reaction"]][["!ID"]]
@@ -601,18 +563,17 @@ sbtab_from_ods <- function(ods.file){
 	M <- readODS::read.ods(ods.file)
 	lM <- length(M)
 	SBtab <- list(length=lM)
-	document.name <- .GetDocumentName(M[[1]])
+	header <- paste0(M[[1]][1,],collapse='')
+	document.name <- sbtab.header.value(header,'Document')
 	table.name <- vector(length=lM)
 	for (i in 1:lM){
-		table.name[i] <- .GetTableName(M[[i]])
-		## table.title <- .GetTableTitle(M[[i]])
+		header <- paste0(M[[i]][1,],collapse='')
+		table.name[i] <- sbtab.header.value(header,'TableName')
 		SBtab[[i]] <- M[[i]][-c(1,2),]
 		names(SBtab[[i]]) <- M[[i]][2,]
 	}
-	##
 	names(SBtab) <- table.name
-		##print(names(SBtab))
-	message(table.name)
+	cat("Tables found: ",paste(table.name,collapse=', '),"\n")
 	comment(SBtab) <- document.name
 	return(SBtab)
 }
@@ -624,29 +585,23 @@ sbtab_from_ods <- function(ods.file){
 #' model property: Reaction, Compound, Parameter, etc.
 #'
 #' The SBtab content is not interpreted in any way.
-#' @param tsv.file a character vector (file names, one per sheet)
-#' @return SBtab
-#' a list of tables, one per file in tsv.file list
-#' SBtab[['Reaction']] retrieves the table of reactions, a data.frame
-#' comment(SBtab) retrieves the SBtab document name
-#'
+#' @param tsv.file a character vector (file names, one per sheet),
+#'     defaults to all tsv files in the current directory.
+#' @return SBtab a list of tables, one per file in tsv.file list
+#'     SBtab[['Reaction']] retrieves the table of reactions, a
+#'     data.frame comment(SBtab) retrieves the SBtab document name
 #' @keywords import
 #' @examples
 #' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
 #' @export
-sbtab_from_tsv <- function(tsv.file){
-	SBtab=list();
-	header <- readLines(tsv.file[1],n=1);
-	mD <- regexec("Document='([^']+)'", header)
-	match <- regmatches(header,mD)
-	document.name <- make.cnames(match[[1]][2])
-	message(sprintf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name))
-	##
+sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$')){
+	SBtab <- list()
+	header <- readLines(tsv.file[1],n=1)
+	document.name <- sbtab.header.value(header,"Document")
+	printf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name)
 	for (f in tsv.file){
-		header <- readLines(f,n=1);
-		mTN <- regexec("TableName='([^']+)'", header)
-		match <- regmatches(header,mTN)
-		TableName <- match[[1]][2]
+		header <- readLines(f,n=1)
+		TableName <- sbtab.header.value(header,'TableName')
 		SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
 	}
 	comment(SBtab) <- document.name

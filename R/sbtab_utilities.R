@@ -1,3 +1,21 @@
+#' Make C compatible names
+#'
+#' Uses make.names internally, but replaces dots with underscores.
+#'
+#' @param Labels a character vector with words that need to be turned
+#'     into names.
+#' @return a vector with unique names, can be used as variable names
+#'     in C
+make.cnames <- function(Labels){
+	Names <- gsub("'([^']*)'","lsquo\\1rsquo",trimws(Labels))
+	Names <- gsub('"([^"]*)"',"ldquo\\1rdquo",Names)
+	Names <- gsub("&","and",Names,fixed=TRUE)
+	Names <- gsub("|","or",Names,fixed=TRUE)
+	Names <- gsub("'","prime",Names)
+	Unique.Names <- gsub("[.]","_",make.names(Names, unique = TRUE, allow_ = TRUE))
+	return(Unique.Names)
+}
+
 #' Fixed-token-split a scalar string into parts
 #'
 #' This function splits a string like strsplit, but it removes
@@ -97,4 +115,33 @@ sbtab_quantity <- function(Table){
     n <- unlist(Table['!ID'])
     names(v) <- n
     return(v)
+}
+
+#' Read a property from the SBtab header
+#'
+#' This function retrieves a property from an sbtab header:
+#' PropertyName='PropertyValue' (properties are these key=value
+#' pairs).
+#'
+#' @param sbtab.header the first line of an SBtab file
+#' @param key the left side of each key=value pair
+#' @return value of the key=value pair
+sbtab.header.value <- function(sbtab.header,key='Document'){
+	## the table title has to be in either one of the columns of row 1
+	m <- unlist(sbtab.header %~% sprintf("%s='([^']+)'",key))
+	if (length(m)>0){
+		property <- m[2] # so the first experssion in parentheses
+	} else {
+		stop(sprintf("property «%s» not set in SBtab header: «%s».",key,header))
+	}
+	return(property)
+}
+
+#' printf prints
+#'
+#' a wrapper around sprintf but it actually outputs on screen.
+#' @param ... arguments to sprintf
+#' @return nothing
+printf <- function(...){
+ cat(sprintf(...))
 }
