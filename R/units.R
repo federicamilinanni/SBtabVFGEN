@@ -245,6 +245,11 @@ unit.from.string <- function(unit.str){
 #' @param unit.str unit string
 #' @param unit optionally, the data.frame that describes the unit
 #' @export
+#' @examples
+#' > unit.info("km/h",unit.from.string("km/h"))
+#' «km/h» has been interpreted as:
+#'	(1 × metre×10^(3))^(1)
+#'	(60 × second×10^(0))^(-1)
 unit.info <- function(unit.str,unit=unit.from.string(unit.str)){
 	printf("«%s» has been interpreted as: \n",unit.str)
 	printf("\t(%g × %s×10^(%i))^(%i)\n",unit$multiplier,unit$kind,unit$scale,unit$exponent)

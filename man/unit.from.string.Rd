@@ -4,7 +4,7 @@
 \alias{unit.from.string}
 \title{Unit Interpreter}
 \usage{
-unit.from.string(unit.str, verbose = FALSE)
+unit.from.string(unit.str)
 }
 \arguments{
 \item{unit.str}{a string that contains a human readable unit}

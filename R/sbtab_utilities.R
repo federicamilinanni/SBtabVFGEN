@@ -143,5 +143,5 @@ sbtab.header.value <- function(sbtab.header,key='Document'){
 #' @param ... arguments to sprintf
 #' @return nothing
 printf <- function(...){
- cat(sprintf(...))
+ cat(sprintf(...),sep='')
 }
