@@ -4,6 +4,7 @@
 #'
 #' @param Labels a character vector with words that need to be turned
 #'     into names.
+#' @export
 #' @return a vector with unique names, can be used as variable names
 #'     in C
 make.cnames <- function(Labels){
@@ -26,6 +27,7 @@ make.cnames <- function(Labels){
 #' @param s a split token
 #' @param re defaults to FALSE, if TRUE s is treated as a regular expression
 #' @return a character vector of the components without leading or trailing whitespace
+#' @export
 #' @examples ftsplit(" A + 2*B ","+")
 #' [1] "A"   "2*B"
 #' @examples x<-c('a+b','c+d','1 + 2'); lapply(x,ftsplit,'+')

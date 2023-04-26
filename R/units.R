@@ -12,7 +12,6 @@
 #' @return normalized category name of the unit kind: litre, mole,
 #'     metre, kilogram, gram, ampere, candela, second, kelvin, hour,
 #'     molarity, dimensionless. defaults to dimensionless.
-#' @export
 #' @examples
 #' >  unit.kind("meter")
 #' [1] "metre"
@@ -55,7 +54,6 @@ unit.kind <- function(kind){
 #'
 #' @param prefix a string, e.g.: "M", "mega", "m", "milli", "µ", "micro", etc.
 #' @return an integer that corresponds to the prefix, defaults to 0.
-#' @export
 #' @examples
 #' > unit.scale("M")
 #' [1] 6
@@ -232,7 +230,8 @@ unit.from.string <- function(unit.str){
 			unit <- rbind(unit,su)
 		}
 	}
-	comment(unit) <- unit.id(unit.str)
+	comment(unit) <- unit.str
+	attr(unit,'id') <- unit.id(unit.str)
 	return(unit)
 }
 
