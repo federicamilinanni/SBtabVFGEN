@@ -166,7 +166,7 @@ simple.unit <- function(u){
 	} else if (u.k == "molarity") {
 		u.k <- c(unit.kind("mole"),unit.kind("litre"))
 		u.m <- c(u.m,1)
-		u.x <- rep(u.x,2)
+		u.x <- c(u.x,-u.x)
 		u.s <- c(u.s,1)
 	}
 	return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
