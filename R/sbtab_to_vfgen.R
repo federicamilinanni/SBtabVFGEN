@@ -646,8 +646,9 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 		## definitely without conservation laws
 		SBML <- .make.sbml(document.name,Defaults,Constant,Parameter,Input,Expression,Reaction,Compound,Output,Comp)
 		file.xml <- sprintf("%s.xml",document.name)
-		writeSBML(SBML,file.xml);
+		libSBML::writeSBML(SBML,file.xml);
 		stopifnot(file.exists(file.xml))
+		## fix sbml's problem with the time variable
 		sbml.text <- readLines(file.xml)
 		sbml.text <- gsub('<ci>\\s*t(ime)?\\s*</ci>','<csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>',sbml.text)
 		cat(sbml.text,sep="\n",file=file.xml)
