@@ -19,11 +19,11 @@ permissions:
 
 jobs:
   build:
-    runs-on: [ ubuntu-latest, macos-latest ]
-    strategy:
+    strategy: 
       matrix:
+        os: [ ubuntu-latest, macos-latest ]
         r-version: ['3.6.3', '4.1.1']
-
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up R ${{ matrix.r-version }}
