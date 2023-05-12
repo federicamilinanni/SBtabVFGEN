@@ -252,8 +252,8 @@ all.refs.valid <- function(tab,allvars=all.vars(tab,reac=FALSE)){
 		refs <- cNames[l] %s% "[~>]"
 		valid.refs <- refs %in% allvars
 		if (!all(valid.refs)){
-			printf("Table %s contains invalid references:\n",attr(T,"TableName"))
-			printf("%30s\n",refs[!valid.refs])
+			message(sprintf("Table %s contains invalid references:\n",attr(T,"TableName")))
+			message(sprintf("%30s\n",refs[!valid.refs]))
 			r <- FALSE
 			warning("Not all refs are valid.")
 		}
@@ -274,9 +274,9 @@ id.eq.name <- function(T){
 	Name <- T[["!Name"]]
 	l <- ID == Name
 	if (any(!l)){
-		cat("these IDs and Names are different:\n")
-		printf("%30s    %s\n","ID","Name")
-		printf("%30s != %s\n",ID[!l],Name[!l])
+		message("these IDs and Names are different:")
+		message(sprintf("%30s    %s\n","ID","Name"))
+		message(sprintf("%30s != %s\n",ID[!l],Name[!l]))
 	}
 	return(l)
 }
@@ -294,8 +294,8 @@ sbtab.valid <- function(tab){
 	av <- all.vars(tab)
 	l <- vars %in% av
 	if (any(!l)) {
-		cat("These variables appear in the reaction table, but are not defined in the rest of the document\n")
-		print(vars[!l])
+		warning("These variables appear in the reaction table, but are not defined in the rest of the document")
+		message(sprintf("%30s\n",vars[!l]))
 	}
 	## point out where ID and Name are different, maybe that is a problem
 	for (T in tab){
@@ -305,7 +305,7 @@ sbtab.valid <- function(tab){
 		}
 	}
 	if (all.refs.valid(tab)){
-		cat("All internal references are valid (~REF and >REF)\n")
+		message("All internal references are valid (~REF and >REF)\n")
 	}
 }
 
