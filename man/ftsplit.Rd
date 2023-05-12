@@ -33,5 +33,5 @@ x<-c('a+b','c+d','1 + 2'); lapply(x,ftsplit,'+')
 [1] "1" "2"
 this also works, but mixes up the components:
 x<-c('a+b','c+d+1','1 / 2'); ftsplit(x,'+')
-[1] "a"     "b"     "c"     "d"     "1"     "1 / 2"
+[1] "a"	 "b"	 "c"	 "d"	 "1"	 "1 / 2"
 }

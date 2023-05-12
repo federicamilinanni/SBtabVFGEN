@@ -287,7 +287,7 @@ id.eq.name <- function(T){
 #' It finds misspelled varibale names in the reaction kinetics.
 #'
 #' @param tab a list of lists as returned by `sbtab_from_tsv()`
-sbtab.mistakes <- function(tab){
+sbtab.valid <- function(tab){
 	stopifnot("Reaction" %in% names(tab))
 	vars <- ftsplit(gsub("[-()+*/]+"," ",tab$Reaction[["!KineticLaw"]]),"[ ]+",re=TRUE)
 	av <- all.vars(tab)
