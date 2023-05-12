@@ -6,6 +6,9 @@
 \usage{
 sbtab.data(tab)
 }
+\arguments{
+\item{tab}{a list of data.frames with SBtab content}
+}
 \description{
 This function reads all datasets from SBtab Documents that are
 referenced in the Experiment table and returns them as a list of

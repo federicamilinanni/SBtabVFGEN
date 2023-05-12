@@ -287,6 +287,7 @@ id.eq.name <- function(T){
 #' It finds misspelled varibale names in the reaction kinetics.
 #'
 #' @param tab a list of lists as returned by `sbtab_from_tsv()`
+#' @export
 sbtab.valid <- function(tab){
 	stopifnot("Reaction" %in% names(tab))
 	vars <- ftsplit(gsub("[-()+*/]+"," ",tab$Reaction[["!KineticLaw"]]),"[ ]+",re=TRUE)
@@ -316,6 +317,8 @@ sbtab.valid <- function(tab){
 #'
 #' The returned list always describes simulation experiments:
 #' time series experiments, possibly with scheduled events.
+#' @param tab a list of data.frames with SBtab content
+#' @export
 sbtab.data <- function(tab){
 	l <- grepl("([tT]able([oO]f)?)?[eE]xperiments?|[mM]easurements?|[sS]imulations?",names(tab))
 	if (any(l) && sum(l)==1) {
