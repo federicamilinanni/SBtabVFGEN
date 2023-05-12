@@ -148,6 +148,7 @@ sbtab.header.value <- function(sbtab.header,key='Document'){
 #'
 #' The SBtab content is not interpreted in any way.
 #' @param ods.file a string (file's name)
+#' @param verbose if FALSE, nothing is printed on screen (with cat)
 #' @return SBtab
 #' a list of tables (data.frames), one per ods sheet
 #' SBtab[['TableName']] retrives a data.frame
@@ -157,7 +158,7 @@ sbtab.header.value <- function(sbtab.header,key='Document'){
 #' @examples
 #' model.sbtab<-sbtab_from_ods('model.ods')
 #' @export
-sbtab_from_ods <- function(ods.file){
+sbtab_from_ods <- function(ods.file,verbose=TRUE){
 	M <- readODS::read.ods(ods.file)
 	lM <- length(M)
 	SBtab <- list(length=lM)
@@ -171,7 +172,7 @@ sbtab_from_ods <- function(ods.file){
 		names(SBtab[[i]]) <- M[[i]][2,]
 	}
 	names(SBtab) <- table.name
-	cat("Tables found: ",paste(table.name,collapse=', '),"\n")
+	if (verbose) cat("Tables found: ",paste(table.name,collapse=', '),"\n")
 	comment(SBtab) <- document.name
 	return(SBtab)
 }
@@ -185,6 +186,7 @@ sbtab_from_ods <- function(ods.file){
 #' The SBtab content is not interpreted in any way.
 #' @param tsv.file a character vector (file names, one per sheet),
 #'	 defaults to all tsv files in the current directory.
+#' @param verbose if FALSE, nothing is printed with cat()
 #' @return SBtab a list of tables, one per file in tsv.file list
 #'	 SBtab[['Reaction']] retrieves the table of reactions, a
 #'	 data.frame comment(SBtab) retrieves the SBtab document name
@@ -192,11 +194,11 @@ sbtab_from_ods <- function(ods.file){
 #' @examples
 #' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
 #' @export
-sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$')){
+sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$'),verbose=TRUE){
 	SBtab <- list()
 	header <- readLines(tsv.file[1],n=1)
 	document.name <- sbtab.header.value(header,"Document")
-	printf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name)
+	if (verbose) printf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name)
 	for (f in tsv.file){
 		header <- readLines(f,n=1)
 		TableName <- sbtab.header.value(header,'TableName')

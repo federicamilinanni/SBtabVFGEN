@@ -4,10 +4,12 @@
 \alias{sbtab_from_ods}
 \title{A parser for .ods files with SBtab document structure}
 \usage{
-sbtab_from_ods(ods.file)
+sbtab_from_ods(ods.file, verbose = TRUE)
 }
 \arguments{
 \item{ods.file}{a string (file's name)}
+
+\item{verbose}{if FALSE, nothing is printed on screen (with cat)}
 }
 \value{
 SBtab

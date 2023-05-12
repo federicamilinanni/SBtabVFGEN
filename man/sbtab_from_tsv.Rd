@@ -4,11 +4,13 @@
 \alias{sbtab_from_tsv}
 \title{A parser for a bunch of .tsv files with SBtab document content}
 \usage{
-sbtab_from_tsv(tsv.file = dir(pattern = "[.]tsv$"))
+sbtab_from_tsv(tsv.file = dir(pattern = "[.]tsv$"), verbose = TRUE)
 }
 \arguments{
 \item{tsv.file}{a character vector (file names, one per sheet),
 defaults to all tsv files in the current directory.}
+
+\item{verbose}{if FALSE, nothing is printed with cat()}
 }
 \value{
 SBtab a list of tables, one per file in tsv.file list
