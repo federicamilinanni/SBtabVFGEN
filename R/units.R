@@ -42,7 +42,7 @@ unit.kind <- function(kind){
 	} else if (grepl("^(M|molarity)$",kind)){
 		k <- "molarity"
 	} else {
-		k <- "dimensionless"
+		stop(sprintf("The unit kind «%s» is not known, yet."))
 	}
 	return(k)
 }
@@ -146,6 +146,8 @@ simple.unit <- function(u){
 	u.x <- 1
 	u.s <- 0
 	u.k <- "dimensionless"
+	## an empty unit means that the value is dimensionless (the unit is '1')
+	if (u == "") return(data.frame(scale=u.s,multiplier=u.m,exponent=u.x,kind=u.k))
 	## um, actually, kg is an SI unit "kind", but doesn't take other prefixes
 	if (grepl("^kg$",u)){
 		u.k <- "kilogram"

@@ -542,71 +542,6 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
 	zip(paste0(H,".zip"),files=files)
 }
 
-#' A parser for .ods files with SBtab document structure
-#'
-#' This uses the readODS package to read the file.
-#' SBtab sheets are themselves tables dedicated to a specific type of
-#' model property: Reaction, Compound, Parameter, etc.
-#'
-#' The SBtab content is not interpreted in any way.
-#' @param ods.file a string (file's name)
-#' @return SBtab
-#' a list of tables (data.frames), one per ods sheet
-#' SBtab[['TableName']] retrives a data.frame
-#' comment(SBtab) is the name of the document
-#'
-#' @keywords import
-#' @examples
-#' model.sbtab<-sbtab_from_ods('model.ods')
-#' @export
-sbtab_from_ods <- function(ods.file){
-	M <- readODS::read.ods(ods.file)
-	lM <- length(M)
-	SBtab <- list(length=lM)
-	header <- paste0(M[[1]][1,],collapse='')
-	document.name <- sbtab.header.value(header,'Document')
-	table.name <- vector(length=lM)
-	for (i in 1:lM){
-		header <- paste0(M[[i]][1,],collapse='')
-		table.name[i] <- sbtab.header.value(header,'TableName')
-		SBtab[[i]] <- M[[i]][-c(1,2),]
-		names(SBtab[[i]]) <- M[[i]][2,]
-	}
-	names(SBtab) <- table.name
-	cat("Tables found: ",paste(table.name,collapse=', '),"\n")
-	comment(SBtab) <- document.name
-	return(SBtab)
-}
-
-#' A parser for a bunch of .tsv files with SBtab document content
-#'
-#' This function reads the files (not using any package).
-#' SBtab sheets are themselves tables dedicated to a specific type of
-#' model property: Reaction, Compound, Parameter, etc.
-#'
-#' The SBtab content is not interpreted in any way.
-#' @param tsv.file a character vector (file names, one per sheet),
-#'     defaults to all tsv files in the current directory.
-#' @return SBtab a list of tables, one per file in tsv.file list
-#'     SBtab[['Reaction']] retrieves the table of reactions, a
-#'     data.frame comment(SBtab) retrieves the SBtab document name
-#' @keywords import
-#' @examples
-#' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
-#' @export
-sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$')){
-	SBtab <- list()
-	header <- readLines(tsv.file[1],n=1)
-	document.name <- sbtab.header.value(header,"Document")
-	printf("[tsv] file[1] «%s» belongs to Document «%s»\n\tI'll take this as the Model Name.\n",tsv.file[1],document.name)
-	for (f in tsv.file){
-		header <- readLines(f,n=1)
-		TableName <- sbtab.header.value(header,'TableName')
-		SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
-	}
-	comment(SBtab) <- document.name
-	return(SBtab)
-}
 
 #' SBtab content exporter
 #'
@@ -627,12 +562,10 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 	## message("The names of the SBtab list:")
 	## message(cat(names(SBtab),sep=", "))
 	document.name <- comment(SBtab)
-	message(sprintf("Document Name: %s.",document.name))
-
+	cat(sprintf("Document Name: %s.",document.name))
 	cat(sprintf("SBtab has %i tables.\n",length(SBtab)))
-
-	message("The names of SBtab[[1]]:")
-	message(cat(colnames(SBtab[[1]]),sep=", "))
+	cat("The names of SBtab[[1]]:\n")
+	cat(colnames(SBtab[[1]]),sep=", ")
 	Reaction <- .GetReactions(SBtab)
 	Constant <- .GetConstants(SBtab)
 	Expression <- .GetExpressions(SBtab)
