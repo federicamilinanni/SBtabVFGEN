@@ -1,7 +1,7 @@
 Type: Package
 Package: SBtabVFGEN
 Title: Converts from SBtab to vf,mod,[sbml]
-Version: 0.3.1
+Version: 0.3.2
 Authors@R:
     person(given = "Andrei",
            family = "Kramer",
@@ -14,7 +14,7 @@ Imports:
     pracma
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Suggests:
     testthat (>= 3.0.0),
     hdf5r

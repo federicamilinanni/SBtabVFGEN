@@ -3,10 +3,10 @@
 #' Uses make.names internally, but replaces dots with underscores.
 #'
 #' @param Labels a character vector with words that need to be turned
-#'	 into names.
+#'    into names.
 #' @export
 #' @return a vector with unique names, can be used as variable names
-#'	 in C
+#'    in C
 make.cnames <- function(Labels){
 	Names <- gsub("'([^']*)'","lsquo\\1rsquo",trimws(Labels))
 	Names <- gsub('"([^"]*)"',"ldquo\\1rdquo",Names)
@@ -61,39 +61,39 @@ ftsplit <- function(str,s,re=FALSE){
 #'
 #' @param v the vector to update
 #' @param Table a table with column names partially matching those in
-#'	 v
+#'    v
 #' @return a matrix with various versions of v (columns) one per
-#'	 setting described in data.frame Table. The names can have a ">"
-#'	 prefix in the names (see SBtab rules)
+#'    setting described in data.frame Table. The names can have a ">"
+#'    prefix in the names (see SBtab rules)
 #' @export
 #' @examples
 #' > v<-c(1,2,3)
 #' > names(v)<-c('a','b','c')
 #'
 #' > data<-data.frame(row.names=c('low','med','high'),
-#'				  b=c(0.5,2.5,5.5),
-#'				  comment=c('b < 1','close to default','b > 2×default'))
+#'     b=c(0.5,2.5,5.5),
+#'     comment=c('b < 1','close to default','b > 2×default'))
 #'
-#'		b		  comment
-#' low  0.5			b < 1
-#' med  2.5 close to default
-#' high 5.5	b > 2×default
+#'   b                 comment
+#' low  0.5              b < 1
+#' med  2.5   close to default
+#' high 5.5      b > 2×default
 #'
 #' > update_from_table(v,data)
 #'   low med high
-#' a   1   1	1
-#' b   2   2	2
-#' c   3   3	3
-update_from_table <- function(v,Table){
+#' a   1   1    1
+#' b   2   2    2
+#' c   3   3    3
+update_from_table <- function(v,Table,prefix=">"){
 	if (is.null(v) || is.null(Table)) return(NULL)
 	N <- names(v)
 	stopifnot(is.data.frame(Table))
 	n <- nrow(Table)
 	M <- matrix(v,nrow=length(v),ncol=n)
 	rownames(M)<-names(v)
-	l <- startsWith(names(Table),'>')
+	l <- startsWith(names(Table),prefix)
 	T<-Table[l]
-	names(T)<-sub(">","",names(Table[l]))
+	names(T)<-sub(prefix,"",names(Table[l]))
 	NT <- N[N %in% names(T)]
 	M[NT,] <- t(T[NT])
 	colnames(M)<-rownames(Table)
@@ -185,11 +185,11 @@ sbtab_from_ods <- function(ods.file,verbose=TRUE){
 #'
 #' The SBtab content is not interpreted in any way.
 #' @param tsv.file a character vector (file names, one per sheet),
-#'	 defaults to all tsv files in the current directory.
+#'     defaults to all tsv files in the current directory.
 #' @param verbose if FALSE, nothing is printed with cat()
 #' @return SBtab a list of tables, one per file in tsv.file list
-#'	 SBtab[['Reaction']] retrieves the table of reactions, a
-#'	 data.frame comment(SBtab) retrieves the SBtab document name
+#'     SBtab[['Reaction']] retrieves the table of reactions, a
+#'     data.frame comment(SBtab) retrieves the SBtab document name
 #' @keywords import
 #' @examples
 #' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
@@ -221,7 +221,7 @@ sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$'),verbose=TRUE){
 #'
 #' @param tab a list of lists with the table content
 #' @param react if TRUE, this function only collects the IDs of
-#'	 Compouds, Parameters and Expressions
+#'    Compouds, Parameters and Expressions
 #' @return a vector of all names
 all.vars <- function(tab,react=TRUE){
 	allvars <- c(tab$Parameter[["!ID"]],tab$Compound[["!ID"]])
@@ -298,17 +298,66 @@ sbtab.valid <- function(tab){
 	if (any(!l)) {
 		warning("These variables appear in the reaction table, but are not defined in the rest of the document")
 		message(sprintf("%30s\n",vars[!l]))
+		return(FALSE)
 	}
 	## point out where ID and Name are different, maybe that is a problem
 	for (T in tab){
 		l <- id.eq.name(T)
-		if (!is.na(l) && !all(l)){
+		if (!any(is.na(l)) && !all(l)){
 			warning("Not all IDs are equal to the Name attribute, but maybe this is on purpose.")
 		}
 	}
 	if (all.refs.valid(tab)){
 		message("All internal references are valid (~REF and >REF)\n")
+	} else {
+		return(FALSE)
 	}
+	return(TRUE)
+}
+
+#' Create a Time Series Simulation Experiment
+#'
+#' Given the constituents of a time series simulation experiment,
+#' return a list that rgsl will understand as a simulation.
+#'
+#' The output of a real experiment can be a function of the state
+#' variables, not necessarily the state variable trajectories
+#' themselves. We assume that parameter estimation of some sort will
+#' happen.
+#'
+#' If an estimate of the measurement error is not available, then
+#' --strictly speaking-- the data is useless: the noise must be
+#' understood as unbounded. But, instead, we assume that the case is
+#' very complex and the user knows what to do about it. We
+#' automatically set the noise to 5% (relative to each value) and
+#' another 5% of the largest value as an estimate of scale, this
+#' represents the absolute error:
+#'
+#' tl;dr      default_error = 5% REL + 5% MAXVAL.
+#'
+#' The user should replace these values with something, or
+#' simply not use them, if the application goes beyond testing.
+#'
+#' @export
+#' @param outputValues (data.frame) measured data, to be replicated by the
+#'     simulation
+#' @param outputTimes (vector) time values at which the outputValues were
+#'     measured
+#' @param errorValues (data.frame) an estimate of the measurement noise, if
+#'     available
+#' @param inputParameters (vector) a parameter vector that the model needs to
+#'     operate (can be some default value to be changed later)
+#' @param initialState (vector) initial values of the state variables, at t0
+#' @return list with these quantities as list items
+time.series <- function(outputValues,outoutTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialState){
+	outNames <- names(outputValues)
+	names(outputValues) <- outNames %s% ">"
+	experiment <- list(
+		outputValues=outputValues,
+		errorValues=errorValues,
+		input=inputParameters,
+		initialState=initialState)
+	return(experiment)
 }
 
 #' Read data from SBtab
@@ -329,6 +378,8 @@ sbtab.data <- function(tab){
 		warning("There must be exactly one Table of Experiments.")
 		return(NA)
 	}
+	out.id <- tab$Output[["!ID"]]
+	input.id <- tab$Input[["!ID"]]
 	n <- dim(E)[1]
 	experiments <- vector("list",length=n)
 	names(experiments) <- E[["!ID"]]
@@ -350,22 +401,39 @@ sbtab.data <- function(tab){
 	v <- tab$Input[["!DefaultValue"]]
 	names(v) <- tab$Input[["!ID"]]
 	input <- update_from_table(v,E)
-
 	id <- E[["!ID"]]
 	for (i in 1:n){
 		stopifnot(id[i] %in% names(tab))
 		tNames <- names(tab[[id[i]]])
+		l <- grepl(">([a-zA-Z][^ ]*)",tNames)
+		m <- dim(tab[[id[i]]])[1]
+		v.out <- rep(NA,length(out.id))
+		names(v) <- out.id
 		if (time.series[i]){
-			l <- grepl(">([a-zA-Z][^ ]*)",tNames)
-			outNames <- tNames[l]
-			errNames <- tNames[l] %s% c(">","~")
-			experiments[[id[i]]][["outputValues"]] <- tab[[id[i]]][l]
-			experiments[[id[i]]][["errorValues"]] <- tab[[id[i]]][errNames]
-			names(experiments[[id[i]]][["outputValues"]]) <- outNames %s% ">"
-			names(experiments[[id[i]]][["errorValues"]]) <- errNames %s% "~"
-			experiments[[id[i]]][["input"]] <- input[,i]
-			experiments[[id[i]]][["initialState"]] <- initVal[,i]
-			experiments[[id[i]]][["outputTimes"]] <- tab[[id[i]]][["!Time"]]
+			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
+			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
+			experiment[[id[i]]] <- time.series(
+				outputValues=OUT,
+				errorValues=ERR,
+				inputParameters=input[,i],
+				initialValue=initVal[,i],
+				outputTimes=tab[[id[i]]][["!Time"]]
+			)
+		} else if (dose.response[i]){
+			u <- update_from_table(input[,i],tab[[id[i]]])
+			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
+			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
+			outTime <- E[["!Time"]]
+			dose.id <- tab[[id[i]]][["!ID"]]
+			for (j in 1:m){
+				experiments[[dose.id[j]]] <- time.series(
+					outputValues=OUT[j,],
+					errorValues=ERR[j,],
+					inputParameters=u[,j],
+					initialValue=initVal[,i],
+					outputTimes=outTime[i]
+				)
+			}
 		}
 	}
 	return(experiments)
