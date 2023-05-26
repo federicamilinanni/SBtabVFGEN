@@ -3,10 +3,10 @@
 #' Uses make.names internally, but replaces dots with underscores.
 #'
 #' @param Labels a character vector with words that need to be turned
-#'	 into names.
+#'     into names.
 #' @export
 #' @return a vector with unique names, can be used as variable names
-#'	 in C
+#'     in C
 make.cnames <- function(Labels){
 	Names <- gsub("'([^']*)'","lsquo\\1rsquo",trimws(Labels))
 	Names <- gsub('"([^"]*)"',"ldquo\\1rdquo",Names)
@@ -25,8 +25,10 @@ make.cnames <- function(Labels){
 #'
 #' @param str a string (character vector of length 1)
 #' @param s a split token
-#' @param re defaults to FALSE, if TRUE s is treated as a regular expression
-#' @return a character vector of the components without leading or trailing whitespace
+#' @param re defaults to FALSE, if TRUE s is treated as a regular
+#'     expression
+#' @return a character vector of the components without leading or
+#'     trailing whitespace
 #' @export
 #' @examples ftsplit(" A + 2*B ","+")
 #' [1] "A"   "2*B"
@@ -40,8 +42,10 @@ make.cnames <- function(Labels){
 #' @examples this also works, but mixes up the components:
 #' x<-c('a+b','c+d+1','1 / 2'); ftsplit(x,'+')
 #' [1] "a"	 "b"	 "c"	 "d"	 "1"	 "1 / 2"
-ftsplit <- function(str,s,re=FALSE){
-	return(trimws(unlist(strsplit(str,s,fixed=!re))))
+ftsplit <- function(str,s=" ",re=FALSE){
+	s<-trimws(unlist(strsplit(str,s,fixed=!re)))
+	l<-nzchar(s)
+	return(s[l])
 }
 
 #' Update a named vector with values from a table
@@ -61,29 +65,29 @@ ftsplit <- function(str,s,re=FALSE){
 #'
 #' @param v the vector to update
 #' @param Table a table with column names partially matching those in
-#'	 v
+#'     v
 #' @return a matrix with various versions of v (columns) one per
-#'	 setting described in data.frame Table. The names can have a ">"
-#'	 prefix in the names (see SBtab rules)
+#'     setting described in data.frame Table. The names can have a ">"
+#'     prefix in the names (see SBtab rules)
 #' @export
 #' @examples
 #' > v<-c(1,2,3)
 #' > names(v)<-c('a','b','c')
 #'
 #' > data<-data.frame(row.names=c('low','med','high'),
-#'				  b=c(0.5,2.5,5.5),
-#'				  comment=c('b < 1','close to default','b > 2×default'))
+#'   b=c(0.5,2.5,5.5),
+#'   comment=c('b < 1','close to default','b > 2×default'))
 #'
-#'		b		  comment
-#' low  0.5			b < 1
-#' med  2.5 close to default
-#' high 5.5	b > 2×default
+#'        b   comment
+#' low  0.5   b < 1
+#' med  2.5   close to default
+#' high 5.5   b > 2×default
 #'
 #' > update_from_table(v,data)
 #'   low med high
-#' a   1   1	1
-#' b   2   2	2
-#' c   3   3	3
+#' a   1   1   1
+#' b   2   2   2
+#' c   3   3   3
 update_from_table <- function(v,Table){
 	if (is.null(v) || is.null(Table)) return(NULL)
 	N <- names(v)
@@ -106,9 +110,9 @@ update_from_table <- function(v,Table){
 #' elements according to the "!ID" column.
 #'
 #' @param Table the sbtab table imported via sbtab_from_{ods,tsv}
-#'	 (either)
+#'     (either)
 #' @return a vector with names corresponding to !ID and values taken
-#'	 from !DefaultValue, !Value, or !InitialValue
+#'     from !DefaultValue, !Value, or !InitialValue
 #' @keywords sbtab quantity
 #' @export
 sbtab_quantity <- function(Table){
@@ -149,14 +153,12 @@ sbtab.header.value <- function(sbtab.header,key='Document'){
 #' The SBtab content is not interpreted in any way.
 #' @param ods.file a string (file's name)
 #' @param verbose if FALSE, nothing is printed on screen (with cat)
-#' @return SBtab
-#' a list of tables (data.frames), one per ods sheet
-#' SBtab[['TableName']] retrives a data.frame
-#' comment(SBtab) is the name of the document
+#' @return SBtab a list of tables (data.frames), one per ods sheet
+#'     SBtab[['TableName']] retrives a data.frame comment(SBtab) is
+#'     the name of the document
 #'
 #' @keywords import
-#' @examples
-#' model.sbtab<-sbtab_from_ods('model.ods')
+#' @examples model.sbtab<-sbtab_from_ods('model.ods')
 #' @export
 sbtab_from_ods <- function(ods.file,verbose=TRUE){
 	M <- readODS::read.ods(ods.file)
@@ -185,11 +187,11 @@ sbtab_from_ods <- function(ods.file,verbose=TRUE){
 #'
 #' The SBtab content is not interpreted in any way.
 #' @param tsv.file a character vector (file names, one per sheet),
-#'	 defaults to all tsv files in the current directory.
+#'     defaults to all tsv files in the current directory.
 #' @param verbose if FALSE, nothing is printed with cat()
 #' @return SBtab a list of tables, one per file in tsv.file list
-#'	 SBtab[['Reaction']] retrieves the table of reactions, a
-#'	 data.frame comment(SBtab) retrieves the SBtab document name
+#'     SBtab[['Reaction']] retrieves the table of reactions, a
+#'     data.frame comment(SBtab) retrieves the SBtab document name
 #' @keywords import
 #' @examples
 #' model.sbtab<-sbtab_from_tsv(dir(pattern='.*[.]tsv$'))
@@ -221,7 +223,7 @@ sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$'),verbose=TRUE){
 #'
 #' @param tab a list of lists with the table content
 #' @param react if TRUE, this function only collects the IDs of
-#'	 Compouds, Parameters and Expressions
+#'     Compouds, Parameters and Expressions
 #' @return a vector of all names
 all.vars <- function(tab,react=TRUE){
 	allvars <- c(tab$Parameter[["!ID"]],tab$Compound[["!ID"]])
