@@ -88,16 +88,16 @@ ftsplit <- function(str,s=" ",re=FALSE){
 #' a   1   1   1
 #' b   2   2   2
 #' c   3   3   3
-update_from_table <- function(v,Table){
+update_from_table <- function(v,Table,prefix=">"){
 	if (is.null(v) || is.null(Table)) return(NULL)
 	N <- names(v)
 	stopifnot(is.data.frame(Table))
 	n <- nrow(Table)
 	M <- matrix(v,nrow=length(v),ncol=n)
 	rownames(M)<-names(v)
-	l <- startsWith(names(Table),'>')
+	l <- startsWith(names(Table),prefix)
 	T<-Table[l]
-	names(T)<-sub(">","",names(Table[l]))
+	names(T)<-sub(prefix,"",names(Table[l]))
 	NT <- N[N %in% names(T)]
 	M[NT,] <- t(T[NT])
 	colnames(M)<-rownames(Table)
@@ -158,7 +158,8 @@ sbtab.header.value <- function(sbtab.header,key='Document'){
 #'     the name of the document
 #'
 #' @keywords import
-#' @examples model.sbtab<-sbtab_from_ods('model.ods')
+#' @examples
+#' model.sbtab<-sbtab_from_ods('model.ods')
 #' @export
 sbtab_from_ods <- function(ods.file,verbose=TRUE){
 	M <- readODS::read.ods(ods.file)
@@ -300,17 +301,66 @@ sbtab.valid <- function(tab){
 	if (any(!l)) {
 		warning("These variables appear in the reaction table, but are not defined in the rest of the document")
 		message(sprintf("%30s\n",vars[!l]))
+		return(FALSE)
 	}
 	## point out where ID and Name are different, maybe that is a problem
 	for (T in tab){
 		l <- id.eq.name(T)
-		if (!is.na(l) && !all(l)){
+		if (!any(is.na(l)) && !all(l)){
 			warning("Not all IDs are equal to the Name attribute, but maybe this is on purpose.")
 		}
 	}
 	if (all.refs.valid(tab)){
 		message("All internal references are valid (~REF and >REF)\n")
+	} else {
+		return(FALSE)
 	}
+	return(TRUE)
+}
+
+#' Create a Time Series Simulation Experiment
+#'
+#' Given the constituents of a time series simulation experiment,
+#' return a list that rgsl will understand as a simulation.
+#'
+#' The output of a real experiment can be a function of the state
+#' variables, not necessarily the state variable trajectories
+#' themselves. We assume that parameter estimation of some sort will
+#' happen.
+#'
+#' If an estimate of the measurement error is not available, then
+#' --strictly speaking-- the data is useless: the noise must be
+#' understood as unbounded. But, instead, we assume that the case is
+#' very complex and the user knows what to do about it. We
+#' automatically set the noise to 5% (relative to each value) and
+#' another 5% of the largest value as an estimate of scale, this
+#' represents the absolute error:
+#'
+#' tl;dr      default_error = 5% REL + 5% MAXVAL.
+#'
+#' The user should replace these values with something, or
+#' simply not use them, if the application goes beyond testing.
+#'
+#' @export
+#' @param outputValues (data.frame) measured data, to be replicated by the
+#'     simulation
+#' @param outputTimes (vector) time values at which the outputValues were
+#'     measured
+#' @param errorValues (data.frame) an estimate of the measurement noise, if
+#'     available
+#' @param inputParameters (vector) a parameter vector that the model needs to
+#'     operate (can be some default value to be changed later)
+#' @param initialState (vector) initial values of the state variables, at t0
+#' @return list with these quantities as list items
+time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialState){
+	outNames <- names(outputValues)
+	names(outputValues) <- outNames %s% ">"
+	experiment <- list(
+		outputValues=outputValues,
+		errorValues=errorValues,
+		input=inputParameters,
+		initialState=initialState)
+	return(experiment)
 }
 
 #' Read data from SBtab
@@ -331,6 +381,8 @@ sbtab.data <- function(tab){
 		warning("There must be exactly one Table of Experiments.")
 		return(NA)
 	}
+	out.id <- tab$Output[["!ID"]]
+	input.id <- tab$Input[["!ID"]]
 	n <- dim(E)[1]
 	experiments <- vector("list",length=n)
 	names(experiments) <- E[["!ID"]]
@@ -357,17 +409,35 @@ sbtab.data <- function(tab){
 	for (i in 1:n){
 		stopifnot(id[i] %in% names(tab))
 		tNames <- names(tab[[id[i]]])
+		l <- grepl(">([a-zA-Z][^ ]*)",tNames)
+		m <- dim(tab[[id[i]]])[1]
+		v.out <- rep(NA,length(out.id))
+		names(v.out) <- out.id
 		if (time.series[i]){
-			l <- grepl(">([a-zA-Z][^ ]*)",tNames)
-			outNames <- tNames[l]
-			errNames <- tNames[l] %s% c(">","~")
-			experiments[[id[i]]][["outputValues"]] <- tab[[id[i]]][l]
-			experiments[[id[i]]][["errorValues"]] <- tab[[id[i]]][errNames]
-			names(experiments[[id[i]]][["outputValues"]]) <- outNames %s% ">"
-			names(experiments[[id[i]]][["errorValues"]]) <- errNames %s% "~"
-			experiments[[id[i]]][["input"]] <- input[,i]
-			experiments[[id[i]]][["initialState"]] <- initVal[,i]
-			experiments[[id[i]]][["outputTimes"]] <- tab[[id[i]]][["!Time"]]
+			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
+			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
+			experiments[[id[i]]] <- time.series(
+				outputValues=OUT,
+				errorValues=ERR,
+				inputParameters=input[,i],
+				initialState=initVal[,i],
+				outputTimes=tab[[id[i]]][["!Time"]]
+			)
+		} else if (dose.response[i]){
+			u <- update_from_table(input[,i],tab[[id[i]]])
+			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
+			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
+			outTime <- E[["!Time"]]
+			dose.id <- tab[[id[i]]][["!ID"]]
+			for (j in 1:m){
+				experiments[[dose.id[j]]] <- time.series(
+					outputValues=OUT[j,],
+					errorValues=ERR[j,],
+					inputParameters=u[,j],
+					initialState=initVal[,i],
+					outputTimes=outTime[i]
+				)
+			}
 		}
 	}
 	return(experiments)

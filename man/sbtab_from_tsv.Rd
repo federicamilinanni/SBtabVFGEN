@@ -14,8 +14,8 @@ defaults to all tsv files in the current directory.}
 }
 \value{
 SBtab a list of tables, one per file in tsv.file list
- SBtab[['Reaction']] retrieves the table of reactions, a
- data.frame comment(SBtab) retrieves the SBtab document name
+    SBtab[['Reaction']] retrieves the table of reactions, a
+    data.frame comment(SBtab) retrieves the SBtab document name
 }
 \description{
 This function reads the files (not using any package).
