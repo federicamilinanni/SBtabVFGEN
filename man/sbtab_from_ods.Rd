@@ -12,10 +12,9 @@ sbtab_from_ods(ods.file, verbose = TRUE)
 \item{verbose}{if FALSE, nothing is printed on screen (with cat)}
 }
 \value{
-SBtab
-a list of tables (data.frames), one per ods sheet
-SBtab[['TableName']] retrives a data.frame
-comment(SBtab) is the name of the document
+SBtab a list of tables (data.frames), one per ods sheet
+    SBtab[['TableName']] retrives a data.frame comment(SBtab) is
+    the name of the document
 }
 \description{
 This uses the readODS package to read the file.

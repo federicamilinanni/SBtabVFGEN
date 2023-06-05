@@ -12,7 +12,7 @@ into names.}
 }
 \value{
 a vector with unique names, can be used as variable names
-   in C
+    in C
 }
 \description{
 Uses make.names internally, but replaces dots with underscores.

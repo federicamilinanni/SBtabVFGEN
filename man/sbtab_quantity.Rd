@@ -12,7 +12,7 @@ sbtab_quantity(Table)
 }
 \value{
 a vector with names corresponding to !ID and values taken
- from !DefaultValue, !Value, or !InitialValue
+    from !DefaultValue, !Value, or !InitialValue
 }
 \description{
 This function extracts a vector from an sbtab table, and names the

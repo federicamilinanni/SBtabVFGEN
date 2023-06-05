@@ -14,8 +14,8 @@ v}
 }
 \value{
 a matrix with various versions of v (columns) one per
-   setting described in data.frame Table. The names can have a ">"
-   prefix in the names (see SBtab rules)
+    setting described in data.frame Table. The names can have a ">"
+    prefix in the names (see SBtab rules)
 }
 \description{
 This function can be used in the circumstance that you already have
@@ -37,17 +37,17 @@ be used. The M will have as many columns as the table has rows.
 > names(v)<-c('a','b','c')
 
 > data<-data.frame(row.names=c('low','med','high'),
-    b=c(0.5,2.5,5.5),
-    comment=c('b < 1','close to default','b > 2×default'))
+  b=c(0.5,2.5,5.5),
+  comment=c('b < 1','close to default','b > 2×default'))
 
-  b                 comment
-low  0.5              b < 1
+       b   comment
+low  0.5   b < 1
 med  2.5   close to default
-high 5.5      b > 2×default
+high 5.5   b > 2×default
 
 > update_from_table(v,data)
   low med high
-a   1   1    1
-b   2   2    2
-c   3   3    3
+a   1   1   1
+b   2   2   2
+c   3   3   3
 }

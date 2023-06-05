@@ -359,7 +359,8 @@ time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorVal
 		outputValues=outputValues,
 		errorValues=errorValues,
 		input=inputParameters,
-		initialState=initialState)
+		initialState=initialState,
+		outputTimes=outputTimes)
 	return(experiment)
 }
 
@@ -384,8 +385,7 @@ sbtab.data <- function(tab){
 	out.id <- tab$Output[["!ID"]]
 	input.id <- tab$Input[["!ID"]]
 	n <- dim(E)[1]
-	experiments <- vector("list",length=n)
-	names(experiments) <- E[["!ID"]]
+	experiments <- list()
 	l <- grepl("!([eE]xperiment)?Type",names(E))
 	if (any(l)){
 		type <- E %1% l
@@ -397,12 +397,10 @@ sbtab.data <- function(tab){
 		dose.response <- !time.series
 		dose.sequence <- !time.series
 	}
-	v <- tab$Compound[["!InitialValue"]]
-	names(v) <- tab$Compound[["!ID"]]
+	v <- sbtab_quantity(tab$Compound)
 	initVal <- update_from_table(v,E)
 
-	v <- tab$Input[["!DefaultValue"]]
-	names(v) <- tab$Input[["!ID"]]
+	v <- sbtab_quantity(tab$Input)
 	input <- update_from_table(v,E)
 
 	id <- E[["!ID"]]

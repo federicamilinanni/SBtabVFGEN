@@ -6,7 +6,7 @@
 \usage{
 \method{time}{series}(
   outputValues,
-  outoutTimes = 1:dim(outputValues)[2],
+  outputTimes = 1:dim(outputValues)[2],
   errorValues = 0.05 * outputValues + 0.05 * max(outputValues),
   inputParameters,
   initialState
@@ -16,6 +16,9 @@
 \item{outputValues}{(data.frame) measured data, to be replicated by the
 simulation}
 
+\item{outputTimes}{(vector) time values at which the outputValues were
+measured}
+
 \item{errorValues}{(data.frame) an estimate of the measurement noise, if
 available}
 
@@ -23,9 +26,6 @@ available}
 operate (can be some default value to be changed later)}
 
 \item{initialState}{(vector) initial values of the state variables, at t0}
-
-\item{outputTimes}{(vector) time values at which the outputValues were
-measured}
 }
 \value{
 list with these quantities as list items
