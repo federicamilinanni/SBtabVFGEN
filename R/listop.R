@@ -26,3 +26,14 @@
 		return(x[l][,1])
 	}
 }
+
+#' otherwise operator
+#'
+#' Returns the first operand, unless it evaluates to NULL, then the
+#' second is returned.
+#' @param a anything
+#' @param b a default value, also anything
+#' @return a; but if is.null(a), return b
+`%otherwise%` <- function(a,b){
+	return(ifelse(is.null(a),b,a))
+}

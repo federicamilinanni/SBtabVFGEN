@@ -9,6 +9,7 @@
   outputTimes = 1:dim(outputValues)[2],
   errorValues = 0.05 * outputValues + 0.05 * max(outputValues),
   inputParameters,
+  initialTime = min(outputTimes),
   initialState
 )
 }
@@ -24,6 +25,8 @@ available}
 
 \item{inputParameters}{(vector) a parameter vector that the model needs to
 operate (can be some default value to be changed later)}
+
+\item{initialTime}{t0 for the time series experiment: y(t0) = y0}
 
 \item{initialState}{(vector) initial values of the state variables, at t0}
 }

@@ -353,7 +353,7 @@ sbtab.valid <- function(tab){
 #' @param initialTime t0 for the time series experiment: y(t0) = y0
 #' @param initialState (vector) initial values of the state variables, at t0
 #' @return list with these quantities as list items
-time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=0.0,initialState){
+time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=min(outputTimes),initialState){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
 	experiment <- list(
@@ -417,8 +417,10 @@ sbtab.data <- function(tab){
 		m <- dim(tab[[id[i]]])[1]
 		v.out <- rep(NA,length(out.id))
 		names(v.out) <- out.id
-		initialTime <- ifelse(is.null(t0),0.0,t0[i])
+
 		if (time.series[i]){
+			oTime <- tab[[id[i]]][["!Time"]]
+			initialTime <- ifelse(is.null(t0),min(oTime),t0[i])
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
 			experiments[[id[i]]] <- time.series(
@@ -427,13 +429,14 @@ sbtab.data <- function(tab){
 				inputParameters=input[,i],
 				initialTime=initialTime,
 				initialState=initVal[,i],
-				outputTimes=tab[[id[i]]][["!Time"]]
+				outputTimes=oTime
 			)
 		} else if (dose.response[i]){
 			u <- update_from_table(input[,i],tab[[id[i]]])
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
 			outTime <- E[["!Time"]]
+			initialTime <- ifelse(is.null(t0),0.0,t0[i])
 			dose.id <- tab[[id[i]]][["!ID"]]
 			for (j in 1:m){
 				experiments[[dose.id[j]]] <- time.series(
