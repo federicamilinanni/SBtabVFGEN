@@ -19,6 +19,7 @@
 #' [1] 128 200
 `%1%`  <- function(x,l){
 	stopifnot(is.logical(l))
+	if (!any(l)) return(NULL)
 	if (is.list(x[l])) {
 		return(x[l][[1]])
 	} else if(is.data.frame(x[l])){

@@ -350,15 +350,17 @@ sbtab.valid <- function(tab){
 #'     available
 #' @param inputParameters (vector) a parameter vector that the model needs to
 #'     operate (can be some default value to be changed later)
+#' @param initialTime t0 for the time series experiment: y(t0) = y0
 #' @param initialState (vector) initial values of the state variables, at t0
 #' @return list with these quantities as list items
-time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialState){
+time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=0.0,initialState){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
 	experiment <- list(
 		outputValues=outputValues,
 		errorValues=errorValues,
 		input=inputParameters,
+		initialTime=initialTime,
 		initialState=initialState,
 		outputTimes=outputTimes)
 	return(experiment)
@@ -380,6 +382,7 @@ sbtab.data <- function(tab){
 		E <- tab %1% l
 	} else {
 		warning("There must be exactly one Table of Experiments.")
+		print(names(tab)[l])
 		return(NA)
 	}
 	out.id <- tab$Output[["!ID"]]
@@ -397,6 +400,9 @@ sbtab.data <- function(tab){
 		dose.response <- !time.series
 		dose.sequence <- !time.series
 	}
+
+	t0 <- E %1% grepl("^!([tT]0|[Ii]nitialTime)$",names(E))
+
 	v <- sbtab_quantity(tab$Compound)
 	initVal <- update_from_table(v,E)
 
@@ -411,6 +417,7 @@ sbtab.data <- function(tab){
 		m <- dim(tab[[id[i]]])[1]
 		v.out <- rep(NA,length(out.id))
 		names(v.out) <- out.id
+		initialTime <- ifelse(is.null(t0),0.0,t0[i])
 		if (time.series[i]){
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
@@ -418,6 +425,7 @@ sbtab.data <- function(tab){
 				outputValues=OUT,
 				errorValues=ERR,
 				inputParameters=input[,i],
+				initialTime=initialTime,
 				initialState=initVal[,i],
 				outputTimes=tab[[id[i]]][["!Time"]]
 			)
@@ -432,6 +440,7 @@ sbtab.data <- function(tab){
 					outputValues=OUT[j,],
 					errorValues=ERR[j,],
 					inputParameters=u[,j],
+					initialTime=initialTime,
 					initialState=initVal[,i],
 					outputTimes=outTime[i]
 				)
