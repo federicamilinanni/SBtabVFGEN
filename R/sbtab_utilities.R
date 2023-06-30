@@ -116,11 +116,10 @@ update_from_table <- function(v,Table,prefix=">"){
 #' @keywords sbtab quantity
 #' @export
 sbtab_quantity <- function(Table){
-	N <- names(Table)
-	NT <- N[N %in% c('!DefaultValue','!Value','!InitialValue')]
-	v <- unlist(Table[NT])
-	n <- unlist(Table['!ID'])
-	names(v) <- n
+	colNames <- names(Table)
+	V <- colNames %1% grepl("!(Default|Initial)?Value",colNames)
+	v <- as.double(gsub("−","-",Table[V])
+	names(v) <- rownames(Table)
 	return(v)
 }
 
@@ -134,12 +133,12 @@ sbtab_quantity <- function(Table){
 #' @param key the left side of each key=value pair
 #' @return value of the key=value pair
 sbtab.header.value <- function(sbtab.header,key='Document'){
-	## the table title has to be in either one of the columns of row 1
 	m <- unlist(sbtab.header %~% sprintf("%s='([^']+)'",key))
 	if (length(m)>0){
 		property <- m[2] # so the first experssion in parentheses
 	} else {
-		stop(sprintf("property «%s» not set in SBtab header: «%s».",key,header))
+		warning(sprintf("property «%s» not set in SBtab header: «%s».",key,header))
+		property <- NULL
 	}
 	return(property)
 }
@@ -171,8 +170,9 @@ sbtab_from_ods <- function(ods.file,verbose=TRUE){
 	for (i in 1:lM){
 		header <- paste0(M[[i]][1,],collapse='')
 		table.name[i] <- sbtab.header.value(header,'TableName')
-		SBtab[[i]] <- M[[i]][-c(1,2),]
+		SBtab[[i]] <- M[[i]][-c(1,2),-1]
 		names(SBtab[[i]]) <- M[[i]][2,]
+		rownames(SBtab[[i]]) <- as.character(M[[i]][-c(1,2),1])
 	}
 	names(SBtab) <- table.name
 	if (verbose) cat("Tables found: ",paste(table.name,collapse=', '),"\n")
@@ -205,7 +205,7 @@ sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$'),verbose=TRUE){
 	for (f in tsv.file){
 		header <- readLines(f,n=1)
 		TableName <- sbtab.header.value(header,'TableName')
-		SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE)
+		SBtab[[TableName]] <- read.delim(f,as.is=TRUE,skip=1,check.names=FALSE,comment.char="%",blank.lines.skip=TRUE,row.names=1)
 		attr(SBtab[[TableName]],"TableName") <- TableName
 	}
 	comment(SBtab) <- document.name
@@ -227,7 +227,7 @@ sbtab_from_tsv <- function(tsv.file=dir(pattern='[.]tsv$'),verbose=TRUE){
 #'     Compouds, Parameters and Expressions
 #' @return a vector of all names
 all.vars <- function(tab,react=TRUE){
-	allvars <- c(tab$Parameter[["!ID"]],tab$Compound[["!ID"]])
+	allvars <- c(row.names(tab$Parameter),row.names(tab$Compound))
 	tNames <- names(tab)
 	if (react){
 		l <- tNames %in% c("Input","Constant","Expression")
@@ -235,7 +235,7 @@ all.vars <- function(tab,react=TRUE){
 	}
 	for (T in tNames){
 		if ("!ID" %in% names(tab[[T]])) {
-			allvars <- c(allvars,tab[[T]][["!ID"]])
+			allvars <- c(allvars,row.names(tab[[T]]))
 		}
 	}
 	return(trimws(unlist(allvars)))
@@ -364,6 +364,53 @@ time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorVal
 		initialState=initialState,
 		outputTimes=outputTimes)
 	return(experiment)
+}
+
+sbtab.events <- function(ename,tab){
+	if (ename %in% names(tab)){
+		n.sv <- nrow(tab$Compound)
+		n.par <- nrow(tab$Parameter) + nrow(tab$Input)
+		n.t <- nrow(tab[[ename]])
+
+		tf <- list(
+				state=list(
+						A=matrix(1.0,n.sv,n.t),
+						b=matrix(0.0,n.sv,n.t)),
+				param=list(
+						A=matrix(1.0,n.par,n.t),
+						b=matrix(0.0,n.par,n.t)),
+				))
+		rownames(tf$state$b) <- row.names(tab$Compound)
+		rownames(tf$state$A) <- row.names(tab$Compound)
+		par.names <- c(row.names(tab$Parameter),row.names(tab$Input))
+		rownames(tf$param$b) <- par.names
+		rownames(tf$param$A) <- par.names
+
+		colNames <- names(tab[[ename]])
+		n <- nrow(tab[[ename]])
+		for (i in grep("^>[A-Z]{3}:.+$",colNames)){
+			m <- colNames[i] %~% ">([A-Z]{3}):(.+)$"
+			op <- m[[1]][1]
+			quantity <- m[[1]][2]
+			kind <- ifelse(quantity %in% tab$Compound[["!ID"]],"state","param")
+			if (op == "ADD") {
+				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][i])
+			} else if (op == "SUB") {
+				tf[[kind]]$b[quantity,] <- (-1.0)*as.numeric(tab[[ename]][i])
+			} else if (op == "MUL") {
+				tf[[kind]]$A[quantity,] <- as.numeric(tab[[ename]][i])
+			} else if (op == "DIV") {
+				tf[[kind]]$A[quantity,] <- 1.0/as.numeric(tab[[ename]][i])
+			} else if (op == "SET") {
+				tf[[kind]]$A[quantity,] <- 0.0
+				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][i])
+			} else {
+				stop(sprintf("unknown operation in event table %s: %s\n",ename,op))
+			}
+		}
+	}
+	tf <- list(state=)
+	return(list(time=as.numeric(tab[[ename]][["!Time"]]),))
 }
 
 #' Read data from SBtab

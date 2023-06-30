@@ -97,7 +97,6 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 	N <- length(RN)
 	if (any(ss)){
 		CName <- row.names(Compound)[ss]
-		CID <- Compound$ID[ss]
 		ODE <- ODE[ss]
 		## for working SBML, replace all flux names with the actual flux expressions:
 		for (j in 1:N){
@@ -106,11 +105,9 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 		## ODE <- gsub("^[+]","",ODE)
 		header <- character()
 		header[1] <- sprintf("!!SBtabSBtabVersion='1.0'\tTableName='Output' TableTitle='These Outputs describe how well the SteadyState has been achieved' TableType='Quantity' Document='%s'",document.name)
-		header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorName\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
-		Id <- sprintf("YSS%s",CID)
+		header[2] <- sprintf("!ID\t!Name\t!Comment\t!ErrorType\t!Unit\t!ProbDist\t!Formula")
 		Name <- sprintf("%s_NetFlux",CName)
-		ErrorName <- sprintf("GAMMA_%s",Id)
-		SuggestedMeasureOfEquilibrium <- c(header,sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Id,Name,ErrorName,ODE))
+		SuggestedMeasureOfEquilibrium <- c(header,sprintf("%s\t%s\tmeasures deviation from steady state\t%s\tWeight\tnM\tNormal\t%s",Name,Name,ODE))
 		ssfname <- paste0(document.name,"_SteadyStateMetrics.tsv")
 		cat(SuggestedMeasureOfEquilibrium,sep="\n",file=ssfname)
 	}
@@ -127,19 +124,17 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 }
 
 .GetReactions <- function(SBtab){
-	ID <- SBtab[["Reaction"]][["!ID"]]
 	Formula <- SBtab[["Reaction"]][["!ReactionFormula"]]
 	Name <- make.cnames(SBtab[["Reaction"]][["!Name"]])
 	Flux <- SBtab[["Reaction"]][["!KineticLaw"]]
 	IsReversible <- SBtab[["Reaction"]][["!IsReversible"]]
-	Reaction <- data.frame(ID,Formula,Flux,IsReversible,row.names=Name)
+	Reaction <- data.frame(Formula,Flux,IsReversible,row.names=rownames(SBtab))
 	return(Reaction)
 }
 
 .GetConstants <- function(SBtab){
 	if ("Constant" %in% names(SBtab)){
-		ID <- SBtab[["Constant"]][["!ID"]]
-		Name <- make.cnames(SBtab[["Constant"]][["!Name"]])
+		Name <- rownames(SBtab)
 		Value <- SBtab[["Constant"]][["!Value"]]
 		Constant <- data.frame(ID,Value,row.names=Name)
 		if ("!Unit" %in% names(SBtab[["Constant"]])){
@@ -147,7 +142,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 		} else {
 			Unit=NULL;
 		}
-		Constant <- data.frame(ID,Value,Unit,row.names=Name)
+		Constant <- data.frame(Value,Unit,row.names=Name)
 		return(Constant)
 	} else {
 		message("There is no «Constant» Table in this model.")
@@ -157,7 +152,7 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 
 ## this will at first be for logical vectors, not general yet
 .OptionalColumn <- function(SBtab,Name,mode="logical"){
-	n <- length(SBtab[["!ID"]])
+	n <- nrow(SBtab)
 	if (Name %in% names(SBtab)){
 		Column <- switch(mode,
 			             logical=.GetLogical(SBtab[[Name]]),
@@ -171,9 +166,8 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 }
 
 .GetCompounds <- function(SBtab){
-	nComp <- length(SBtab[["Compound"]][["!ID"]])
-	ID <- SBtab[["Compound"]][["!ID"]]
-	Name <- make.cnames(SBtab[["Compound"]][["!Name"]])
+	nComp <- nrow(SBtab[["Compound"]])
+	Name <- rownames(SBtab[["Compound"]])
 	message("compound names:")
 	print(Name)
 	## replace possible non-ascii "-"
@@ -187,17 +181,16 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 	Assignment <- .OptionalColumn(SBtab[["Compound"]],"!Assignment","character")
 	IsConstant <- .OptionalColumn(SBtab[["Compound"]],"!IsConstant","logical")
 	Interpolation <- .OptionalColumn(SBtab[["Compound"]],"!Interpolation","logical")
-	Compound <- data.frame(ID,InitialValue,SteadyState,Unit,IsConstant,Assignment,Interpolation,row.names=Name)
+	Compound <- data.frame(InitialValue,SteadyState,Unit,IsConstant,Assignment,Interpolation,row.names=Name)
 	return(Compound)
 }
 
 .GetExpressions <- function(SBtab){
 	if ("Expression" %in% names(SBtab)){
-		ID <- SBtab[["Expression"]][["!ID"]]
-		Name <- make.cnames(SBtab[["Expression"]][["!Name"]])
+		Name <- rownames(SBtab[["Expression"]])
 		Formula <- SBtab[["Expression"]][["!Formula"]]
 		Unit <- SBtab[["Expression"]][["!Unit"]]
-		Expression <- data.frame(ID,Formula,Unit,row.names=Name)
+		Expression <- data.frame(Formula,Unit,row.names=Name)
 		return(Expression)
 	} else {
 		message("There is no «Expression» Table in this model.")
@@ -206,69 +199,47 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 }
 
 .GetParameters <- function(SBtab){
-	ID <- SBtab[["Parameter"]][["!ID"]]
-	nPar <- length(ID);
+	nPar <- nrow(SBtab[["Parameter"]]);
 	if ("!Scale" %in% names(SBtab[["Parameter"]])){
 		Scale <- SBtab[["Parameter"]][["!Scale"]]
 	}else{
 		Scale <- vector(mode="character",len=nPar)
-		Scale[] <- "log"
+		Scale[] <- "linear"
 	}
-	Name <- make.cnames(SBtab[["Parameter"]][["!Name"]])
-	if ("!DefaultValue" %in% colnames(SBtab[["Parameter"]])){
-		Value <- SBtab[["Parameter"]][["!DefaultValue"]]
-	} else if ("!Value" %in% colnames(SBtab[["Parameter"]])){
-		Value <- SBtab[["Parameter"]][["!Value"]]
-	} else if ("!Mean" %in% colnames(SBtab[["Parameter"]])){
-		Value <- SBtab[["Parameter"]][["!Mean"]]
-	} else if ("!Median" %in% colnames(SBtab[["Parameter"]])){
-		Value <- SBtab[["Parameter"]][["!Median"]]
-	} else {
-		print(colnames(SBtab[["Parameter"]]))
-		stop("no usable Value column for Parameters found")
-	}
-
+	Name <- rownames(SBtab[["Parameter"]])
+	Value <- sbtab.quantity(SBtab[["Parameter"]])
 	message("raw parameter values:")
-	##print(Value)
-	message("---")
-	nValue <- as.double(gsub("−","-",Value));
-	print(nValue)
-	message("---")
-	Value <- nValue
-	if (any(Scale %in% c("log","log10","natural logarithm","decadic logarithm","base-10 logarithm","logarithm","ln"))) {
-		l <- Scale %in% c("log","logarithm","natural logarithm","ln")
-		Value[l]<-exp(Value[l])
-		l <- Scale %in% c("log10","decadic logarithm","base-10 logarithm")
-		Value[l]<-10^Value[l]
+	if (any(grepl("log",Scale))) {
+		l <- grepl("^(((natural|base-e)?[ ]*log(arithm)?)|ln)$",Scale)
+		Value[l] <- exp(Value[l])
+		l <- grepl("^(((decadic|base-10)[ ]*logarithm)|log10)$",Scale)
+		Value[l] <- 10^Value[l]
 	}
 	Unit <- SBtab[["Parameter"]][["!Unit"]]
-	Parameter <- data.frame(ID=ID,Value=Value,Unit=Unit,row.names=Name)
+	Parameter <- data.frame(Value=Value,Unit=Unit,row.names=Name)
 	print(names(Parameter))
 	return(Parameter)
 }
 
 .GetOutputs <- function(SBtab){
-	ID <- SBtab[["Output"]][["!ID"]]
-	Name <- make.cnames(SBtab[["Output"]][["!Name"]])
+	Name <- rownames(SBtab[["Output"]])
 	Formula <-  SBtab[["Output"]][["!Formula"]]
 	Unit <- SBtab[["Output"]][["!Unit"]]
-	Output <- data.frame(ID,Formula,Unit,row.names=Name)
+	Output <- data.frame(Formula,Unit,row.names=Name)
 	return(Output)
 }
 
 .GetCompartments <- function(SBtab){
 	if ("Compartment" %in% names(SBtab)){
-		ID <- SBtab[["Compartment"]][["!ID"]]
-		Name <- make.cnames(SBtab[["Compartment"]][["!Name"]])
+		Name <- rownames(SBtab[["Compartment"]])
 		Size <-  SBtab[["Compartment"]][["!Size"]]
 		Unit <- SBtab[["Compartment"]][["!Unit"]]
 	} else {
-		ID <- 'Compartment'
 		Name <- 'Compartment'
 		Size <- 1.0
 		Unit <- 'liter'
 	}
-	Comp <- data.frame(ID,Size,Unit,row.names=Name)
+	Comp <- data.frame(Size,Unit,row.names=Name)
 	return(Comp)
 }
 
@@ -281,15 +252,14 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 			print(Disregard)
 			message("---")
 		} else {
-			n <- length(SBtab[["Input"]][["!ID"]])
+			n <- nrow(SBtab[["Input"]])
 			Disregard <- vector(mode="logical",length=n)
 		}
-		ID <- SBtab[["Input"]][["!ID"]][!Disregard]
 		Name <- make.cnames(SBtab[["Input"]][["!Name"]][!Disregard])
 		DefaultValue <-  SBtab[["Input"]][["!DefaultValue"]][!Disregard]
 		Unit <-  SBtab[["Input"]][["!Unit"]][!Disregard]
 		##
-		Input <- data.frame(ID,DefaultValue,Unit,row.names=Name)
+		Input <- data.frame(DefaultValue,Unit,row.names=Name)
 		return(Input)
 	} else {
 		message("There is no «Input» Table in this model.")
@@ -299,15 +269,13 @@ PrintSteadyStateOutputs <- function(Compound,ODE,Reaction,document.name){
 
 .GetDefaults <- function(SBtab){
 	if ("Defaults" %in% names(SBtab)){
-		ID <- SBtab[["Defaults"]][["!ID"]]
-		Name <- make.cnames(SBtab[["Defaults"]][["!Name"]])
+		Name <- rownames(SBtab[["Defaults"]])
 		Unit <-  SBtab[["Defaults"]][["!Unit"]]
 	} else {
-		ID <- c("time","substance","volume","area","length")
-		Name <- ID
+		Name <- c("time","substance","volume","area","length")
 		Unit <- c("millisecond","millimole","liter","nanometer^2","nanometer")
 	}
-	Defaults <- data.frame(ID,Unit,row.names=Name)
+	Defaults <- data.frame(Unit,row.names=Name)
 	return(Defaults)
 }
 
@@ -332,15 +300,15 @@ UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Input){
 		cat(sprintf("%i × %s",n,compound))
 		if (compound %in% row.names(Compound)){
 			j <- as.numeric(match(compound,row.names(Compound)))
-			message(sprintf("\t\t\t(%s is compound %i)",compound,j))
+			cat(sprintf("\t\t\t(%s is compound %i)",compound,j))
 		} else if (compound %in% row.names(Expression)){
 			j <- (-1)
-			message(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
+			cat(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
 		} else if (compound %in% row.names(Input)){
 			j <- (-1)
-			message(sprintf("\t\t\t«%s» is an input parameter (a parameter that represents a constant concentration of a substance outside of the model's scope), it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
+			cat(sprintf("\t\t\t«%s» is an input parameter (a parameter that represents a constant concentration of a substance outside of the model's scope), it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
 		} else if (compound %in% c("null","NULL","NIL","NONE","NA","Ø","[]","{}")) {
-			message(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound))
+			cat(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound))
 			j <- (-2)
 		} else {
 			stop(sprintf("\t\t\t«%s» is neither in the list of registered compounds nor is it an expression\n",compound))
@@ -383,13 +351,13 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression,Input){
 		line=lhs_rhs[[i]]
 		lhs[i]=trimws(line[1])
 		rhs[i]=trimws(line[2])
-		message(sprintf("Reaction %i:",i))
+		cat(sprintf("Reaction %i:",i))
 		cat(sprintf("line (a->b): «%s» ←→ «%s»\n",line[1],line[2]))
 		a <- unlist(strsplit(line[1],"[+]"))
 		b <- unlist(strsplit(line[2],"[+]"))
-		message(" where a: ")
+		cat(" where a: ")
 		print(a)
-		message("   and b: ")
+		cat("   and b: ")
 		print(b)
 
 		## the following two «for» blocks (1,2) operate by adding
@@ -446,24 +414,24 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
 
 .make.vfgen <- function(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw){
 	vfgen <- list()
-	fmt <- list(const=" <Constant Name=\"%s\" Description=\"constant %s\" Value=\"%s\"/>",
-			    par=" <Parameter Name=\"%s\" Description=\"independent parameter %s\" DefaultValue=\"%g\"/>",
-			    input=" <Parameter Name=\"%s\" Description=\"input parameter %s\" DefaultValue=\"%s\"/>",
+	fmt <- list(const=" <Constant Name=\"%s\" Description=\"constant\" Value=\"%s\"/>",
+			    par=" <Parameter Name=\"%s\" Description=\"independent parameter\" DefaultValue=\"%g\"/>",
+			    input=" <Parameter Name=\"%s\" Description=\"input parameter\" DefaultValue=\"%s\"/>",
 			    total=" <Parameter Name=\"%s\" Description=\"conserved quantity eliminates %s as a state variable\" DefaultValue=\"%f\"/>",
 			    ConservationLaw=" <Expression Name=\"%s\" Description=\"derived from conservation law %i\" Formula=\"%s\"/>",
-			    expression=" <Expression Name=\"%s\" Description=\"defined expression %s\" Formula=\"%s\"/>",
-			    flux=" <Expression Name=\"%s\" Description=\"flux %s\" Formula=\"%s\"/>",
-			    comment="<!-- <StateVariable Name=\"%s\" Description=\"compound %s\" DefaultInitialCondition=\"%s\" Formula=\"%s\"/> -->",
-			    ode=" <StateVariable Name=\"%s\" Description=\"compound %s\" DefaultInitialCondition=\"%s\" Formula=\"%s\"/>",
-			    output=" <Function Name=\"%s\" Description=\"output %s\" Formula=\"%s\"/>")
+			    expression=" <Expression Name=\"%s\" Description=\"defined expression\" Formula=\"%s\"/>",
+			    flux=" <Expression Name=\"%s\" Description=\"flux\" Formula=\"%s\"/>",
+			    comment="<!-- <StateVariable Name=\"%s\" Description=\"removed compound\" DefaultInitialCondition=\"%s\" Formula=\"%s\"/> -->",
+			    ode=" <StateVariable Name=\"%s\" Description=\"compound\" DefaultInitialCondition=\"%s\" Formula=\"%s\"/>",
+			    output=" <Function Name=\"%s\" Description=\"output\" Formula=\"%s\"/>")
 	vfgen[["header"]] <- "<?xml version=\"1.0\" ?>"
 	vfgen[["model"]] <- sprintf("<VectorField Name=\"%s\" Description=\"model created by an R script «sbtab_to_vfgen.R» (https://github.com/a-kramer/SBtabVFGEN)\">",H)
 	## Constants
-	vfgen[["const"]] <- sprintf(fmt$const,row.names(Constant),Constant$ID,Constant$Value)
+	vfgen[["const"]] <- sprintf(fmt$const,row.names(Constant),Constant$Value)
 	## Parameters
-	vfgen[["par"]] <- sprintf(fmt$par,row.names(Parameter),Parameter$ID,Parameter$Value)
+	vfgen[["par"]] <- sprintf(fmt$par,row.names(Parameter),Parameter$Value)
 	## Inputs
-	vfgen[["input"]] <- sprintf(fmt$input,row.names(Input),Input$ID,Input$DefaultValue)
+	vfgen[["input"]] <- sprintf(fmt$input,row.names(Input),Input$DefaultValue)
 	## Conservation Laws
 	if (is.null(ConLaw)){
 		vfgen[["ConservationLaw"]] <- NULL
@@ -478,21 +446,21 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
 		vfgen[["ConservationLaw"]] <- sprintf(fmt$ConservationLaw,CName,c(1:nLaws),F)
 	}
 			                            # Expressions and Reaction Fluxes
-	vfgen[["expression"]] <- sprintf(fmt$expression,row.names(Expression),Expression$ID,Expression$Formula)
-	vfgen[["flux"]] <- sprintf(fmt$flux,row.names(Reaction),Reaction$ID,Reaction$Flux)
+	vfgen[["expression"]] <- sprintf(fmt$expression,row.names(Expression),Expression$Formula)
+	vfgen[["flux"]] <- sprintf(fmt$flux,row.names(Reaction),Reaction$Flux)
 			                            # ODE right-hand-sides
 	nC <- dim.data.frame(Compound)
 	CName <- row.names(Compound)
 	for (i in 1:nC[1]){
 		if (nLaws>0 && i %in% ConLaw$Eliminates){
-			message(sprintf("StateVariable %s will be commented out as it was already defined as a Mass Conservation Law Expression.",CName[i]))
-			vfgen[["ode"]][i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
+			cat(sprintf("StateVariable %s will be commented out as it was already defined as a Mass Conservation Law Expression.",CName[i]))
+			vfgen[["ode"]][i] <- sprintf(fmt$comment,CName[i], Compound$InitialValue[i],ODE[i])
 		}else{
-			vfgen[["ode"]][i] <- sprintf(fmt$ode,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
+			vfgen[["ode"]][i] <- sprintf(fmt$ode,CName[i], Compound$InitialValue[i],ODE[i])
 		}
 	}
 	## Output Functions
-	vfgen[["function"]] <- sprintf(fmt$output,row.names(Output),Output$ID,Output$Formula)
+	vfgen[["function"]] <- sprintf(fmt$output,row.names(Output),Output$Formula)
 	vfgen[["endmodel"]] <- "</VectorField>"
 	return(vfgen)
 }
@@ -554,8 +522,9 @@ PrintConLawInfo <- function(ConLaw,CompoundName,document.name){
 #' @param cla a logical value that determines whether conservation law
 #'     analysis should be performed. If this is TRUE (default) the
 #'     resulting ODE model will be reduced to a state variable sub-set
-#'     that is independent in the sense of linear algebraic
-#'     relationships.
+#'     that is independent (in the sense of linear algebraic
+#'     relationships).
+#' @return if conservation law analysis is turned on, this function returns the results
 #' @export
 sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 	options(stringsAsFactors = FALSE)
@@ -593,9 +562,9 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 		IsConstant <- Compound$IsConstant
 		message(sprintf("class(IsConstant): %s.\n",class(IsConstant)))
 		CC <- Compound[IsConstant,]
-		NewExpression <- data.frame(ID=CC$ID,Formula=CC$InitialValue,Unit=CC$Unit,row.names=row.names(CC))
+		NewExpression <- data.frame(Formula=CC$InitialValue,Unit=CC$Unit,row.names=row.names(CC))
 		print(NewExpression)
-		Expression=rbind(Expression,NewExpression)
+		Expression <- rbind(Expression,NewExpression)
 		print(Expression)
 		Compound <- Compound[!IsConstant,]
 		print(row.names(Expression))
@@ -611,10 +580,8 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 			if (a==""){
 				ex<-NA
 			}else{
-				ex <- charmatch(a,Expression$ID)
+				ex <- charmatch(a,rownames(Expression))
 			}
-			##print(a)
-			##print(ex)
 			if (!is.na(ex)){
 				l[i] <- TRUE
 				F[i] <- row.names(Expression[ex,])
@@ -672,9 +639,8 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 		##print(t(Laws))
 	}
 	PrintSteadyStateOutputs(Compound,ODE,Reaction,document.name)
-	H <- document.name
-	H <- sub("-",'_',H)
-		.write.txt(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
+	H <- make.cnames(document.name)
+	.write.txt(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
 	vfgen <- .make.vfgen(H,Constant,Parameter,Input,Expression,Reaction,Compound,Output,ODE,ConLaw)
 	fname<-sprintf("%s.vf",H)
 	cat(unlist(vfgen),sep="\n",file=fname)
@@ -685,4 +651,5 @@ sbtab_to_vfgen <- function(SBtab,cla=TRUE){
 	cat(unlist(Mod),sep="\n",file=fname)
 	message(sprintf("The mod content was written to: %s\n",fname))
 ##
+	return(ConLaw)
 }
