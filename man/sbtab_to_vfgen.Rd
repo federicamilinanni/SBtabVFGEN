@@ -13,8 +13,13 @@ sbtab_to_vfgen(SBtab, cla = TRUE)
 \item{cla}{a logical value that determines whether conservation law
 analysis should be performed. If this is TRUE (default) the
 resulting ODE model will be reduced to a state variable sub-set
-that is independent in the sense of linear algebraic
-relationships.}
+that is independent (in the sense of linear algebraic
+relationships).}
+}
+\value{
+if conservation law analysis is turned on, this function
+    returns the results, otherwise NA; if the model cannot be reduced, this
+    also returns NULL.
 }
 \description{
 This function interprets the SBtab content and exports it to three

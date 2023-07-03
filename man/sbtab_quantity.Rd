@@ -16,7 +16,8 @@ a vector with names corresponding to !ID and values taken
 }
 \description{
 This function extracts a vector from an sbtab table, and names the
-elements according to the "!ID" column.
+elements according to the row names of the table. The value column can be named any of these:
+Value, DefaultValue, InitialValue, Mean, Median.
 }
 \keyword{quantity}
 \keyword{sbtab}

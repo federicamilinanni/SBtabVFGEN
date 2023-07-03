@@ -10,7 +10,8 @@
   errorValues = 0.05 * outputValues + 0.05 * max(outputValues),
   inputParameters,
   initialTime = min(outputTimes),
-  initialState
+  initialState,
+  events = NA
 )
 }
 \arguments{

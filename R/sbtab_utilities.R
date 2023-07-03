@@ -359,9 +359,10 @@ sbtab.valid <- function(tab){
 #' @param initialTime t0 for the time series experiment: y(t0) = y0
 #' @param initialState (vector) initial values of the state variables, at t0
 #' @return list with these quantities as list items
-time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=min(outputTimes),initialState){
+time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=min(outputTimes),initialState,events=NA){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
+	if (is.na(events)){
 	experiment <- list(
 		outputValues=outputValues,
 		errorValues=errorValues,
@@ -369,10 +370,24 @@ time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorVal
 		initialTime=initialTime,
 		initialState=initialState,
 		outputTimes=outputTimes)
+	} else {
+	experiment <- list(
+		outputValues=outputValues,
+		errorValues=errorValues,
+		input=inputParameters,
+		initialTime=initialTime,
+		initialState=initialState,
+		outputTimes=outputTimes,
+		events=events)
+	}
 	return(experiment)
 }
 
 sbtab.events <- function(ename,tab){
+	if (is.na(ename)) {
+		return(NULL)
+	}
+
 	if (ename %in% names(tab)){
 		n.sv <- nrow(tab$Compound)
 		n.par <- nrow(tab$Parameter) + nrow(tab$Input)
@@ -380,14 +395,14 @@ sbtab.events <- function(ename,tab){
 
 		tf <- list(
 			state=list(
-					A=matrix(1.0,n.sv,n.t),
-					b=matrix(0.0,n.sv,n.t)
-				),
+				A=matrix(1.0,n.sv,n.t),
+				b=matrix(0.0,n.sv,n.t)
+			),
 			param=list(
-					A=matrix(1.0,n.par,n.t),
-					b=matrix(0.0,n.par,n.t)
-				)
+				A=matrix(1.0,n.par,n.t),
+				b=matrix(0.0,n.par,n.t)
 			)
+		)
 		rownames(tf$state$b) <- row.names(tab$Compound)
 		rownames(tf$state$A) <- row.names(tab$Compound)
 		par.names <- c(row.names(tab$Parameter),row.names(tab$Input))
@@ -396,6 +411,9 @@ sbtab.events <- function(ename,tab){
 
 		colNames <- names(tab[[ename]])
 		n <- nrow(tab[[ename]])
+
+		event.time <- tab[[ename]][["!Time"]]
+
 		for (i in grep("^>[A-Z]{3}:.+$",colNames)){
 			m <- colNames[i] %~% ">([A-Z]{3}):(.+)$"
 			op <- m[[1]][1]
@@ -416,8 +434,10 @@ sbtab.events <- function(ename,tab){
 				stop(sprintf("unknown operation in event table %s: %s\n",ename,op))
 			}
 		}
+	} else {
+		return(NULL)
 	}
-	return(list(time=as.numeric(tab[[ename]][["!Time"]]),))
+	return(list(time=event.time,tf=tf))
 }
 
 #' Read data from SBtab
@@ -464,13 +484,27 @@ sbtab.data <- function(tab){
 	input <- update_from_table(v,E)
 
 	id <- row.names(E)
+
+	if ("!Event" %in% names(E)){
+		event.names <- E[["!Event"]]
+	} else {
+		event.names <- rep(NA,n)
+	}
+
 	for (i in 1:n){
 		stopifnot(id[i] %in% names(tab))
 		tNames <- names(tab[[id[i]]])
 		l <- grepl(">([a-zA-Z][^ ]*)",tNames)
 		m <- dim(tab[[id[i]]])[1]
+
 		v.out <- rep(NA,length(out.id))
 		names(v.out) <- out.id
+
+		if (is.character(event.names[i])){
+			events <- sbtab.events(event.names[i],tab)
+		} else {
+			events <- NA
+		}
 
 		if (time.series[i]){
 			oTime <- tab[[id[i]]][["!Time"]]
@@ -483,7 +517,8 @@ sbtab.data <- function(tab){
 				inputParameters=input[,i],
 				initialTime=initialTime,
 				initialState=initVal[,i],
-				outputTimes=oTime
+				outputTimes=oTime,
+				events=events
 			)
 		} else if (dose.response[i]){
 			u <- update_from_table(input[,i],tab[[id[i]]])
@@ -499,7 +534,8 @@ sbtab.data <- function(tab){
 					inputParameters=u[,j],
 					initialTime=initialTime,
 					initialState=initVal[,i],
-					outputTimes=outTime[i]
+					outputTimes=outTime[i],
+					events=events
 				)
 			}
 		}
