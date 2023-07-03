@@ -98,7 +98,8 @@
 	num.reactions <- nrow(Reaction)
 	Name <- row.names(Reaction)
 	OneCompartmentModel=FALSE;
-	if (is.na(Compartment) || length(Compartment$ID==1)){
+	Compartment.id <- row.names(Compartment)
+	if (is.na(Compartment) || nrow(Compartment)==1){
 		OneCompartmentModel=TRUE;
 	}
 	AB <- strsplit(Reaction$Formula,split="<=>")
@@ -114,7 +115,7 @@
 		kl <- libSBML::Reaction_createKineticLaw(reaction);
 		Flux <- Reaction$Flux[i]
 		if (OneCompartmentModel){
-			Flux <- sprintf("(%s)*%s",Flux,Compartment$ID[1]);
+			Flux <- sprintf("(%s)*%s",Flux,Compartment.id[1]);
 			message("reaction rates in SBML need to have the unit «substance/time» rather than «concentration/time».\nSo conventional kinetics need to be multiplied by compartment volumes.");
 			message("Since this model has only one Compartment, all kinetics will be multiplied by its volume for the SBML model.");
 		}
@@ -253,23 +254,25 @@
 #' @return SBML model as a character vector
 .make.sbml <- function(H,Defaults,Constant=NULL,Parameter,Input=NULL,Expression=NULL,Reaction,Compound,Output,Comp){
 	Doc <- libSBML::SBMLDocument(2,4); # (LEVEL,VERSION)
-	sbml  <-  libSBML::SBMLDocument_createModel(Doc);
-	libSBML::Model_setId(sbml,H);
+	sbml  <-  libSBML::SBMLDocument_createModel(Doc)
+	libSBML::Model_setId(sbml,H)
+	default.id <- row.names(Defaults)
 	## default units
 	## substance
 	for (i in 1:nrow(Defaults)){
-		message(sprintf("default unit «%s» (%s)",Defaults$ID[i],Defaults$Unit[i]))
+		message(sprintf("default unit «%s» (%s)",default.id[i],Defaults$Unit[i]))
 		unit <- unit.from.string(Defaults$Unit[i])
-		.create.sbml.unit(sbml,unit,Defaults$ID[i])
+		.create.sbml.unit(sbml,unit,default.id[i])
 	}
 
 	u.units <- .unique.units(sbml,c(Expression$Unit,Compound$Unit,Parameter$Unit,Constant$Unit,Input$Unit,Output$Unit,Comp$Unit))
 	CompName <- row.names(Comp)
 	print(CompName)
+	Comp.id <- row.names(Comp)
 	for (i in 1:nrow(Comp)){
 		this.unit.id <- unit.id(Comp$Unit[i])
 		comp <- libSBML::Model_createCompartment(sbml)
-		libSBML::Compartment_setId(comp,Comp$ID[i])
+		libSBML::Compartment_setId(comp,Comp.id[i])
 		libSBML::Compartment_setName(comp,CompName[i])
 		libSBML::Compartment_setUnits(comp,this.unit.id)
 		libSBML::Compartment_setVolume(comp,as.numeric(Comp$Size[i]))
@@ -277,17 +280,17 @@
 	if(!is.null(Constant)){
 		.sbtab.constant.to.sbml(sbml,Constant)
 	}
-	.sbtab.compound.to.sbml(sbml,Compound,Comp$ID[1],"substance")
+	.sbtab.compound.to.sbml(sbml,Compound,Comp.id[1],"substance")
 	.sbtab.parameter.to.sbml(sbml,Parameter)
 	if (!is.null(Input)){
 		.sbtab.parameter.to.sbml(sbml,Input)
 	}
 	.sbtab.reaction.to.sbml(sbml,Reaction,Comp)
 	if (!is.null(Expression)){
-		.sbtab.expression.to.sbml(sbml,Expression,Comp$ID[1],Compound)
+		.sbtab.expression.to.sbml(sbml,Expression,Comp.id[1],Compound)
 	}
 	if (!is.null(Output)){
-		.sbtab.output.to.sbml(sbml,Output,Comp$ID[1],"substance")
+		.sbtab.output.to.sbml(sbml,Output,Comp.id[1],"substance")
 	}
 	return(Doc)
 }

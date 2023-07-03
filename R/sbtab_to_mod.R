@@ -42,9 +42,9 @@ NeuronUnit<-function(unit){
 			    ConservationLaw="\t%s = %s : conservation law",
 			    expression="\t%s : a pre-defined algebraic expression",
 			    flux="\t%s : a flux, for use in DERIVATIVE mechanism",
-			    comment="\t: Compound %s with ID %s and initial condition %g had derivative %s, but is calculated by conservation law.",
+			    comment="\t: Compound %s with initial condition %g had derivative %s, but is calculated by conservation law.",
 			    state="\t%s (%s) : a state variable",
-			    ode="\t%s' = %s : affects compound with ID %s",
+			    ode="\t%s' = %s : affects compound %s",
 			    reactigon="\t %s <-> %s (%s, %s)",
 			    output="\t%s = %s : Output ID %s",
 			    assignment="\t%s = %s : assignment for expression %s")
@@ -70,7 +70,7 @@ NeuronUnit<-function(unit){
 		stop("Compound names should not end in '0'. \nNEURON will create initial values by appending a '0' to the state variable names. \nShould your variables contain var1 and var10, NEURON will also create var10 and var100 from them, which will be in conflict with your names. Please choose different names in the source files (SBtab).")
 	}
 	## Conservation Laws
-	if (is.null(ConLaw)){
+	if (is.null(ConLaw) || is.na(ConLaw)){
 		ConservationLaw <- NULL
 		ConservationInput <- NULL
 		CName <- NULL
@@ -105,7 +105,7 @@ NeuronUnit<-function(unit){
 			               sprintf("\t%s : computed from conservation law",CName),
 			               sprintf("\t%s : an observable",row.names(Output)),
 			               "}")
-	Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,Expression$ID)
+	Assignment <- sprintf(fmt$assignment,row.names(Expression),Expression$Formula,row.names(Expression))
 	nC <- dim.data.frame(Compound)
 	CName <- row.names(Compound)
 	STATE=vector(mode="character",length=nC[1])
@@ -115,12 +115,12 @@ NeuronUnit<-function(unit){
 		if (nLaws>0 && i %in% ConLaw$Eliminates){
 			message(sprintf("MOD: StateVariable %s will be commented out as it was already defined as a Mass Conservation Law Expression.",CName[i]))
 			STATE[i] <- sprintf("\t: %s is calculated via Conservation Law",CName[i])
-			DERIVATIVE[i] <- sprintf(fmt$comment,CName[i], Compound$ID[i], Compound$InitialValue[i],ODE[i])
+			DERIVATIVE[i] <- sprintf(fmt$comment, CName[i], Compound$InitialValue[i],ODE[i])
 			IVP[i] <- sprintf("\t: %s cannot have initial values as it is determined by conservation law",CName[i])
 		}else{
 			STATE[i] <- sprintf(fmt$state,CName[i],NeuronUnit(Compound$Unit[i]))
 			Right.Hand.Side <- sub("^[[:blank:]]*[+]","",ODE[i]) # remove leading plus signs, if present
-			DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], Right.Hand.Side,Compound$ID[i])
+			DERIVATIVE[i] <- sprintf(fmt$ode,CName[i], Right.Hand.Side, CName[i])
 			IVP[i] <- sprintf("\t %s = %s : initial condition",CName[i],Compound$InitialValue[i])
 		}
 	}
@@ -128,7 +128,7 @@ NeuronUnit<-function(unit){
 			                 "\ttime = t : an alias for the time variable, if needed.",
 			                 ConservationLaw,
 			                 Assignment,
-			                 sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,Reaction$ID),
+			                 sprintf("\t%s = %s : flux expression %s",row.names(Reaction),Reaction$Flux,row.names(Reaction)),
 			                 "}")
 
 	Mod[["STATE"]] <- c("STATE {",STATE,"}")
@@ -138,6 +138,6 @@ NeuronUnit<-function(unit){
 			                 "}")
 	Mod[["DERIVATIVE"]] <- c("DERIVATIVE ode {",DERIVATIVE,"}")
 	## Output Functions
-	Mod[["FUNCTION"]] <- c("PROCEDURE observables_func() {",sprintf(fmt$output,row.names(Output),Output$Formula,Output$ID),"}")
+	Mod[["FUNCTION"]] <- c("PROCEDURE observables_func() {",sprintf(fmt$output,row.names(Output),Output$Formula,row.names(Output)),"}")
 	return(Mod)
 }

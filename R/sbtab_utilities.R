@@ -107,7 +107,8 @@ update_from_table <- function(v,Table,prefix=">"){
 #' read vector from sbtab Quantity table
 #'
 #' This function extracts a vector from an sbtab table, and names the
-#' elements according to the "!ID" column.
+#' elements according to the row names of the table. The value column can be named any of these:
+#' Value, DefaultValue, InitialValue, Mean, Median.
 #'
 #' @param Table the sbtab table imported via sbtab_from_{ods,tsv}
 #'     (either)
@@ -117,9 +118,13 @@ update_from_table <- function(v,Table,prefix=">"){
 #' @export
 sbtab_quantity <- function(Table){
 	colNames <- names(Table)
-	V <- colNames %1% grepl("!(Default|Initial)?Value",colNames)
-	v <- as.double(gsub("−","-",Table[V])
-	names(v) <- rownames(Table)
+	l <- grepl("^!((Default|Initial)?Value|Mean|Median)$",colNames)
+	if (any(l)){
+		v <- as.double(Table %1% l)
+		names(v) <- rownames(Table)
+	} else {
+		stop("Table has no Value column.")
+	}
 	return(v)
 }
 
@@ -234,9 +239,7 @@ all.vars <- function(tab,react=TRUE){
 		tNames <- tNames[l]
 	}
 	for (T in tNames){
-		if ("!ID" %in% names(tab[[T]])) {
-			allvars <- c(allvars,row.names(tab[[T]]))
-		}
+		allvars <- c(allvars,row.names(tab[[T]]))
 	}
 	return(trimws(unlist(allvars)))
 }
@@ -274,14 +277,17 @@ all.refs.valid <- function(tab,allvars=all.vars(tab,reac=FALSE)){
 #'
 #' @param T one table (data.frame)
 id.eq.name <- function(T){
-	if (!all(c("!ID","!Name") %in% names(T))) return(NA)
-	ID <- T[["!ID"]]
-	Name <- T[["!Name"]]
-	l <- ID == Name
-	if (any(!l)){
-		message("these IDs and Names are different:")
-		message(sprintf("%30s    %s\n","ID","Name"))
-		message(sprintf("%30s != %s\n",ID[!l],Name[!l]))
+	if ("!Name" %in% names(T)){
+		ID <- row.names(T)
+		Name <- T[["!Name"]]
+		l <- ID == Name
+		if (any(!l)){
+			message("these IDs and Names are different:")
+			message(sprintf("%30s    %s\n","ID","Name"))
+			message(sprintf("%30s != %s\n",ID[!l],Name[!l]))
+		}
+	} else {
+		l <- NA
 	}
 	return(l)
 }
@@ -306,8 +312,8 @@ sbtab.valid <- function(tab){
 	## point out where ID and Name are different, maybe that is a problem
 	for (T in tab){
 		l <- id.eq.name(T)
-		if (!any(is.na(l)) && !all(l)){
-			warning("Not all IDs are equal to the Name attribute, but maybe this is on purpose.")
+		if (!is.na(l) && !all(l)){
+			warning(sprintf("Not all IDs are equal to the Name attribute in «%s», but maybe this is on purpose.\n",attr(T,"TableName")))
 		}
 	}
 	if (all.refs.valid(tab)){
@@ -373,13 +379,15 @@ sbtab.events <- function(ename,tab){
 		n.t <- nrow(tab[[ename]])
 
 		tf <- list(
-				state=list(
-						A=matrix(1.0,n.sv,n.t),
-						b=matrix(0.0,n.sv,n.t)),
-				param=list(
-						A=matrix(1.0,n.par,n.t),
-						b=matrix(0.0,n.par,n.t)),
-				))
+			state=list(
+					A=matrix(1.0,n.sv,n.t),
+					b=matrix(0.0,n.sv,n.t)
+				),
+			param=list(
+					A=matrix(1.0,n.par,n.t),
+					b=matrix(0.0,n.par,n.t)
+				)
+			)
 		rownames(tf$state$b) <- row.names(tab$Compound)
 		rownames(tf$state$A) <- row.names(tab$Compound)
 		par.names <- c(row.names(tab$Parameter),row.names(tab$Input))
@@ -392,7 +400,7 @@ sbtab.events <- function(ename,tab){
 			m <- colNames[i] %~% ">([A-Z]{3}):(.+)$"
 			op <- m[[1]][1]
 			quantity <- m[[1]][2]
-			kind <- ifelse(quantity %in% tab$Compound[["!ID"]],"state","param")
+			kind <- ifelse(quantity %in% row.names(tab$Compound),"state","param")
 			if (op == "ADD") {
 				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][i])
 			} else if (op == "SUB") {
@@ -409,7 +417,6 @@ sbtab.events <- function(ename,tab){
 			}
 		}
 	}
-	tf <- list(state=)
 	return(list(time=as.numeric(tab[[ename]][["!Time"]]),))
 }
 
@@ -432,8 +439,8 @@ sbtab.data <- function(tab){
 		print(names(tab)[l])
 		return(NA)
 	}
-	out.id <- tab$Output[["!ID"]]
-	input.id <- tab$Input[["!ID"]]
+	out.id <- row.names(tab$Output)
+	input.id <- row.names(tab$Input)
 	n <- dim(E)[1]
 	experiments <- list()
 	l <- grepl("!([eE]xperiment)?Type",names(E))
@@ -456,7 +463,7 @@ sbtab.data <- function(tab){
 	v <- sbtab_quantity(tab$Input)
 	input <- update_from_table(v,E)
 
-	id <- E[["!ID"]]
+	id <- row.names(E)
 	for (i in 1:n){
 		stopifnot(id[i] %in% names(tab))
 		tNames <- names(tab[[id[i]]])
@@ -484,7 +491,7 @@ sbtab.data <- function(tab){
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
 			outTime <- E[["!Time"]]
 			initialTime <- ifelse(is.null(t0),0.0,t0[i])
-			dose.id <- tab[[id[i]]][["!ID"]]
+			dose.id <- row.names(tab[[id[i]]])
 			for (j in 1:m){
 				experiments[[dose.id[j]]] <- time.series(
 					outputValues=OUT[j,],
