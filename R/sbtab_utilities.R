@@ -177,7 +177,7 @@ sbtab_from_ods <- function(ods.file,verbose=TRUE){
 		table.name[i] <- sbtab.header.value(header,'TableName')
 		SBtab[[i]] <- M[[i]][-c(1,2),-1]
 		names(SBtab[[i]]) <- M[[i]][2,]
-		rownames(SBtab[[i]]) <- as.character(M[[i]][-c(1,2),1])
+		row.names(SBtab[[i]]) <- as.character(M[[i]][-c(1,2),1])
 	}
 	names(SBtab) <- table.name
 	if (verbose) cat("Tables found: ",paste(table.name,collapse=', '),"\n")
@@ -362,23 +362,25 @@ sbtab.valid <- function(tab){
 time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=min(outputTimes),initialState,events=NA){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
-	if (is.na(events)){
-	experiment <- list(
-		outputValues=outputValues,
-		errorValues=errorValues,
-		input=inputParameters,
-		initialTime=initialTime,
-		initialState=initialState,
-		outputTimes=outputTimes)
+	if (is.null(events) || is.na(events)){
+		experiment <- list(
+			outputValues=outputValues,
+			errorValues=errorValues,
+			input=inputParameters,
+			initialTime=initialTime,
+			initialState=initialState,
+			outputTimes=outputTimes
+		)
 	} else {
-	experiment <- list(
-		outputValues=outputValues,
-		errorValues=errorValues,
-		input=inputParameters,
-		initialTime=initialTime,
-		initialState=initialState,
-		outputTimes=outputTimes,
-		events=events)
+		experiment <- list(
+			outputValues=outputValues,
+			errorValues=errorValues,
+			input=inputParameters,
+			initialTime=initialTime,
+			initialState=initialState,
+			outputTimes=outputTimes,
+			events=events
+		)
 	}
 	return(experiment)
 }
@@ -388,7 +390,7 @@ sbtab.events <- function(ename,tab){
 		return(NULL)
 	}
 
-	if (ename %in% names(tab)){
+	if (nzchar(ename) && ename %in% names(tab)){
 		n.sv <- nrow(tab$Compound)
 		n.par <- nrow(tab$Parameter) + nrow(tab$Input)
 		n.t <- nrow(tab[[ename]])
@@ -416,20 +418,20 @@ sbtab.events <- function(ename,tab){
 
 		for (i in grep("^>[A-Z]{3}:.+$",colNames)){
 			m <- colNames[i] %~% ">([A-Z]{3}):(.+)$"
-			op <- m[[1]][1]
-			quantity <- m[[1]][2]
+			op <- m[[1]][2]
+			quantity <- m[[1]][3]
 			kind <- ifelse(quantity %in% row.names(tab$Compound),"state","param")
 			if (op == "ADD") {
-				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][i])
+				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][[i]])
 			} else if (op == "SUB") {
-				tf[[kind]]$b[quantity,] <- (-1.0)*as.numeric(tab[[ename]][i])
+				tf[[kind]]$b[quantity,] <- (-1.0)*as.numeric(tab[[ename]][[i]])
 			} else if (op == "MUL") {
-				tf[[kind]]$A[quantity,] <- as.numeric(tab[[ename]][i])
+				tf[[kind]]$A[quantity,] <- as.numeric(tab[[ename]][[i]])
 			} else if (op == "DIV") {
-				tf[[kind]]$A[quantity,] <- 1.0/as.numeric(tab[[ename]][i])
+				tf[[kind]]$A[quantity,] <- 1.0/as.numeric(tab[[ename]][[i]])
 			} else if (op == "SET") {
 				tf[[kind]]$A[quantity,] <- 0.0
-				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][i])
+				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][[i]])
 			} else {
 				stop(sprintf("unknown operation in event table %s: %s\n",ename,op))
 			}
@@ -463,12 +465,12 @@ sbtab.data <- function(tab){
 	input.id <- row.names(tab$Input)
 	n <- dim(E)[1]
 	experiments <- list()
-	l <- grepl("!([eE]xperiment)?Type",names(E))
+	l <- grepl("!([eE]xperiment)?[tT]ype",names(E))
 	if (any(l)){
 		type <- E %1% l
-		time.series <- grepl("time[_ ]series",type,ignore.case=TRUE)
-		dose.response <- grepl("dose[_ ]response",type,ignore.case=TRUE)
-		dose.sequence <- grepl("dose[ _]sequence",type,ignore.case=TRUE)
+		time.series <- grepl("[Tt]ime[_ ][Ss]eries",type,ignore.case=TRUE)
+		dose.response <- grepl("[Dd]ose[_ ][Rr]esponse",type,ignore.case=TRUE)
+		dose.sequence <- grepl("[Dd]ose[ _][Ss]equence",type,ignore.case=TRUE)
 	} else {
 		time.series <- rep(TRUE,n) # by default
 		dose.response <- !time.series

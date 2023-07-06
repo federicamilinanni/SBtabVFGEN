@@ -295,7 +295,7 @@ UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Input){
 		cat(sprintf("%i × %s",n,compound))
 		if (compound %in% row.names(Compound)){
 			j <- as.numeric(match(compound,row.names(Compound)))
-			cat(sprintf("\t\t\t(%s is compound %i)",compound,j))
+			cat(sprintf("\t\t\t(%s is compound %i)\n",compound,j))
 		} else if (compound %in% row.names(Expression)){
 			j <- (-1)
 			cat(sprintf("\t\t\t«%s» is a fixed expression, it has no influx. ODE will be unaffected, but the expression may be used in ReactionFlux calculations\n",compound))
@@ -306,7 +306,7 @@ UpdateODEandStoichiometry <- function(Term,Compound,FluxName,Expression,Input){
 			cat(sprintf("\t\t\t«%s» (Ø) is a placeholder to formulate degradation in reaction formulae.\n",compound))
 			j <- (-2)
 		} else {
-			stop(sprintf("\t\t\t«%s» is neither in the list of registered compounds nor is it an expression\n",compound))
+			stop(sprintf("\t\t\t«%s» is neither in the list of registered compounds nor is it an expression.\n",compound))
 		}
 		J[i] <- j
 		C[i] <- n
@@ -362,7 +362,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression,Input){
 		## work at all. But perhaps <<- is also bad practice.
 
 		## 1
-		message("Products:")
+		cat("Products:\n")
 		L <- length(b);
 		Term <- UpdateODEandStoichiometry(b,Compound,RName[i],Expression,Input)
 		for (k in 1:L){
@@ -373,7 +373,7 @@ ParseReactionFormulae <- function(Compound,Reaction,Expression,Input){
 			}
 		}
 		## 2
-		message("Reactants:")
+		cat("Reactants:\n")
 		L <- length(a);
 		Term <- UpdateODEandStoichiometry(a,Compound,RName[i],Expression,Input)
 		for (k in 1:L){
