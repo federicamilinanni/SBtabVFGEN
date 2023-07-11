@@ -15,6 +15,7 @@ test_that("event import works",{
 		full.names=TRUE,pattern="_gvf[.]c"
 	)
 	expect_true(file.exists(vf.c))
+	print(getwd())
 	so <- rgsl::model.so(vf.c)
 	print(so)
 	expect_type(so,"character")

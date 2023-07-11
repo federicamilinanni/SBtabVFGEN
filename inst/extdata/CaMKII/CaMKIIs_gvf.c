@@ -2988,7 +2988,7 @@ int CaMKIIs_init(double t, double *y_, void *par)
 	y_[18] = 0;
 	y_[19] = 0;
 	y_[20] = 0;
-	y_[21] = 5.658469984;
-	y_[22] = 0;
+	y_[21] = 0;
+	y_[22] = 5.658469984;
 	return GSL_SUCCESS;
 }

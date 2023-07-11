@@ -184,8 +184,8 @@
  <StateVariable Name="pCaMKII_CaM_Ca1" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux26+ReactionFlux28-ReactionFlux29"/>
  <StateVariable Name="pCaMKII_CaM" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux27-ReactionFlux28"/>
  <StateVariable Name="PP1__pCaMKIIa" Description="compound" DefaultInitialCondition="0" Formula="+ReactionFlux33-ReactionFlux34"/>
- <StateVariable Name="caa" Description="compound" DefaultInitialCondition="5.658469984" Formula="+SpikeFlux1"/>
- <StateVariable Name="cab" Description="compound" DefaultInitialCondition="0" Formula="+SpikeFlux2"/>
+ <StateVariable Name="caa" Description="compound" DefaultInitialCondition="0" Formula="+SpikeFlux1"/>
+ <StateVariable Name="cab" Description="compound" DefaultInitialCondition="5.658469984" Formula="+SpikeFlux2"/>
  <Function Name="CaPerCaM" Description="output" Formula="BoundCa / (s + Total_CaM)"/>
  <Function Name="AutoCaMKII" Description="output" Formula="100*(Total_pCaMKII / (s + totalCaMKII))"/>
  <Function Name="CaMPerPP2B" Description="output" Formula="Total_PP2B_CaM_CaX / (s + PP2B + Total_PP2B_CaM_CaX)"/>
