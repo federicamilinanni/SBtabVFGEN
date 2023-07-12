@@ -64,6 +64,7 @@
  <Parameter Name="PP2B_0" Description="input parameter" DefaultValue="3"/>
  <Parameter Name="kca1" Description="input parameter" DefaultValue="0.00978422"/>
  <Parameter Name="kca2" Description="input parameter" DefaultValue="0.03448"/>
+ <Parameter Name="isOn" Description="input parameter" DefaultValue="0"/>
  <Expression Name="KD__CaM_Ca3__PP2B" Description="defined expression" Formula="(KD__CaM_Ca3__Ca * KD__CaM_Ca4__PP2B) / KD__PP2B_CaM_Ca3__Ca"/>
  <Expression Name="KD__CaM_Ca2__PP2B" Description="defined expression" Formula="(KD__CaM_Ca2__Ca * KD__CaM_Ca3__PP2B) / KD__PP2B_CaM_Ca2__Ca"/>
  <Expression Name="KD__CaM_Ca1__PP2B" Description="defined expression" Formula="(KD__CaM_Ca1__Ca * KD__CaM_Ca2__PP2B) / KD__PP2B_CaM_Ca1__Ca"/>
@@ -107,8 +108,7 @@
  <Expression Name="kr__CaM_Ca2__pCaMKIIa" Description="defined expression" Formula="KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa"/>
  <Expression Name="kr__CaM_Ca1__pCaMKIIa" Description="defined expression" Formula="KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa"/>
  <Expression Name="kr__CaM__pCaMKIIa" Description="defined expression" Formula="KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa"/>
- <Expression Name="logistic" Description="defined expression" Formula="1.0/(1+exp(-10*t))"/>
- <Expression Name="Ca" Description="defined expression" Formula="logistic*Ca_set+caa"/>
+ <Expression Name="Ca" Description="defined expression" Formula="isOn*Ca_set+caa"/>
  <Expression Name="PP1" Description="defined expression" Formula="PP1_0-PP1__pCaMKIIa"/>
  <Expression Name="CaMKII" Description="defined expression" Formula="CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)"/>
  <Expression Name="CaM" Description="defined expression" Formula="CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)"/>

@@ -359,15 +359,15 @@ sbtab.valid <- function(tab){
 #' @param initialTime t0 for the time series experiment: y(t0) = y0
 #' @param initialState (vector) initial values of the state variables, at t0
 #' @return list with these quantities as list items
-time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=min(outputTimes),initialState,events=NA){
+time.series <- function(outputValues,outputTimes=as.double(1:dim(outputValues)[2]),errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=as.double(min(outputTimes)),initialState,events=NA){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
 	if (is.null(events) || is.na(events)){
 		experiment <- list(
-			outputValues=outputValues,
+			outputValues=as.double(outputValues),
 			errorValues=errorValues,
 			input=inputParameters,
-			initialTime=initialTime,
+			initialTime=as.double(initialTime),
 			initialState=initialState,
 			outputTimes=outputTimes
 		)
@@ -376,9 +376,9 @@ time.series <- function(outputValues,outputTimes=1:dim(outputValues)[2],errorVal
 			outputValues=outputValues,
 			errorValues=errorValues,
 			input=inputParameters,
-			initialTime=initialTime,
+			initialTime=as.double(initialTime),
 			initialState=initialState,
-			outputTimes=outputTimes,
+			outputTimes=as.double(outputTimes),
 			events=events
 		)
 	}
@@ -397,12 +397,12 @@ sbtab.events <- function(ename,tab){
 
 		tf <- list(
 			state=list(
-				A=matrix(1.0,n.sv,n.t),
-				b=matrix(0.0,n.sv,n.t)
+				A=array(1.0,dim=c(n.sv,1,n.t)),
+				b=array(0.0,dim=c(n.sv,1,n.t))
 			),
 			param=list(
-				A=matrix(1.0,n.par,n.t),
-				b=matrix(0.0,n.par,n.t)
+				A=array(1.0,dim=c(n.par,1,n.t)),
+				b=array(0.0,dim=c(n.par,1,n.t))
 			)
 		)
 		rownames(tf$state$b) <- row.names(tab$Compound)
@@ -414,24 +414,24 @@ sbtab.events <- function(ename,tab){
 		colNames <- names(tab[[ename]])
 		n <- nrow(tab[[ename]])
 
-		event.time <- tab[[ename]][["!Time"]]
+		event.time <- as.double(tab[[ename]][["!Time"]])
 
 		for (i in grep("^>[A-Z]{3}:.+$",colNames)){
-			m <- colNames[i] %~% ">([A-Z]{3}):(.+)$"
-			op <- m[[1]][2]
+			m <- colNames[i] %~% ">([A-Za-z]{3}):(.+)$"
+			op <- tolower(m[[1]][2])
 			quantity <- m[[1]][3]
 			kind <- ifelse(quantity %in% row.names(tab$Compound),"state","param")
-			if (op == "ADD") {
-				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][[i]])
-			} else if (op == "SUB") {
-				tf[[kind]]$b[quantity,] <- (-1.0)*as.numeric(tab[[ename]][[i]])
-			} else if (op == "MUL") {
-				tf[[kind]]$A[quantity,] <- as.numeric(tab[[ename]][[i]])
-			} else if (op == "DIV") {
-				tf[[kind]]$A[quantity,] <- 1.0/as.numeric(tab[[ename]][[i]])
-			} else if (op == "SET") {
-				tf[[kind]]$A[quantity,] <- 0.0
-				tf[[kind]]$b[quantity,] <- as.numeric(tab[[ename]][[i]])
+			if (op == "add") {
+				tf[[kind]]$b[quantity,1,] <- as.numeric(tab[[ename]][[i]])
+			} else if (op == "sub") {
+				tf[[kind]]$b[quantity,1,] <- (-1.0)*as.numeric(tab[[ename]][[i]])
+			} else if (op == "mul") {
+				tf[[kind]]$A[quantity,1,] <- as.numeric(tab[[ename]][[i]])
+			} else if (op == "div") {
+				tf[[kind]]$A[quantity,1,] <- 1.0/as.numeric(tab[[ename]][[i]])
+			} else if (op == "set") {
+				tf[[kind]]$A[quantity,1,] <- 0.0
+				tf[[kind]]$b[quantity,1,] <- as.numeric(tab[[ename]][[i]])
 			} else {
 				stop(sprintf("unknown operation in event table %s: %s\n",ename,op))
 			}

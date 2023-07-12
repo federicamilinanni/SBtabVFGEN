@@ -1,7 +1,7 @@
 Type: Package
 Package: SBtabVFGEN
 Title: Converts from SBtab to vf,mod,[sbml]
-Version: 0.3.2
+Version: 0.4.0
 Authors@R:
     person(given = "Andrei",
            family = "Kramer",
