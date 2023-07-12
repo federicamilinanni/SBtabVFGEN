@@ -67,6 +67,7 @@ CaMKIIs_vf <- function(t, state, parameters)
 	PP2B_0 <- parameters[59]
 	kca1 <- parameters[60]
 	kca2 <- parameters[61]
+	isOn <- parameters[62]
 	CaM_Ca1 <- state[1]
 	CaM_Ca2 <- state[2]
 	CaM_Ca3 <- state[3]
@@ -133,8 +134,7 @@ CaMKIIs_vf <- function(t, state, parameters)
 	kr__CaM_Ca2__pCaMKIIa <- KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa
 	kr__CaM_Ca1__pCaMKIIa <- KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa
 	kr__CaM__pCaMKIIa <- KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa
-	logistic <- 1.0/(1+exp(-10*t))
-	Ca <- logistic*Ca_set+caa
+	Ca <- isOn*Ca_set+caa
 	PP1 <- PP1_0-PP1__pCaMKIIa
 	CaMKII <- CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)
 	CaM <- CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)
@@ -284,6 +284,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	PP2B_0 <- parameters[59]
 	kca1 <- parameters[60]
 	kca2 <- parameters[61]
+	isOn <- parameters[62]
 	CaM_Ca1 <- state[1]
 	CaM_Ca2 <- state[2]
 	CaM_Ca3 <- state[3]
@@ -350,8 +351,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	kr__CaM_Ca2__pCaMKIIa <- KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa
 	kr__CaM_Ca1__pCaMKIIa <- KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa
 	kr__CaM__pCaMKIIa <- KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa
-	logistic <- 1.0/(1+exp(-10*t))
-	Ca <- logistic*Ca_set+caa
+	Ca <- isOn*Ca_set+caa
 	PP1 <- PP1_0-PP1__pCaMKIIa
 	CaMKII <- CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)
 	CaM <- CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)
@@ -408,533 +408,533 @@ CaMKIIs_jac<-function(t, state, parameters)
 	SpikeFlux2 <- 0-(kca1*kca2*caa+(kca1+kca2)*cab)
 	jac_ <- matrix(NA,23,23)
 # column 1 (df/dy_0)
-	jac_[1,1] <- (((((kf__CaM__Ca*(((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1)-KD__CaM__Ca))-(kf__CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))-(kf__CaM_Ca1__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))))-(kf__CaM_Ca1__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))))-(kf__CaM_Ca1__pCaMKIIa*pCaMKIIa))
-	jac_[2,1] <- (kf__CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
+	jac_[1,1] <- (-kf__CaM_Ca1__pCaMKIIa*pCaMKIIa)-kf__CaM_Ca1__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-(Ca_set*isOn+caa)*kf__CaM__Ca-KD__CaM__Ca*kf__CaM__Ca-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca1__PP2B-(Ca_set*isOn+caa)*kf__CaM_Ca1__Ca
+	jac_[2,1] <- (Ca_set*isOn+caa)*kf__CaM_Ca1__Ca
 	jac_[3,1] <- 0
 	jac_[4,1] <- 0
-	jac_[5,1] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
-	jac_[6,1] <- (kf__CaM_Ca1__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))
+	jac_[5,1] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
+	jac_[6,1] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca1__PP2B
 	jac_[7,1] <- 0
 	jac_[8,1] <- 0
 	jac_[9,1] <- 0
-	jac_[10,1] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,1] <- (kf__CaM_Ca1__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))
+	jac_[10,1] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
+	jac_[11,1] <- kf__CaM_Ca1__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[12,1] <- 0
 	jac_[13,1] <- 0
 	jac_[14,1] <- 0
-	jac_[15,1] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,1] <- ((0-(kf__CaM_Ca1__pCaMKIIa*pCaMKIIa))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,1] <- 0
+	jac_[16,1] <- kf__CaM__pCaMKIIa*pCaMKIIa-kf__CaM_Ca1__pCaMKIIa*pCaMKIIa
 	jac_[17,1] <- 0
 	jac_[18,1] <- 0
-	jac_[19,1] <- (kf__CaM_Ca1__pCaMKIIa*pCaMKIIa)
-	jac_[20,1] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[19,1] <- kf__CaM_Ca1__pCaMKIIa*pCaMKIIa
+	jac_[20,1] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,1] <- 0
 	jac_[22,1] <- 0
 	jac_[23,1] <- 0
 # column 2 (df/dy_1)
-	jac_[1,2] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__Ca*(0-KD__CaM_Ca1__Ca)))
-	jac_[2,2] <- (((((kf__CaM_Ca1__Ca*(0-KD__CaM_Ca1__Ca))-(kf__CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))-(kf__CaM_Ca2__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))))-(kf__CaM_Ca2__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))))-(kf__CaM_Ca2__pCaMKIIa*pCaMKIIa))
-	jac_[3,2] <- (kf__CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
+	jac_[1,2] <- KD__CaM_Ca1__Ca*kf__CaM_Ca1__Ca-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,2] <- (-kf__CaM_Ca2__pCaMKIIa*pCaMKIIa)-kf__CaM_Ca2__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca2__PP2B-(Ca_set*isOn+caa)*kf__CaM_Ca2__Ca-KD__CaM_Ca1__Ca*kf__CaM_Ca1__Ca
+	jac_[3,2] <- (Ca_set*isOn+caa)*kf__CaM_Ca2__Ca
 	jac_[4,2] <- 0
-	jac_[5,2] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[5,2] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,2] <- 0
-	jac_[7,2] <- (kf__CaM_Ca2__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))
+	jac_[7,2] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca2__PP2B
 	jac_[8,2] <- 0
 	jac_[9,2] <- 0
-	jac_[10,2] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[10,2] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,2] <- 0
-	jac_[12,2] <- (kf__CaM_Ca2__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))
+	jac_[12,2] <- kf__CaM_Ca2__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[13,2] <- 0
 	jac_[14,2] <- 0
-	jac_[15,2] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,2] <- ((0-(kf__CaM_Ca2__pCaMKIIa*pCaMKIIa))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,2] <- 0
+	jac_[16,2] <- kf__CaM__pCaMKIIa*pCaMKIIa-kf__CaM_Ca2__pCaMKIIa*pCaMKIIa
 	jac_[17,2] <- 0
-	jac_[18,2] <- (kf__CaM_Ca2__pCaMKIIa*pCaMKIIa)
+	jac_[18,2] <- kf__CaM_Ca2__pCaMKIIa*pCaMKIIa
 	jac_[19,2] <- 0
-	jac_[20,2] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,2] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,2] <- 0
 	jac_[22,2] <- 0
 	jac_[23,2] <- 0
 # column 3 (df/dy_2)
-	jac_[1,3] <- (kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))
-	jac_[2,3] <- (0-(kf__CaM_Ca2__Ca*(0-KD__CaM_Ca2__Ca)))
-	jac_[3,3] <- (((((kf__CaM_Ca2__Ca*(0-KD__CaM_Ca2__Ca))-(kf__CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))-(kf__CaM_Ca3__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))))-(kf__CaM_Ca3__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))))-(kf__CaM_Ca3__pCaMKIIa*pCaMKIIa))
-	jac_[4,3] <- (kf__CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
-	jac_[5,3] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,3] <- -(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,3] <- KD__CaM_Ca2__Ca*kf__CaM_Ca2__Ca
+	jac_[3,3] <- (-kf__CaM_Ca3__pCaMKIIa*pCaMKIIa)-kf__CaM_Ca3__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca3__PP2B-(Ca_set*isOn+caa)*kf__CaM_Ca3__Ca-KD__CaM_Ca2__Ca*kf__CaM_Ca2__Ca
+	jac_[4,3] <- (Ca_set*isOn+caa)*kf__CaM_Ca3__Ca
+	jac_[5,3] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,3] <- 0
 	jac_[7,3] <- 0
-	jac_[8,3] <- (kf__CaM_Ca3__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))
+	jac_[8,3] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca3__PP2B
 	jac_[9,3] <- 0
-	jac_[10,3] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[10,3] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,3] <- 0
 	jac_[12,3] <- 0
-	jac_[13,3] <- (kf__CaM_Ca3__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))
+	jac_[13,3] <- kf__CaM_Ca3__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[14,3] <- 0
-	jac_[15,3] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,3] <- ((0-(kf__CaM_Ca3__pCaMKIIa*pCaMKIIa))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
-	jac_[17,3] <- (kf__CaM_Ca3__pCaMKIIa*pCaMKIIa)
+	jac_[15,3] <- 0
+	jac_[16,3] <- kf__CaM__pCaMKIIa*pCaMKIIa-kf__CaM_Ca3__pCaMKIIa*pCaMKIIa
+	jac_[17,3] <- kf__CaM_Ca3__pCaMKIIa*pCaMKIIa
 	jac_[18,3] <- 0
 	jac_[19,3] <- 0
-	jac_[20,3] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,3] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,3] <- 0
 	jac_[22,3] <- 0
 	jac_[23,3] <- 0
 # column 4 (df/dy_3)
-	jac_[1,4] <- (kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))
+	jac_[1,4] <- -(Ca_set*isOn+caa)*kf__CaM__Ca
 	jac_[2,4] <- 0
-	jac_[3,4] <- (0-(0-(KD__CaM_Ca3__Ca*kf__CaM_Ca3__Ca)))
-	jac_[4,4] <- ((((0-(KD__CaM_Ca3__Ca*kf__CaM_Ca3__Ca))-(kf__CaM_Ca4__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))))-(kf__CaM_Ca4__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))))-(kf__CaM_Ca4__pCaMKIIa*pCaMKIIa))
-	jac_[5,4] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[3,4] <- KD__CaM_Ca3__Ca*kf__CaM_Ca3__Ca
+	jac_[4,4] <- (-kf__CaM_Ca4__pCaMKIIa*pCaMKIIa)-kf__CaM_Ca4__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca4__PP2B-KD__CaM_Ca3__Ca*kf__CaM_Ca3__Ca
+	jac_[5,4] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,4] <- 0
 	jac_[7,4] <- 0
 	jac_[8,4] <- 0
-	jac_[9,4] <- (kf__CaM_Ca4__PP2B*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))
-	jac_[10,4] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[9,4] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM_Ca4__PP2B
+	jac_[10,4] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,4] <- 0
 	jac_[12,4] <- 0
 	jac_[13,4] <- 0
-	jac_[14,4] <- ((kf__CaM_Ca4__CaMKII*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM_Ca4))
-	jac_[15,4] <- ((kf__CaM_Ca4__pCaMKIIa*pCaMKIIa)+(0*CaMKII_CaM_Ca4))
-	jac_[16,4] <- ((-1*(kf__CaM_Ca4__pCaMKIIa*pCaMKIIa))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[14,4] <- kf__CaM_Ca4__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
+	jac_[15,4] <- kf__CaM_Ca4__pCaMKIIa*pCaMKIIa
+	jac_[16,4] <- kf__CaM__pCaMKIIa*pCaMKIIa-kf__CaM_Ca4__pCaMKIIa*pCaMKIIa
 	jac_[17,4] <- 0
 	jac_[18,4] <- 0
 	jac_[19,4] <- 0
-	jac_[20,4] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,4] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,4] <- 0
 	jac_[22,4] <- 0
 	jac_[23,4] <- 0
 # column 5 (df/dy_4)
-	jac_[1,5] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__PP2B*(CaM_Ca1*-1)))
-	jac_[2,5] <- (0-(kf__CaM_Ca2__PP2B*(CaM_Ca2*-1)))
-	jac_[3,5] <- (0-(kf__CaM_Ca3__PP2B*(CaM_Ca3*-1)))
-	jac_[4,5] <- (0-((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1))
-	jac_[5,5] <- ((kf__CaM__PP2B*((-1*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)/KD__PP2B_CaM__Ca))))))-(kf__PP2B_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[6,5] <- ((kf__CaM_Ca1__PP2B*(CaM_Ca1*-1))+(kf__PP2B_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[7,5] <- (kf__CaM_Ca2__PP2B*(CaM_Ca2*-1))
-	jac_[8,5] <- (kf__CaM_Ca3__PP2B*(CaM_Ca3*-1))
-	jac_[9,5] <- ((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1)
-	jac_[10,5] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[1,5] <- CaM_Ca1*kf__CaM_Ca1__PP2B-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,5] <- CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[3,5] <- CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[4,5] <- CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[5,5] <- (-kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))-(Ca_set*isOn+caa)*kf__PP2B_CaM__Ca-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jac_[6,5] <- (Ca_set*isOn+caa)*kf__PP2B_CaM__Ca-CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[7,5] <- -CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[8,5] <- -CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[9,5] <- -CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[10,5] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,5] <- 0
 	jac_[12,5] <- 0
 	jac_[13,5] <- 0
 	jac_[14,5] <- 0
-	jac_[15,5] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,5] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,5] <- 0
+	jac_[16,5] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,5] <- 0
 	jac_[18,5] <- 0
 	jac_[19,5] <- 0
-	jac_[20,5] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,5] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,5] <- 0
 	jac_[22,5] <- 0
 	jac_[23,5] <- 0
 # column 6 (df/dy_5)
-	jac_[1,6] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__PP2B*((CaM_Ca1*-1)-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca))))))
-	jac_[2,6] <- (0-(kf__CaM_Ca2__PP2B*(CaM_Ca2*-1)))
-	jac_[3,6] <- (0-(kf__CaM_Ca3__PP2B*(CaM_Ca3*-1)))
-	jac_[4,6] <- (0-((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1))
-	jac_[5,6] <- ((kf__CaM__PP2B*((-1*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*PP2B_CaM)))-(0-(KD__PP2B_CaM__Ca*kf__PP2B_CaM__Ca)))
-	jac_[6,6] <- (((kf__CaM_Ca1__PP2B*((CaM_Ca1*-1)-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)))))+(0-(KD__PP2B_CaM__Ca*kf__PP2B_CaM__Ca)))-(kf__PP2B_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[7,6] <- ((kf__CaM_Ca2__PP2B*(CaM_Ca2*-1))+(kf__PP2B_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[8,6] <- (kf__CaM_Ca3__PP2B*(CaM_Ca3*-1))
-	jac_[9,6] <- ((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1)
-	jac_[10,6] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[1,6] <- (-(Ca_set*isOn+caa)*kf__CaM__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[2,6] <- CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[3,6] <- CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[4,6] <- CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[5,6] <- (-kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))+KD__PP2B_CaM__Ca*kf__PP2B_CaM__Ca-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
+	jac_[6,6] <- (-KD__PP2B_CaM__Ca*kf__PP2B_CaM__Ca)-(Ca_set*isOn+caa)*kf__PP2B_CaM_Ca1__Ca-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)-CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[7,6] <- (Ca_set*isOn+caa)*kf__PP2B_CaM_Ca1__Ca-CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[8,6] <- -CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[9,6] <- -CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[10,6] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,6] <- 0
 	jac_[12,6] <- 0
 	jac_[13,6] <- 0
 	jac_[14,6] <- 0
-	jac_[15,6] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,6] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,6] <- 0
+	jac_[16,6] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,6] <- 0
 	jac_[18,6] <- 0
 	jac_[19,6] <- 0
-	jac_[20,6] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,6] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,6] <- 0
 	jac_[22,6] <- 0
 	jac_[23,6] <- 0
 # column 7 (df/dy_6)
-	jac_[1,7] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__PP2B*(CaM_Ca1*-1)))
-	jac_[2,7] <- (0-(kf__CaM_Ca2__PP2B*((CaM_Ca2*-1)-(KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)))))
-	jac_[3,7] <- (0-(kf__CaM_Ca3__PP2B*(CaM_Ca3*-1)))
-	jac_[4,7] <- (0-((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1))
-	jac_[5,7] <- (kf__CaM__PP2B*((-1*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*PP2B_CaM)))
-	jac_[6,7] <- ((kf__CaM_Ca1__PP2B*(CaM_Ca1*-1))-(0-(KD__PP2B_CaM_Ca1__Ca*kf__PP2B_CaM_Ca1__Ca)))
-	jac_[7,7] <- (((kf__CaM_Ca2__PP2B*((CaM_Ca2*-1)-(KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))))+(0-(KD__PP2B_CaM_Ca1__Ca*kf__PP2B_CaM_Ca1__Ca)))-(kf__PP2B_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[8,7] <- ((kf__CaM_Ca3__PP2B*(CaM_Ca3*-1))+(kf__PP2B_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[9,7] <- ((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1)
-	jac_[10,7] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[1,7] <- CaM_Ca1*kf__CaM_Ca1__PP2B-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,7] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[3,7] <- CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[4,7] <- CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[5,7] <- (-kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
+	jac_[6,7] <- KD__PP2B_CaM_Ca1__Ca*kf__PP2B_CaM_Ca1__Ca-CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[7,7] <- (-(Ca_set*isOn+caa)*kf__PP2B_CaM_Ca2__Ca)-KD__PP2B_CaM_Ca1__Ca*kf__PP2B_CaM_Ca1__Ca-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)-CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[8,7] <- (Ca_set*isOn+caa)*kf__PP2B_CaM_Ca2__Ca-CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[9,7] <- -CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[10,7] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,7] <- 0
 	jac_[12,7] <- 0
 	jac_[13,7] <- 0
 	jac_[14,7] <- 0
-	jac_[15,7] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,7] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,7] <- 0
+	jac_[16,7] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,7] <- 0
 	jac_[18,7] <- 0
 	jac_[19,7] <- 0
-	jac_[20,7] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,7] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,7] <- 0
 	jac_[22,7] <- 0
 	jac_[23,7] <- 0
 # column 8 (df/dy_7)
-	jac_[1,8] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__PP2B*(CaM_Ca1*-1)))
-	jac_[2,8] <- (0-(kf__CaM_Ca2__PP2B*(CaM_Ca2*-1)))
-	jac_[3,8] <- (0-(kf__CaM_Ca3__PP2B*((CaM_Ca3*-1)-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca))))
-	jac_[4,8] <- (0-((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1))
-	jac_[5,8] <- (kf__CaM__PP2B*((-1*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*PP2B_CaM)))
-	jac_[6,8] <- (kf__CaM_Ca1__PP2B*(CaM_Ca1*-1))
-	jac_[7,8] <- ((kf__CaM_Ca2__PP2B*(CaM_Ca2*-1))-(0-(KD__PP2B_CaM_Ca2__Ca*kf__PP2B_CaM_Ca2__Ca)))
-	jac_[8,8] <- (((kf__CaM_Ca3__PP2B*((CaM_Ca3*-1)-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))+(0-(KD__PP2B_CaM_Ca2__Ca*kf__PP2B_CaM_Ca2__Ca)))-(kf__PP2B_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[9,8] <- (((kf__CaM_Ca4__PP2B*CaM_Ca4)*-1)+(kf__PP2B_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[10,8] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[1,8] <- CaM_Ca1*kf__CaM_Ca1__PP2B-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,8] <- CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[3,8] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca+CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[4,8] <- CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[5,8] <- (-kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
+	jac_[6,8] <- -CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[7,8] <- KD__PP2B_CaM_Ca2__Ca*kf__PP2B_CaM_Ca2__Ca-CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[8,8] <- (-(Ca_set*isOn+caa)*kf__PP2B_CaM_Ca3__Ca)-KD__PP2B_CaM_Ca2__Ca*kf__PP2B_CaM_Ca2__Ca-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca-CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[9,8] <- (Ca_set*isOn+caa)*kf__PP2B_CaM_Ca3__Ca-CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[10,8] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,8] <- 0
 	jac_[12,8] <- 0
 	jac_[13,8] <- 0
 	jac_[14,8] <- 0
-	jac_[15,8] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,8] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,8] <- 0
+	jac_[16,8] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,8] <- 0
 	jac_[18,8] <- 0
 	jac_[19,8] <- 0
-	jac_[20,8] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,8] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,8] <- 0
 	jac_[22,8] <- 0
 	jac_[23,8] <- 0
 # column 9 (df/dy_8)
-	jac_[1,9] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__PP2B*(CaM_Ca1*-1)))
-	jac_[2,9] <- (0-(kf__CaM_Ca2__PP2B*(CaM_Ca2*-1)))
-	jac_[3,9] <- (0-(kf__CaM_Ca3__PP2B*(CaM_Ca3*-1)))
-	jac_[4,9] <- (0-(kf__CaM_Ca4__PP2B*((CaM_Ca4*-1)-KD__CaM_Ca4__PP2B)))
-	jac_[5,9] <- (kf__CaM__PP2B*((-1*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*PP2B_CaM)))
-	jac_[6,9] <- (kf__CaM_Ca1__PP2B*(CaM_Ca1*-1))
-	jac_[7,9] <- (kf__CaM_Ca2__PP2B*(CaM_Ca2*-1))
-	jac_[8,9] <- ((kf__CaM_Ca3__PP2B*(CaM_Ca3*-1))-(0-(KD__PP2B_CaM_Ca3__Ca*kf__PP2B_CaM_Ca3__Ca)))
-	jac_[9,9] <- ((kf__CaM_Ca4__PP2B*((CaM_Ca4*-1)-KD__CaM_Ca4__PP2B))+(0-(KD__PP2B_CaM_Ca3__Ca*kf__PP2B_CaM_Ca3__Ca)))
-	jac_[10,9] <- (kf__CaM__CaMKII*((-1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(0*CaMKII_CaM)))
+	jac_[1,9] <- CaM_Ca1*kf__CaM_Ca1__PP2B-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,9] <- CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[3,9] <- CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[4,9] <- KD__CaM_Ca4__PP2B*kf__CaM_Ca4__PP2B+CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[5,9] <- (-kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))-((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
+	jac_[6,9] <- -CaM_Ca1*kf__CaM_Ca1__PP2B
+	jac_[7,9] <- -CaM_Ca2*kf__CaM_Ca2__PP2B
+	jac_[8,9] <- KD__PP2B_CaM_Ca3__Ca*kf__PP2B_CaM_Ca3__Ca-CaM_Ca3*kf__CaM_Ca3__PP2B
+	jac_[9,9] <- (-KD__PP2B_CaM_Ca3__Ca*kf__PP2B_CaM_Ca3__Ca)-KD__CaM_Ca4__PP2B*kf__CaM_Ca4__PP2B-CaM_Ca4*kf__CaM_Ca4__PP2B
+	jac_[10,9] <- -kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jac_[11,9] <- 0
 	jac_[12,9] <- 0
 	jac_[13,9] <- 0
 	jac_[14,9] <- 0
-	jac_[15,9] <- (0*CaMKII_CaM_Ca4)
-	jac_[16,9] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[15,9] <- 0
+	jac_[16,9] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,9] <- 0
 	jac_[18,9] <- 0
 	jac_[19,9] <- 0
-	jac_[20,9] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,9] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,9] <- 0
 	jac_[22,9] <- 0
 	jac_[23,9] <- 0
 # column 10 (df/dy_9)
-	jac_[1,10] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,10] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,10] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,10] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,10] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,10] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,10] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,10] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,10] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,10] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,10] <- 0
 	jac_[7,10] <- 0
 	jac_[8,10] <- 0
 	jac_[9,10] <- 0
-	jac_[10,10] <- ((kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)/KD__CaMKII_CaM__Ca))))))-(kf__CaMKII_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[11,10] <- ((kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))+(kf__CaMKII_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[12,10] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,10] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,10] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,10] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,10] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,10] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)-(Ca_set*isOn+caa)*kf__CaMKII_CaM__Ca
+	jac_[11,10] <- (Ca_set*isOn+caa)*kf__CaMKII_CaM__Ca-CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,10] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,10] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,10] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,10] <- 0
+	jac_[16,10] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,10] <- 0
 	jac_[18,10] <- 0
 	jac_[19,10] <- 0
-	jac_[20,10] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,10] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,10] <- 0
 	jac_[22,10] <- 0
 	jac_[23,10] <- 0
 # column 11 (df/dy_10)
-	jac_[1,11] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*((CaM_Ca1*-1)-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca))))))
-	jac_[2,11] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,11] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,11] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,11] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,11] <- (-(Ca_set*isOn+caa)*kf__CaM__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)+CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[2,11] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,11] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,11] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,11] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,11] <- 0
 	jac_[7,11] <- 0
 	jac_[8,11] <- 0
 	jac_[9,11] <- 0
-	jac_[10,11] <- ((kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))-(kf__CaMKII_CaM__Ca*(0-KD__CaMKII_CaM__Ca)))
-	jac_[11,11] <- (((kf__CaM_Ca1__CaMKII*((CaM_Ca1*-1)-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)))))+(kf__CaMKII_CaM__Ca*(0-KD__CaMKII_CaM__Ca)))-(kf__CaMKII_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[12,11] <- ((kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))+(kf__CaMKII_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[13,11] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,11] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,11] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,11] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,11] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)+KD__CaMKII_CaM__Ca*kf__CaMKII_CaM__Ca
+	jac_[11,11] <- (-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca))-CaM_Ca1*kf__CaM_Ca1__CaMKII-KD__CaMKII_CaM__Ca*kf__CaMKII_CaM__Ca-(Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca1__Ca
+	jac_[12,11] <- (Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca1__Ca-CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,11] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,11] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,11] <- 0
+	jac_[16,11] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,11] <- 0
 	jac_[18,11] <- 0
 	jac_[19,11] <- 0
-	jac_[20,11] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,11] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,11] <- 0
 	jac_[22,11] <- 0
 	jac_[23,11] <- 0
 # column 12 (df/dy_11)
-	jac_[1,12] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,12] <- (0-(kf__CaM_Ca2__CaMKII*((CaM_Ca2*-1)-(KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)))))
-	jac_[3,12] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,12] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,12] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,12] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,12] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)+CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,12] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,12] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,12] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,12] <- 0
 	jac_[7,12] <- 0
 	jac_[8,12] <- 0
 	jac_[9,12] <- 0
-	jac_[10,12] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,12] <- ((kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))-(0-(KD__CaMKII_CaM_Ca1__Ca*kf__CaMKII_CaM_Ca1__Ca)))
-	jac_[12,12] <- (((kf__CaM_Ca2__CaMKII*((CaM_Ca2*-1)-(KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))))+(0-(KD__CaMKII_CaM_Ca1__Ca*kf__CaMKII_CaM_Ca1__Ca)))-(kf__CaMKII_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[13,12] <- ((kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))+(kf__CaMKII_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[14,12] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,12] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,12] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,12] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,12] <- KD__CaMKII_CaM_Ca1__Ca*kf__CaMKII_CaM_Ca1__Ca-CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,12] <- (-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca))-CaM_Ca2*kf__CaM_Ca2__CaMKII-(Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca2__Ca-KD__CaMKII_CaM_Ca1__Ca*kf__CaMKII_CaM_Ca1__Ca
+	jac_[13,12] <- (Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca2__Ca-CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,12] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,12] <- 0
+	jac_[16,12] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,12] <- 0
 	jac_[18,12] <- 0
 	jac_[19,12] <- 0
-	jac_[20,12] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,12] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,12] <- 0
 	jac_[22,12] <- 0
 	jac_[23,12] <- 0
 # column 13 (df/dy_12)
-	jac_[1,13] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,13] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,13] <- (0-(kf__CaM_Ca3__CaMKII*((CaM_Ca3*-1)-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca))))
-	jac_[4,13] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,13] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,13] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,13] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,13] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca+CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,13] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,13] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,13] <- 0
 	jac_[7,13] <- 0
 	jac_[8,13] <- 0
 	jac_[9,13] <- 0
-	jac_[10,13] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,13] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,13] <- ((kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))-(0-(KD__CaMKII_CaM_Ca2__Ca*kf__CaMKII_CaM_Ca2__Ca)))
-	jac_[13,13] <- (((kf__CaM_Ca3__CaMKII*((CaM_Ca3*-1)-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))+(0-(KD__CaMKII_CaM_Ca2__Ca*kf__CaMKII_CaM_Ca2__Ca)))-(kf__CaMKII_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[14,13] <- ((((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)+(kf__CaMKII_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,13] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,13] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,13] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,13] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,13] <- KD__CaMKII_CaM_Ca2__Ca*kf__CaMKII_CaM_Ca2__Ca-CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,13] <- (-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)-CaM_Ca3*kf__CaM_Ca3__CaMKII-(Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca3__Ca-KD__CaMKII_CaM_Ca2__Ca*kf__CaMKII_CaM_Ca2__Ca
+	jac_[14,13] <- (Ca_set*isOn+caa)*kf__CaMKII_CaM_Ca3__Ca-CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,13] <- 0
+	jac_[16,13] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,13] <- 0
 	jac_[18,13] <- 0
 	jac_[19,13] <- 0
-	jac_[20,13] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,13] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,13] <- 0
 	jac_[22,13] <- 0
 	jac_[23,13] <- 0
 # column 14 (df/dy_13)
-	jac_[1,14] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,14] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,14] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,14] <- (0-(kf__CaM_Ca4__CaMKII*((CaM_Ca4*-1)-KD__CaM_Ca4__CaMKII)))
-	jac_[5,14] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,14] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,14] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,14] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,14] <- KD__CaM_Ca4__CaMKII*kf__CaM_Ca4__CaMKII+CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,14] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,14] <- 0
 	jac_[7,14] <- 0
 	jac_[8,14] <- 0
 	jac_[9,14] <- 0
-	jac_[10,14] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,14] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,14] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,14] <- ((kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))-(0-(KD__CaMKII_CaM_Ca3__Ca*kf__CaMKII_CaM_Ca3__Ca)))
-	jac_[14,14] <- (((kf__CaM_Ca4__CaMKII*((CaM_Ca4*-1)-KD__CaM_Ca4__CaMKII))+(0-(KD__CaMKII_CaM_Ca3__Ca*kf__CaMKII_CaM_Ca3__Ca)))-(kautMax*(a*((((1*((((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*CaMKII_CaM_Ca4)+((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))/(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))))
-	jac_[15,14] <- (kautMax*(a*((((1*((((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*CaMKII_CaM_Ca4)+((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))/(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))))
-	jac_[16,14] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,14] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,14] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,14] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,14] <- KD__CaMKII_CaM_Ca3__Ca*kf__CaMKII_CaM_Ca3__Ca-CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,14] <- (-(a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)))-(2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))+(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)-KD__CaM_Ca4__CaMKII*kf__CaM_Ca4__CaMKII-CaM_Ca4*kf__CaM_Ca4__CaMKII-KD__CaMKII_CaM_Ca3__Ca*kf__CaMKII_CaM_Ca3__Ca
+	jac_[15,14] <- (a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))+(2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))-(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)
+	jac_[16,14] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[17,14] <- 0
 	jac_[18,14] <- 0
 	jac_[19,14] <- 0
-	jac_[20,14] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,14] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,14] <- 0
 	jac_[22,14] <- 0
 	jac_[23,14] <- 0
 # column 15 (df/dy_14)
-	jac_[1,15] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,15] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,15] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,15] <- ((0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))-(0-(KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa)))
-	jac_[5,15] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,15] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,15] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,15] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,15] <- KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa+CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,15] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,15] <- 0
 	jac_[7,15] <- 0
 	jac_[8,15] <- 0
 	jac_[9,15] <- 0
-	jac_[10,15] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,15] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,15] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,15] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,15] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*((a*(1*((((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4))
-	jac_[15,15] <- (((0-(KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa))+(0-(KD__pCaMKII_CaM_Ca3__Ca*kf__pCaMKII_CaM_Ca3__Ca)))+((kautMax*((a*(1*((((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4))
-	jac_[16,15] <- ((-1*(0-(KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa)))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
-	jac_[17,15] <- (0-(0-(KD__pCaMKII_CaM_Ca3__Ca*kf__pCaMKII_CaM_Ca3__Ca)))
+	jac_[10,15] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,15] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,15] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,15] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,15] <- (-(2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)))+(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)-CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,15] <- (2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))-(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)-KD__pCaMKII_CaM_Ca3__Ca*kf__pCaMKII_CaM_Ca3__Ca-KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa
+	jac_[16,15] <- kf__CaM__pCaMKIIa*pCaMKIIa+KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca4__pCaMKIIa
+	jac_[17,15] <- KD__pCaMKII_CaM_Ca3__Ca*kf__pCaMKII_CaM_Ca3__Ca
 	jac_[18,15] <- 0
 	jac_[19,15] <- 0
-	jac_[20,15] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,15] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,15] <- 0
 	jac_[22,15] <- 0
 	jac_[23,15] <- 0
 # column 16 (df/dy_15)
-	jac_[1,16] <- ((0-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))-(kf__CaM_Ca1__pCaMKIIa*CaM_Ca1))
-	jac_[2,16] <- ((0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))-(kf__CaM_Ca2__pCaMKIIa*CaM_Ca2))
-	jac_[3,16] <- ((0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))-(kf__CaM_Ca3__pCaMKIIa*CaM_Ca3))
-	jac_[4,16] <- ((0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))-(kf__CaM_Ca4__pCaMKIIa*CaM_Ca4))
+	jac_[1,16] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-CaM_Ca1*kf__CaM_Ca1__pCaMKIIa
+	jac_[2,16] <- CaM_Ca2*kf__CaM_Ca2__CaMKII-CaM_Ca2*kf__CaM_Ca2__pCaMKIIa
+	jac_[3,16] <- CaM_Ca3*kf__CaM_Ca3__CaMKII-CaM_Ca3*kf__CaM_Ca3__pCaMKIIa
+	jac_[4,16] <- CaM_Ca4*kf__CaM_Ca4__CaMKII-CaM_Ca4*kf__CaM_Ca4__pCaMKIIa
 	jac_[5,16] <- 0
 	jac_[6,16] <- 0
 	jac_[7,16] <- 0
 	jac_[8,16] <- 0
 	jac_[9,16] <- 0
-	jac_[10,16] <- (kf__CaM__CaMKII*(((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*-1)-(0*CaMKII_CaM)))
-	jac_[11,16] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,16] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,16] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,16] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,16] <- ((kf__CaM_Ca4__pCaMKIIa*CaM_Ca4)+((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[16,16] <- ((((((-1*(kf__CaM_Ca4__pCaMKIIa*CaM_Ca4))-(kf__CaM_Ca3__pCaMKIIa*CaM_Ca3))-(kf__CaM_Ca2__pCaMKIIa*CaM_Ca2))-(kf__CaM_Ca1__pCaMKIIa*CaM_Ca1))-(kf__CaM__pCaMKIIa*((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))-(0*pCaMKII_CaM))))-(kf__PP1__pCaMKIIa*(PP1_0-PP1__pCaMKIIa)))
-	jac_[17,16] <- (kf__CaM_Ca3__pCaMKIIa*CaM_Ca3)
-	jac_[18,16] <- (kf__CaM_Ca2__pCaMKIIa*CaM_Ca2)
-	jac_[19,16] <- (kf__CaM_Ca1__pCaMKIIa*CaM_Ca1)
-	jac_[20,16] <- (kf__CaM__pCaMKIIa*((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))-(0*pCaMKII_CaM)))
-	jac_[21,16] <- (kf__PP1__pCaMKIIa*(PP1_0-PP1__pCaMKIIa))
+	jac_[10,16] <- -kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,16] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,16] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,16] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,16] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,16] <- CaM_Ca4*kf__CaM_Ca4__pCaMKIIa
+	jac_[16,16] <- (-kf__CaM__pCaMKIIa*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM))-(PP1_0-PP1__pCaMKIIa)*kf__PP1__pCaMKIIa-CaM_Ca4*kf__CaM_Ca4__pCaMKIIa-CaM_Ca3*kf__CaM_Ca3__pCaMKIIa-CaM_Ca2*kf__CaM_Ca2__pCaMKIIa-CaM_Ca1*kf__CaM_Ca1__pCaMKIIa
+	jac_[17,16] <- CaM_Ca3*kf__CaM_Ca3__pCaMKIIa
+	jac_[18,16] <- CaM_Ca2*kf__CaM_Ca2__pCaMKIIa
+	jac_[19,16] <- CaM_Ca1*kf__CaM_Ca1__pCaMKIIa
+	jac_[20,16] <- kf__CaM__pCaMKIIa*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[21,16] <- (PP1_0-PP1__pCaMKIIa)*kf__PP1__pCaMKIIa
 	jac_[22,16] <- 0
 	jac_[23,16] <- 0
 # column 17 (df/dy_16)
-	jac_[1,17] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,17] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,17] <- ((0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))-(0-(kf__CaM_Ca3__pCaMKIIa*((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca))))
-	jac_[4,17] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,17] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,17] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,17] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,17] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca+CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,17] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,17] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,17] <- 0
 	jac_[7,17] <- 0
 	jac_[8,17] <- 0
 	jac_[9,17] <- 0
-	jac_[10,17] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,17] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,17] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,17] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,17] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,17] <- ((kf__pCaMKII_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))+((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[16,17] <- ((0-(0-(kf__CaM_Ca3__pCaMKIIa*((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca))))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
-	jac_[17,17] <- (((0-(kf__CaM_Ca3__pCaMKIIa*((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))+(0-(KD__pCaMKII_CaM_Ca2__Ca*kf__pCaMKII_CaM_Ca2__Ca)))-(kf__pCaMKII_CaM_Ca3__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[18,17] <- (0-(0-(KD__pCaMKII_CaM_Ca2__Ca*kf__pCaMKII_CaM_Ca2__Ca)))
+	jac_[10,17] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,17] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,17] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,17] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,17] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,17] <- (Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca3__Ca
+	jac_[16,17] <- kf__CaM__pCaMKIIa*pCaMKIIa+(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca
+	jac_[17,17] <- (-(Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca3__Ca)-KD__pCaMKII_CaM_Ca2__Ca*kf__pCaMKII_CaM_Ca2__Ca-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca
+	jac_[18,17] <- KD__pCaMKII_CaM_Ca2__Ca*kf__pCaMKII_CaM_Ca2__Ca
 	jac_[19,17] <- 0
-	jac_[20,17] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[20,17] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,17] <- 0
 	jac_[22,17] <- 0
 	jac_[23,17] <- 0
 # column 18 (df/dy_17)
-	jac_[1,18] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,18] <- ((0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))-(0-(KD__CaM_Ca2__Ca*(kf__CaM_Ca2__pCaMKIIa*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)))))
-	jac_[3,18] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,18] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,18] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,18] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,18] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,18] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,18] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,18] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,18] <- 0
 	jac_[7,18] <- 0
 	jac_[8,18] <- 0
 	jac_[9,18] <- 0
-	jac_[10,18] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,18] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,18] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,18] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,18] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,18] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,18] <- ((0-(0-(KD__CaM_Ca2__Ca*(kf__CaM_Ca2__pCaMKIIa*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)))))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
-	jac_[17,18] <- (kf__pCaMKII_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
-	jac_[18,18] <- (((0-(KD__CaM_Ca2__Ca*(kf__CaM_Ca2__pCaMKIIa*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))+(0-(KD__pCaMKII_CaM_Ca1__Ca*kf__pCaMKII_CaM_Ca1__Ca)))-(kf__pCaMKII_CaM_Ca2__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[19,18] <- (0-(0-(KD__pCaMKII_CaM_Ca1__Ca*kf__pCaMKII_CaM_Ca1__Ca)))
-	jac_[20,18] <- (kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))
+	jac_[10,18] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,18] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,18] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,18] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,18] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,18] <- 0
+	jac_[16,18] <- kf__CaM__pCaMKIIa*pCaMKIIa+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jac_[17,18] <- (Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca2__Ca
+	jac_[18,18] <- (-(Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca2__Ca)-KD__pCaMKII_CaM_Ca1__Ca*kf__pCaMKII_CaM_Ca1__Ca-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jac_[19,18] <- KD__pCaMKII_CaM_Ca1__Ca*kf__pCaMKII_CaM_Ca1__Ca
+	jac_[20,18] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,18] <- 0
 	jac_[22,18] <- 0
 	jac_[23,18] <- 0
 # column 19 (df/dy_18)
-	jac_[1,19] <- (((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))-(0-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(kf__CaM_Ca1__pCaMKIIa*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca))))))
-	jac_[2,19] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,19] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,19] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,19] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,19] <- (-(Ca_set*isOn+caa)*kf__CaM__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[2,19] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,19] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,19] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,19] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,19] <- 0
 	jac_[7,19] <- 0
 	jac_[8,19] <- 0
 	jac_[9,19] <- 0
-	jac_[10,19] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,19] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,19] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,19] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,19] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,19] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,19] <- ((0-(0-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(kf__CaM_Ca1__pCaMKIIa*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca))))))-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM))))
+	jac_[10,19] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,19] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,19] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,19] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,19] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,19] <- 0
+	jac_[16,19] <- kf__CaM__pCaMKIIa*pCaMKIIa+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
 	jac_[17,19] <- 0
-	jac_[18,19] <- (kf__pCaMKII_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
-	jac_[19,19] <- (((0-(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(kf__CaM_Ca1__pCaMKIIa*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))))+(0-(KD__pCaMKII_CaM__Ca*kf__pCaMKII_CaM__Ca)))-(kf__pCaMKII_CaM_Ca1__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
-	jac_[20,19] <- ((kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(0*pCaMKII_CaM)))-(0-(KD__pCaMKII_CaM__Ca*kf__pCaMKII_CaM__Ca)))
+	jac_[18,19] <- (Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca1__Ca
+	jac_[19,19] <- (-KD__pCaMKII_CaM__Ca*kf__pCaMKII_CaM__Ca)-(Ca_set*isOn+caa)*kf__pCaMKII_CaM_Ca1__Ca-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jac_[20,19] <- KD__pCaMKII_CaM__Ca*kf__pCaMKII_CaM__Ca-kf__CaM__pCaMKIIa*pCaMKIIa
 	jac_[21,19] <- 0
 	jac_[22,19] <- 0
 	jac_[23,19] <- 0
 # column 20 (df/dy_19)
-	jac_[1,20] <- ((kf__CaM__Ca*((((1/(1+exp((-10*t))))*Ca_set)+caa)*-1))-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,20] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,20] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,20] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
-	jac_[5,20] <- (kf__CaM__PP2B*((-1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(0*PP2B_CaM)))
+	jac_[1,20] <- CaM_Ca1*kf__CaM_Ca1__CaMKII-(Ca_set*isOn+caa)*kf__CaM__Ca
+	jac_[2,20] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,20] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,20] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[5,20] <- -((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jac_[6,20] <- 0
 	jac_[7,20] <- 0
 	jac_[8,20] <- 0
 	jac_[9,20] <- 0
-	jac_[10,20] <- (kf__CaM__CaMKII*((-1*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))+(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-(0*CaMKII_CaM)))
-	jac_[11,20] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,20] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,20] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,20] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*0)*CaMKII_CaM_Ca4))
-	jac_[15,20] <- ((kautMax*0)*CaMKII_CaM_Ca4)
-	jac_[16,20] <- (0-(kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)/KD__pCaMKII_CaM__Ca)))))))
+	jac_[10,20] <- (-kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0))-kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,20] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,20] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,20] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,20] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,20] <- 0
+	jac_[16,20] <- kf__CaM__pCaMKIIa*pCaMKIIa+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jac_[17,20] <- 0
 	jac_[18,20] <- 0
-	jac_[19,20] <- (kf__pCaMKII_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
-	jac_[20,20] <- ((kf__CaM__pCaMKIIa*((-1*pCaMKIIa)-(KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)/KD__pCaMKII_CaM__Ca))))))-(kf__pCaMKII_CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa)))
+	jac_[19,20] <- (Ca_set*isOn+caa)*kf__pCaMKII_CaM__Ca
+	jac_[20,20] <- (-kf__CaM__pCaMKIIa*pCaMKIIa)-(Ca_set*isOn+caa)*kf__pCaMKII_CaM__Ca-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jac_[21,20] <- 0
 	jac_[22,20] <- 0
 	jac_[23,20] <- 0
 # column 21 (df/dy_20)
-	jac_[1,21] <- (0-(kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1)))
-	jac_[2,21] <- (0-(kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1)))
-	jac_[3,21] <- (0-(kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1)))
-	jac_[4,21] <- (0-((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1))
+	jac_[1,21] <- CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[2,21] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[3,21] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[4,21] <- CaM_Ca4*kf__CaM_Ca4__CaMKII
 	jac_[5,21] <- 0
 	jac_[6,21] <- 0
 	jac_[7,21] <- 0
 	jac_[8,21] <- 0
 	jac_[9,21] <- 0
-	jac_[10,21] <- (kf__CaM__CaMKII*(((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*-1)-(0*CaMKII_CaM)))
-	jac_[11,21] <- (kf__CaM_Ca1__CaMKII*(CaM_Ca1*-1))
-	jac_[12,21] <- (kf__CaM_Ca2__CaMKII*(CaM_Ca2*-1))
-	jac_[13,21] <- (kf__CaM_Ca3__CaMKII*(CaM_Ca3*-1))
-	jac_[14,21] <- (((kf__CaM_Ca4__CaMKII*CaM_Ca4)*-1)-((kautMax*((a*((0-((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)*-1))*(1*(((1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4))
-	jac_[15,21] <- ((kautMax*((a*((0-((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)*-1))*(1*(((1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4)
-	jac_[16,21] <- (0-(((kf__PP1__pCaMKIIa*pCaMKIIa)*-1)-kr__PP1__pCaMKIIa))
+	jac_[10,21] <- -kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jac_[11,21] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jac_[12,21] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jac_[13,21] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jac_[14,21] <- (-(2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)))+(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^3)/((s-PP1__pCaMKIIa+CaMKII_0)^4*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)-CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jac_[15,21] <- (2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))-(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^3)/((s-PP1__pCaMKIIa+CaMKII_0)^4*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)
+	jac_[16,21] <- kf__PP1__pCaMKIIa*pCaMKIIa+kr__PP1__pCaMKIIa
 	jac_[17,21] <- 0
 	jac_[18,21] <- 0
 	jac_[19,21] <- 0
 	jac_[20,21] <- 0
-	jac_[21,21] <- ((((kf__PP1__pCaMKIIa*pCaMKIIa)*-1)-kr__PP1__pCaMKIIa)-kcat__PP1__pCaMKIIa)
+	jac_[21,21] <- (-kf__PP1__pCaMKIIa*pCaMKIIa)-kr__PP1__pCaMKIIa-kcat__PP1__pCaMKIIa
 	jac_[22,21] <- 0
 	jac_[23,21] <- 0
 # column 22 (df/dy_21)
-	jac_[1,22] <- ((kf__CaM__Ca*(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa)))-(kf__CaM_Ca1__Ca*CaM_Ca1))
-	jac_[2,22] <- ((kf__CaM_Ca1__Ca*CaM_Ca1)-(kf__CaM_Ca2__Ca*CaM_Ca2))
-	jac_[3,22] <- ((kf__CaM_Ca2__Ca*CaM_Ca2)-(kf__CaM_Ca3__Ca*CaM_Ca3))
-	jac_[4,22] <- (kf__CaM_Ca3__Ca*CaM_Ca3)
-	jac_[5,22] <- (0-(kf__PP2B_CaM__Ca*PP2B_CaM))
-	jac_[6,22] <- ((kf__PP2B_CaM__Ca*PP2B_CaM)-(kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca1))
-	jac_[7,22] <- ((kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca1)-(kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca2))
-	jac_[8,22] <- ((kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca2)-(kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca3))
-	jac_[9,22] <- (kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca3)
-	jac_[10,22] <- (0-(kf__CaMKII_CaM__Ca*CaMKII_CaM))
-	jac_[11,22] <- ((kf__CaMKII_CaM__Ca*CaMKII_CaM)-(kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca1))
-	jac_[12,22] <- ((kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca1)-(kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca2))
-	jac_[13,22] <- ((kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca2)-(kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca3))
-	jac_[14,22] <- ((kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca3)-(0*CaMKII_CaM_Ca4))
-	jac_[15,22] <- ((kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3)+(0*CaMKII_CaM_Ca4))
+	jac_[1,22] <- kf__CaM__Ca*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-CaM_Ca1*kf__CaM_Ca1__Ca
+	jac_[2,22] <- CaM_Ca1*kf__CaM_Ca1__Ca-CaM_Ca2*kf__CaM_Ca2__Ca
+	jac_[3,22] <- CaM_Ca2*kf__CaM_Ca2__Ca-CaM_Ca3*kf__CaM_Ca3__Ca
+	jac_[4,22] <- CaM_Ca3*kf__CaM_Ca3__Ca
+	jac_[5,22] <- -PP2B_CaM*kf__PP2B_CaM__Ca
+	jac_[6,22] <- PP2B_CaM*kf__PP2B_CaM__Ca-PP2B_CaM_Ca1*kf__PP2B_CaM_Ca1__Ca
+	jac_[7,22] <- PP2B_CaM_Ca1*kf__PP2B_CaM_Ca1__Ca-PP2B_CaM_Ca2*kf__PP2B_CaM_Ca2__Ca
+	jac_[8,22] <- PP2B_CaM_Ca2*kf__PP2B_CaM_Ca2__Ca-PP2B_CaM_Ca3*kf__PP2B_CaM_Ca3__Ca
+	jac_[9,22] <- PP2B_CaM_Ca3*kf__PP2B_CaM_Ca3__Ca
+	jac_[10,22] <- -CaMKII_CaM*kf__CaMKII_CaM__Ca
+	jac_[11,22] <- CaMKII_CaM*kf__CaMKII_CaM__Ca-CaMKII_CaM_Ca1*kf__CaMKII_CaM_Ca1__Ca
+	jac_[12,22] <- CaMKII_CaM_Ca1*kf__CaMKII_CaM_Ca1__Ca-CaMKII_CaM_Ca2*kf__CaMKII_CaM_Ca2__Ca
+	jac_[13,22] <- CaMKII_CaM_Ca2*kf__CaMKII_CaM_Ca2__Ca-CaMKII_CaM_Ca3*kf__CaMKII_CaM_Ca3__Ca
+	jac_[14,22] <- CaMKII_CaM_Ca3*kf__CaMKII_CaM_Ca3__Ca
+	jac_[15,22] <- kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
 	jac_[16,22] <- 0
-	jac_[17,22] <- ((kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2)-(kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3))
-	jac_[18,22] <- ((kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1)-(kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2))
-	jac_[19,22] <- ((kf__pCaMKII_CaM__Ca*pCaMKII_CaM)-(kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1))
-	jac_[20,22] <- (0-(kf__pCaMKII_CaM__Ca*pCaMKII_CaM))
+	jac_[17,22] <- kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2-kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
+	jac_[18,22] <- kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1-kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2
+	jac_[19,22] <- kf__pCaMKII_CaM__Ca*pCaMKII_CaM-kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1
+	jac_[20,22] <- -kf__pCaMKII_CaM__Ca*pCaMKII_CaM
 	jac_[21,22] <- 0
 	jac_[22,22] <- 0
-	jac_[23,22] <- (0-(kca1*kca2))
+	jac_[23,22] <- -kca1*kca2
 # column 23 (df/dy_22)
 	jac_[1,23] <- 0
 	jac_[2,23] <- 0
@@ -950,7 +950,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	jac_[12,23] <- 0
 	jac_[13,23] <- 0
 	jac_[14,23] <- 0
-	jac_[15,23] <- (0*CaMKII_CaM_Ca4)
+	jac_[15,23] <- 0
 	jac_[16,23] <- 0
 	jac_[17,23] <- 0
 	jac_[18,23] <- 0
@@ -958,7 +958,7 @@ CaMKIIs_jac<-function(t, state, parameters)
 	jac_[20,23] <- 0
 	jac_[21,23] <- 0
 	jac_[22,23] <- 1
-	jac_[23,23] <- (0-(kca1+kca2))
+	jac_[23,23] <- (-kca2)-kca1
 	rownames(jac_) <- c("CaM_Ca1", "CaM_Ca2", "CaM_Ca3", "CaM_Ca4", "PP2B_CaM", "PP2B_CaM_Ca1", "PP2B_CaM_Ca2", "PP2B_CaM_Ca3", "PP2B_CaM_Ca4", "CaMKII_CaM", "CaMKII_CaM_Ca1", "CaMKII_CaM_Ca2", "CaMKII_CaM_Ca3", "CaMKII_CaM_Ca4", "pCaMKII_CaM_Ca4", "pCaMKIIa", "pCaMKII_CaM_Ca3", "pCaMKII_CaM_Ca2", "pCaMKII_CaM_Ca1", "pCaMKII_CaM", "PP1__pCaMKIIa", "caa", "cab")
 	colnames(jac_) <- c("CaM_Ca1", "CaM_Ca2", "CaM_Ca3", "CaM_Ca4", "PP2B_CaM", "PP2B_CaM_Ca1", "PP2B_CaM_Ca2", "PP2B_CaM_Ca3", "PP2B_CaM_Ca4", "CaMKII_CaM", "CaMKII_CaM_Ca1", "CaMKII_CaM_Ca2", "CaMKII_CaM_Ca3", "CaMKII_CaM_Ca4", "pCaMKII_CaM_Ca4", "pCaMKIIa", "pCaMKII_CaM_Ca3", "pCaMKII_CaM_Ca2", "pCaMKII_CaM_Ca1", "pCaMKII_CaM", "PP1__pCaMKIIa", "caa", "cab")
 	return(jac_)
@@ -1030,6 +1030,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	PP2B_0 <- parameters[59]
 	kca1 <- parameters[60]
 	kca2 <- parameters[61]
+	isOn <- parameters[62]
 	CaM_Ca1 <- state[1]
 	CaM_Ca2 <- state[2]
 	CaM_Ca3 <- state[3]
@@ -1096,8 +1097,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	kr__CaM_Ca2__pCaMKIIa<-KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa
 	kr__CaM_Ca1__pCaMKIIa<-KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa
 	kr__CaM__pCaMKIIa<-KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa
-	logistic<-1.0/(1+exp(-10*t))
-	Ca<-logistic*Ca_set+caa
+	Ca<-isOn*Ca_set+caa
 	PP1<-PP1_0-PP1__pCaMKIIa
 	CaMKII<-CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)
 	CaM<-CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)
@@ -1152,9 +1152,9 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	ReactionFlux34<-(kcat__PP1__pCaMKIIa*PP1__pCaMKIIa)
 	SpikeFlux1<-cab
 	SpikeFlux2<-0-(kca1*kca2*caa+(kca1+kca2)*cab)
-	jacp_<-matrix(NA,23,61)
+	jacp_<-matrix(NA,23,62)
 # column 1 (df/dp_1)
-	jacp_[1,1] <- (((((1/(1+exp((-10*t))))*Ca_set)+caa)*(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa)))-(KD__CaM__Ca*CaM_Ca1))
+	jacp_[1,1] <- (Ca_set*isOn+caa)*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-CaM_Ca1*KD__CaM__Ca
 	jacp_[2,1] <- 0
 	jacp_[3,1] <- 0
 	jacp_[4,1] <- 0
@@ -1168,7 +1168,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,1] <- 0
 	jacp_[13,1] <- 0
 	jacp_[14,1] <- 0
-	jacp_[15,1] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,1] <- 0
 	jacp_[16,1] <- 0
 	jacp_[17,1] <- 0
 	jacp_[18,1] <- 0
@@ -1178,8 +1178,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,1] <- 0
 	jacp_[23,1] <- 0
 # column 2 (df/dp_2)
-	jacp_[1,2] <- (0-(((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaM_Ca1)-(KD__CaM_Ca1__Ca*CaM_Ca2)))
-	jacp_[2,2] <- (((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaM_Ca1)-(KD__CaM_Ca1__Ca*CaM_Ca2))
+	jacp_[1,2] <- CaM_Ca2*KD__CaM_Ca1__Ca-CaM_Ca1*(Ca_set*isOn+caa)
+	jacp_[2,2] <- CaM_Ca1*(Ca_set*isOn+caa)-CaM_Ca2*KD__CaM_Ca1__Ca
 	jacp_[3,2] <- 0
 	jacp_[4,2] <- 0
 	jacp_[5,2] <- 0
@@ -1192,7 +1192,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,2] <- 0
 	jacp_[13,2] <- 0
 	jacp_[14,2] <- 0
-	jacp_[15,2] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,2] <- 0
 	jacp_[16,2] <- 0
 	jacp_[17,2] <- 0
 	jacp_[18,2] <- 0
@@ -1203,8 +1203,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[23,2] <- 0
 # column 3 (df/dp_3)
 	jacp_[1,3] <- 0
-	jacp_[2,3] <- (0-(((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaM_Ca2)-(KD__CaM_Ca2__Ca*CaM_Ca3)))
-	jacp_[3,3] <- (((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaM_Ca2)-(KD__CaM_Ca2__Ca*CaM_Ca3))
+	jacp_[2,3] <- CaM_Ca3*KD__CaM_Ca2__Ca-CaM_Ca2*(Ca_set*isOn+caa)
+	jacp_[3,3] <- CaM_Ca2*(Ca_set*isOn+caa)-CaM_Ca3*KD__CaM_Ca2__Ca
 	jacp_[4,3] <- 0
 	jacp_[5,3] <- 0
 	jacp_[6,3] <- 0
@@ -1216,7 +1216,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,3] <- 0
 	jacp_[13,3] <- 0
 	jacp_[14,3] <- 0
-	jacp_[15,3] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,3] <- 0
 	jacp_[16,3] <- 0
 	jacp_[17,3] <- 0
 	jacp_[18,3] <- 0
@@ -1228,8 +1228,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 # column 4 (df/dp_4)
 	jacp_[1,4] <- 0
 	jacp_[2,4] <- 0
-	jacp_[3,4] <- (0-((CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaM_Ca3__Ca*CaM_Ca4)))
-	jacp_[4,4] <- ((CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaM_Ca3__Ca*CaM_Ca4))
+	jacp_[3,4] <- CaM_Ca4*KD__CaM_Ca3__Ca-CaM_Ca3*(Ca_set*isOn+caa)
+	jacp_[4,4] <- CaM_Ca3*(Ca_set*isOn+caa)-CaM_Ca4*KD__CaM_Ca3__Ca
 	jacp_[5,4] <- 0
 	jacp_[6,4] <- 0
 	jacp_[7,4] <- 0
@@ -1240,7 +1240,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,4] <- 0
 	jacp_[13,4] <- 0
 	jacp_[14,4] <- 0
-	jacp_[15,4] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,4] <- 0
 	jacp_[16,4] <- 0
 	jacp_[17,4] <- 0
 	jacp_[18,4] <- 0
@@ -1254,7 +1254,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[2,5] <- 0
 	jacp_[3,5] <- 0
 	jacp_[4,5] <- 0
-	jacp_[5,5] <- (((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)/KD__PP2B_CaM__Ca))))*PP2B_CaM))
+	jacp_[5,5] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
 	jacp_[6,5] <- 0
 	jacp_[7,5] <- 0
 	jacp_[8,5] <- 0
@@ -1264,7 +1264,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,5] <- 0
 	jacp_[13,5] <- 0
 	jacp_[14,5] <- 0
-	jacp_[15,5] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,5] <- 0
 	jacp_[16,5] <- 0
 	jacp_[17,5] <- 0
 	jacp_[18,5] <- 0
@@ -1274,12 +1274,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,5] <- 0
 	jacp_[23,5] <- 0
 # column 6 (df/dp_6)
-	jacp_[1,6] <- (0-((CaM_Ca1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)))*PP2B_CaM_Ca1)))
+	jacp_[1,6] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)-CaM_Ca1*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)
 	jacp_[2,6] <- 0
 	jacp_[3,6] <- 0
 	jacp_[4,6] <- 0
 	jacp_[5,6] <- 0
-	jacp_[6,6] <- ((CaM_Ca1*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)))*PP2B_CaM_Ca1))
+	jacp_[6,6] <- CaM_Ca1*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[7,6] <- 0
 	jacp_[8,6] <- 0
 	jacp_[9,6] <- 0
@@ -1288,7 +1288,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,6] <- 0
 	jacp_[13,6] <- 0
 	jacp_[14,6] <- 0
-	jacp_[15,6] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,6] <- 0
 	jacp_[16,6] <- 0
 	jacp_[17,6] <- 0
 	jacp_[18,6] <- 0
@@ -1299,12 +1299,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[23,6] <- 0
 # column 7 (df/dp_7)
 	jacp_[1,7] <- 0
-	jacp_[2,7] <- (0-((CaM_Ca2*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))*PP2B_CaM_Ca2)))
+	jacp_[2,7] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)-CaM_Ca2*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)
 	jacp_[3,7] <- 0
 	jacp_[4,7] <- 0
 	jacp_[5,7] <- 0
 	jacp_[6,7] <- 0
-	jacp_[7,7] <- ((CaM_Ca2*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))*PP2B_CaM_Ca2))
+	jacp_[7,7] <- CaM_Ca2*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[8,7] <- 0
 	jacp_[9,7] <- 0
 	jacp_[10,7] <- 0
@@ -1312,7 +1312,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,7] <- 0
 	jacp_[13,7] <- 0
 	jacp_[14,7] <- 0
-	jacp_[15,7] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,7] <- 0
 	jacp_[16,7] <- 0
 	jacp_[17,7] <- 0
 	jacp_[18,7] <- 0
@@ -1324,19 +1324,19 @@ CaMKIIs_jacp<-function(t, state, parameters)
 # column 8 (df/dp_8)
 	jacp_[1,8] <- 0
 	jacp_[2,8] <- 0
-	jacp_[3,8] <- (0-((CaM_Ca3*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)*PP2B_CaM_Ca3)))
+	jacp_[3,8] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3)/KD__PP2B_CaM_Ca3__Ca-CaM_Ca3*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)
 	jacp_[4,8] <- 0
 	jacp_[5,8] <- 0
 	jacp_[6,8] <- 0
 	jacp_[7,8] <- 0
-	jacp_[8,8] <- ((CaM_Ca3*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)*PP2B_CaM_Ca3))
+	jacp_[8,8] <- CaM_Ca3*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3)/KD__PP2B_CaM_Ca3__Ca
 	jacp_[9,8] <- 0
 	jacp_[10,8] <- 0
 	jacp_[11,8] <- 0
 	jacp_[12,8] <- 0
 	jacp_[13,8] <- 0
 	jacp_[14,8] <- 0
-	jacp_[15,8] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,8] <- 0
 	jacp_[16,8] <- 0
 	jacp_[17,8] <- 0
 	jacp_[18,8] <- 0
@@ -1349,18 +1349,18 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[1,9] <- 0
 	jacp_[2,9] <- 0
 	jacp_[3,9] <- 0
-	jacp_[4,9] <- (0-((CaM_Ca4*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(KD__CaM_Ca4__PP2B*PP2B_CaM_Ca4)))
+	jacp_[4,9] <- KD__CaM_Ca4__PP2B*PP2B_CaM_Ca4-CaM_Ca4*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)
 	jacp_[5,9] <- 0
 	jacp_[6,9] <- 0
 	jacp_[7,9] <- 0
 	jacp_[8,9] <- 0
-	jacp_[9,9] <- ((CaM_Ca4*(PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)))-(KD__CaM_Ca4__PP2B*PP2B_CaM_Ca4))
+	jacp_[9,9] <- CaM_Ca4*((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)-KD__CaM_Ca4__PP2B*PP2B_CaM_Ca4
 	jacp_[10,9] <- 0
 	jacp_[11,9] <- 0
 	jacp_[12,9] <- 0
 	jacp_[13,9] <- 0
 	jacp_[14,9] <- 0
-	jacp_[15,9] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,9] <- 0
 	jacp_[16,9] <- 0
 	jacp_[17,9] <- 0
 	jacp_[18,9] <- 0
@@ -1374,8 +1374,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[2,10] <- 0
 	jacp_[3,10] <- 0
 	jacp_[4,10] <- 0
-	jacp_[5,10] <- (0-((PP2B_CaM*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM__Ca*PP2B_CaM_Ca1)))
-	jacp_[6,10] <- ((PP2B_CaM*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM__Ca*PP2B_CaM_Ca1))
+	jacp_[5,10] <- KD__PP2B_CaM__Ca*PP2B_CaM_Ca1-PP2B_CaM*(Ca_set*isOn+caa)
+	jacp_[6,10] <- PP2B_CaM*(Ca_set*isOn+caa)-KD__PP2B_CaM__Ca*PP2B_CaM_Ca1
 	jacp_[7,10] <- 0
 	jacp_[8,10] <- 0
 	jacp_[9,10] <- 0
@@ -1384,7 +1384,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,10] <- 0
 	jacp_[13,10] <- 0
 	jacp_[14,10] <- 0
-	jacp_[15,10] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,10] <- 0
 	jacp_[16,10] <- 0
 	jacp_[17,10] <- 0
 	jacp_[18,10] <- 0
@@ -1399,8 +1399,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[3,11] <- 0
 	jacp_[4,11] <- 0
 	jacp_[5,11] <- 0
-	jacp_[6,11] <- (0-((PP2B_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2)))
-	jacp_[7,11] <- ((PP2B_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2))
+	jacp_[6,11] <- KD__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2-PP2B_CaM_Ca1*(Ca_set*isOn+caa)
+	jacp_[7,11] <- PP2B_CaM_Ca1*(Ca_set*isOn+caa)-KD__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2
 	jacp_[8,11] <- 0
 	jacp_[9,11] <- 0
 	jacp_[10,11] <- 0
@@ -1408,7 +1408,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,11] <- 0
 	jacp_[13,11] <- 0
 	jacp_[14,11] <- 0
-	jacp_[15,11] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,11] <- 0
 	jacp_[16,11] <- 0
 	jacp_[17,11] <- 0
 	jacp_[18,11] <- 0
@@ -1424,15 +1424,15 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[4,12] <- 0
 	jacp_[5,12] <- 0
 	jacp_[6,12] <- 0
-	jacp_[7,12] <- (0-((PP2B_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3)))
-	jacp_[8,12] <- ((PP2B_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3))
+	jacp_[7,12] <- KD__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3-PP2B_CaM_Ca2*(Ca_set*isOn+caa)
+	jacp_[8,12] <- PP2B_CaM_Ca2*(Ca_set*isOn+caa)-KD__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3
 	jacp_[9,12] <- 0
 	jacp_[10,12] <- 0
 	jacp_[11,12] <- 0
 	jacp_[12,12] <- 0
 	jacp_[13,12] <- 0
 	jacp_[14,12] <- 0
-	jacp_[15,12] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,12] <- 0
 	jacp_[16,12] <- 0
 	jacp_[17,12] <- 0
 	jacp_[18,12] <- 0
@@ -1449,14 +1449,14 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[5,13] <- 0
 	jacp_[6,13] <- 0
 	jacp_[7,13] <- 0
-	jacp_[8,13] <- (0-((PP2B_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4)))
-	jacp_[9,13] <- ((PP2B_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4))
+	jacp_[8,13] <- KD__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4-PP2B_CaM_Ca3*(Ca_set*isOn+caa)
+	jacp_[9,13] <- PP2B_CaM_Ca3*(Ca_set*isOn+caa)-KD__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4
 	jacp_[10,13] <- 0
 	jacp_[11,13] <- 0
 	jacp_[12,13] <- 0
 	jacp_[13,13] <- 0
 	jacp_[14,13] <- 0
-	jacp_[15,13] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,13] <- 0
 	jacp_[16,13] <- 0
 	jacp_[17,13] <- 0
 	jacp_[18,13] <- 0
@@ -1466,117 +1466,117 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,13] <- 0
 	jacp_[23,13] <- 0
 # column 14 (df/dp_14)
-	jacp_[1,14] <- (((0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,14] <- (((0-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2)))-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))
-	jacp_[3,14] <- ((((0-(0-(kf__CaM_Ca3__Ca*CaM_Ca4)))-(0-(((KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca)*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3)))-(0-(((KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3)))-(0-(((KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))
-	jacp_[4,14] <- (0-(kf__CaM_Ca3__Ca*CaM_Ca4))
-	jacp_[5,14] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,14] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
-	jacp_[7,14] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2))
-	jacp_[8,14] <- (0-(((KD__CaM_Ca4__PP2B/KD__PP2B_CaM_Ca3__Ca)*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3))
+	jacp_[1,14] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[2,14] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca2__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[3,14] <- (KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca+(KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca+(CaMKII_CaM_Ca3*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca+CaM_Ca4*kf__CaM_Ca3__Ca
+	jacp_[4,14] <- -CaM_Ca4*kf__CaM_Ca3__Ca
+	jacp_[5,14] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,14] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[7,14] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[8,14] <- -(KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca
 	jacp_[9,14] <- 0
-	jacp_[10,14] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,14] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
-	jacp_[12,14] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2))
-	jacp_[13,14] <- (0-(((KD__CaM_Ca4__CaMKII/KD__CaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3))
+	jacp_[10,14] <- -(CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,14] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[12,14] <- -(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[13,14] <- -(CaMKII_CaM_Ca3*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca
 	jacp_[14,14] <- 0
-	jacp_[15,14] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,14] <- ((((0-(0-(((KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
-	jacp_[17,14] <- (0-(((KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3))
-	jacp_[18,14] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2))
-	jacp_[19,14] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,14] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca4__pCaMKIIa/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[15,14] <- 0
+	jacp_[16,14] <- (KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca+(KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
+	jacp_[17,14] <- -(KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca
+	jacp_[18,14] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[19,14] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,14] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,14] <- 0
 	jacp_[22,14] <- 0
 	jacp_[23,14] <- 0
 # column 15 (df/dp_15)
-	jacp_[1,15] <- (((0-(0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))-(0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))-(0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,15] <- ((((0-(kf__CaM_Ca2__Ca*(0-CaM_Ca3)))-(0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2)))-(0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2)))-(0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))
-	jacp_[3,15] <- (kf__CaM_Ca2__Ca*(0-CaM_Ca3))
+	jacp_[1,15] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[2,15] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+(CaMKII_CaM_Ca2*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)+CaM_Ca3*kf__CaM_Ca2__Ca
+	jacp_[3,15] <- -CaM_Ca3*kf__CaM_Ca2__Ca
 	jacp_[4,15] <- 0
-	jacp_[5,15] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,15] <- (0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
-	jacp_[7,15] <- (0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2))
+	jacp_[5,15] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,15] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[7,15] <- -(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[8,15] <- 0
 	jacp_[9,15] <- 0
-	jacp_[10,15] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,15] <- (0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
-	jacp_[12,15] <- (0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2))
+	jacp_[10,15] <- -(CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,15] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[12,15] <- -(CaMKII_CaM_Ca2*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[13,15] <- 0
 	jacp_[14,15] <- 0
-	jacp_[15,15] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,15] <- (((0-(0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
+	jacp_[15,15] <- 0
+	jacp_[16,15] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[17,15] <- 0
-	jacp_[18,15] <- (0-(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2))
-	jacp_[19,15] <- (0-((((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,15] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[18,15] <- -(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[19,15] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,15] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,15] <- 0
 	jacp_[22,15] <- 0
 	jacp_[23,15] <- 0
 # column 16 (df/dp_16)
-	jacp_[1,16] <- ((((0-(kf__CaM_Ca1__Ca*(0-CaM_Ca2)))-(0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))-(0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))-(0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,16] <- (kf__CaM_Ca1__Ca*(0-CaM_Ca2))
+	jacp_[1,16] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)+(CaMKII_CaM_Ca1*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)+CaM_Ca2*kf__CaM_Ca1__Ca
+	jacp_[2,16] <- -CaM_Ca2*kf__CaM_Ca1__Ca
 	jacp_[3,16] <- 0
 	jacp_[4,16] <- 0
-	jacp_[5,16] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,16] <- (0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
+	jacp_[5,16] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,16] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[7,16] <- 0
 	jacp_[8,16] <- 0
 	jacp_[9,16] <- 0
-	jacp_[10,16] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,16] <- (0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
+	jacp_[10,16] <- -(CaMKII_CaM*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,16] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[12,16] <- 0
 	jacp_[13,16] <- 0
 	jacp_[14,16] <- 0
-	jacp_[15,16] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,16] <- ((0-(0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
+	jacp_[15,16] <- 0
+	jacp_[16,16] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[17,16] <- 0
 	jacp_[18,16] <- 0
-	jacp_[19,16] <- (0-((((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,16] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[19,16] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,16] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,16] <- 0
 	jacp_[22,16] <- 0
 	jacp_[23,16] <- 0
 # column 17 (df/dp_17)
-	jacp_[1,17] <- (kf__CaM__Ca*(0-CaM_Ca1))
+	jacp_[1,17] <- -CaM_Ca1*kf__CaM__Ca
 	jacp_[2,17] <- 0
 	jacp_[3,17] <- 0
 	jacp_[4,17] <- 0
-	jacp_[5,17] <- (kf__CaM__PP2B*(0-(((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
+	jacp_[5,17] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
 	jacp_[6,17] <- 0
 	jacp_[7,17] <- 0
 	jacp_[8,17] <- 0
 	jacp_[9,17] <- 0
-	jacp_[10,17] <- (kf__CaM__CaMKII*(0-(((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
+	jacp_[10,17] <- -(CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
 	jacp_[11,17] <- 0
 	jacp_[12,17] <- 0
 	jacp_[13,17] <- 0
 	jacp_[14,17] <- 0
-	jacp_[15,17] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,17] <- (0-(kf__CaM__pCaMKIIa*(0-(((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
+	jacp_[15,17] <- 0
+	jacp_[16,17] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[17,17] <- 0
 	jacp_[18,17] <- 0
 	jacp_[19,17] <- 0
-	jacp_[20,17] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[20,17] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,17] <- 0
 	jacp_[22,17] <- 0
 	jacp_[23,17] <- 0
 # column 18 (df/dp_18)
-	jacp_[1,18] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))
-	jacp_[2,18] <- (0-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2)))
-	jacp_[3,18] <- (0-(0-(((KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca)*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3)))
-	jacp_[4,18] <- (0-(0-(kf__CaM_Ca4__PP2B*PP2B_CaM_Ca4)))
-	jacp_[5,18] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,18] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
-	jacp_[7,18] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2))
-	jacp_[8,18] <- (0-(((KD__CaM_Ca3__Ca/KD__PP2B_CaM_Ca3__Ca)*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3))
-	jacp_[9,18] <- (0-(kf__CaM_Ca4__PP2B*PP2B_CaM_Ca4))
+	jacp_[1,18] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[2,18] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[3,18] <- (KD__CaM_Ca3__Ca*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca
+	jacp_[4,18] <- PP2B_CaM_Ca4*kf__CaM_Ca4__PP2B
+	jacp_[5,18] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,18] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[7,18] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[8,18] <- -(KD__CaM_Ca3__Ca*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca
+	jacp_[9,18] <- -PP2B_CaM_Ca4*kf__CaM_Ca4__PP2B
 	jacp_[10,18] <- 0
 	jacp_[11,18] <- 0
 	jacp_[12,18] <- 0
 	jacp_[13,18] <- 0
 	jacp_[14,18] <- 0
-	jacp_[15,18] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,18] <- 0
 	jacp_[16,18] <- 0
 	jacp_[17,18] <- 0
 	jacp_[18,18] <- 0
@@ -1586,21 +1586,21 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,18] <- 0
 	jacp_[23,18] <- 0
 # column 19 (df/dp_19)
-	jacp_[1,19] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca)))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))
-	jacp_[2,19] <- (0-(0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca)))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2)))
-	jacp_[3,19] <- (0-(0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca))*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3)))
+	jacp_[1,19] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca^2)
+	jacp_[2,19] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca^2)
+	jacp_[3,19] <- -(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca^2
 	jacp_[4,19] <- 0
-	jacp_[5,19] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca)))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,19] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca)))/KD__PP2B_CaM_Ca2__Ca))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
-	jacp_[7,19] <- (0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca)))/KD__PP2B_CaM_Ca2__Ca)*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2))
-	jacp_[8,19] <- ((0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B))/(KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM_Ca3__Ca))*kf__CaM_Ca3__PP2B)*PP2B_CaM_Ca3))-(0-(kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4)))
-	jacp_[9,19] <- (0-(kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca4))
+	jacp_[5,19] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca^2*KD__PP2B_CaM__Ca)
+	jacp_[6,19] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca^2)
+	jacp_[7,19] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca^2)
+	jacp_[8,19] <- PP2B_CaM_Ca4*kf__PP2B_CaM_Ca3__Ca+(KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca3*kf__CaM_Ca3__PP2B)/KD__PP2B_CaM_Ca3__Ca^2
+	jacp_[9,19] <- -PP2B_CaM_Ca4*kf__PP2B_CaM_Ca3__Ca
 	jacp_[10,19] <- 0
 	jacp_[11,19] <- 0
 	jacp_[12,19] <- 0
 	jacp_[13,19] <- 0
 	jacp_[14,19] <- 0
-	jacp_[15,19] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,19] <- 0
 	jacp_[16,19] <- 0
 	jacp_[17,19] <- 0
 	jacp_[18,19] <- 0
@@ -1610,21 +1610,21 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,19] <- 0
 	jacp_[23,19] <- 0
 # column 20 (df/dp_20)
-	jacp_[1,20] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca2__Ca)))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))
-	jacp_[2,20] <- (0-(0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca2__Ca))*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2)))
+	jacp_[1,20] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca^2*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[2,20] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca^2*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[3,20] <- 0
 	jacp_[4,20] <- 0
-	jacp_[5,20] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca2__Ca)))/KD__PP2B_CaM_Ca1__Ca))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,20] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca2__Ca)))/KD__PP2B_CaM_Ca1__Ca)*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))
-	jacp_[7,20] <- ((0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)))/(KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca2__Ca))*kf__CaM_Ca2__PP2B)*PP2B_CaM_Ca2))-(0-(kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3)))
-	jacp_[8,20] <- (0-(kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca3))
+	jacp_[5,20] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca^2*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,20] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca^2*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[7,20] <- PP2B_CaM_Ca3*kf__PP2B_CaM_Ca2__Ca+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca2*kf__CaM_Ca2__PP2B)/(KD__PP2B_CaM_Ca2__Ca^2*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[8,20] <- -PP2B_CaM_Ca3*kf__PP2B_CaM_Ca2__Ca
 	jacp_[9,20] <- 0
 	jacp_[10,20] <- 0
 	jacp_[11,20] <- 0
 	jacp_[12,20] <- 0
 	jacp_[13,20] <- 0
 	jacp_[14,20] <- 0
-	jacp_[15,20] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,20] <- 0
 	jacp_[16,20] <- 0
 	jacp_[17,20] <- 0
 	jacp_[18,20] <- 0
@@ -1634,13 +1634,13 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,20] <- 0
 	jacp_[23,20] <- 0
 # column 21 (df/dp_21)
-	jacp_[1,21] <- (0-(0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))))/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca1__Ca))*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1)))
+	jacp_[1,21] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca^2*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
 	jacp_[2,21] <- 0
 	jacp_[3,21] <- 0
 	jacp_[4,21] <- 0
-	jacp_[5,21] <- (kf__CaM__PP2B*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))))/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca1__Ca)))/KD__PP2B_CaM__Ca)*PP2B_CaM)))
-	jacp_[6,21] <- ((0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca))))/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca1__Ca))*kf__CaM_Ca1__PP2B)*PP2B_CaM_Ca1))-(0-(kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2)))
-	jacp_[7,21] <- (0-(kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca2))
+	jacp_[5,21] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca^2*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca)
+	jacp_[6,21] <- PP2B_CaM_Ca2*kf__PP2B_CaM_Ca1__Ca+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*PP2B_CaM_Ca1*kf__CaM_Ca1__PP2B)/(KD__PP2B_CaM_Ca1__Ca^2*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca)
+	jacp_[7,21] <- -PP2B_CaM_Ca2*kf__PP2B_CaM_Ca1__Ca
 	jacp_[8,21] <- 0
 	jacp_[9,21] <- 0
 	jacp_[10,21] <- 0
@@ -1648,7 +1648,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,21] <- 0
 	jacp_[13,21] <- 0
 	jacp_[14,21] <- 0
-	jacp_[15,21] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,21] <- 0
 	jacp_[16,21] <- 0
 	jacp_[17,21] <- 0
 	jacp_[18,21] <- 0
@@ -1662,8 +1662,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[2,22] <- 0
 	jacp_[3,22] <- 0
 	jacp_[4,22] <- 0
-	jacp_[5,22] <- ((kf__CaM__PP2B*(0-(((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B)/KD__PP2B_CaM_Ca3__Ca)/KD__PP2B_CaM_Ca2__Ca)/KD__PP2B_CaM_Ca1__Ca)))))/(KD__PP2B_CaM__Ca*KD__PP2B_CaM__Ca))*PP2B_CaM)))-(0-(kf__PP2B_CaM__Ca*PP2B_CaM_Ca1)))
-	jacp_[6,22] <- (0-(kf__PP2B_CaM__Ca*PP2B_CaM_Ca1))
+	jacp_[5,22] <- PP2B_CaM_Ca1*kf__PP2B_CaM__Ca+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__PP2B*KD__CaM__Ca*PP2B_CaM*kf__CaM__PP2B)/(KD__PP2B_CaM_Ca1__Ca*KD__PP2B_CaM_Ca2__Ca*KD__PP2B_CaM_Ca3__Ca*KD__PP2B_CaM__Ca^2)
+	jacp_[6,22] <- -PP2B_CaM_Ca1*kf__PP2B_CaM__Ca
 	jacp_[7,22] <- 0
 	jacp_[8,22] <- 0
 	jacp_[9,22] <- 0
@@ -1672,7 +1672,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,22] <- 0
 	jacp_[13,22] <- 0
 	jacp_[14,22] <- 0
-	jacp_[15,22] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,22] <- 0
 	jacp_[16,22] <- 0
 	jacp_[17,22] <- 0
 	jacp_[18,22] <- 0
@@ -1691,12 +1691,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[7,23] <- 0
 	jacp_[8,23] <- 0
 	jacp_[9,23] <- 0
-	jacp_[10,23] <- (((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)/KD__CaMKII_CaM__Ca))))*CaMKII_CaM))
+	jacp_[10,23] <- ((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-(CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
 	jacp_[11,23] <- 0
 	jacp_[12,23] <- 0
 	jacp_[13,23] <- 0
 	jacp_[14,23] <- 0
-	jacp_[15,23] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,23] <- 0
 	jacp_[16,23] <- 0
 	jacp_[17,23] <- 0
 	jacp_[18,23] <- 0
@@ -1718,9 +1718,9 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[10,24] <- 0
 	jacp_[11,24] <- 0
 	jacp_[12,24] <- 0
-	jacp_[13,24] <- (0-((CaMKII_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca4)))
-	jacp_[14,24] <- (((CaMKII_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca4))-(0*CaMKII_CaM_Ca4))
-	jacp_[15,24] <- (0*CaMKII_CaM_Ca4)
+	jacp_[13,24] <- CaMKII_CaM_Ca4*KD__CaMKII_CaM_Ca3__Ca-CaMKII_CaM_Ca3*(Ca_set*isOn+caa)
+	jacp_[14,24] <- CaMKII_CaM_Ca3*(Ca_set*isOn+caa)-CaMKII_CaM_Ca4*KD__CaMKII_CaM_Ca3__Ca
+	jacp_[15,24] <- 0
 	jacp_[16,24] <- 0
 	jacp_[17,24] <- 0
 	jacp_[18,24] <- 0
@@ -1741,10 +1741,10 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[9,25] <- 0
 	jacp_[10,25] <- 0
 	jacp_[11,25] <- 0
-	jacp_[12,25] <- (0-((CaMKII_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca3)))
-	jacp_[13,25] <- ((CaMKII_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca3))
+	jacp_[12,25] <- CaMKII_CaM_Ca3*KD__CaMKII_CaM_Ca2__Ca-CaMKII_CaM_Ca2*(Ca_set*isOn+caa)
+	jacp_[13,25] <- CaMKII_CaM_Ca2*(Ca_set*isOn+caa)-CaMKII_CaM_Ca3*KD__CaMKII_CaM_Ca2__Ca
 	jacp_[14,25] <- 0
-	jacp_[15,25] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,25] <- 0
 	jacp_[16,25] <- 0
 	jacp_[17,25] <- 0
 	jacp_[18,25] <- 0
@@ -1764,11 +1764,11 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[8,26] <- 0
 	jacp_[9,26] <- 0
 	jacp_[10,26] <- 0
-	jacp_[11,26] <- (0-((CaMKII_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca2)))
-	jacp_[12,26] <- ((CaMKII_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca2))
+	jacp_[11,26] <- CaMKII_CaM_Ca2*KD__CaMKII_CaM_Ca1__Ca-CaMKII_CaM_Ca1*(Ca_set*isOn+caa)
+	jacp_[12,26] <- CaMKII_CaM_Ca1*(Ca_set*isOn+caa)-CaMKII_CaM_Ca2*KD__CaMKII_CaM_Ca1__Ca
 	jacp_[13,26] <- 0
 	jacp_[14,26] <- 0
-	jacp_[15,26] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,26] <- 0
 	jacp_[16,26] <- 0
 	jacp_[17,26] <- 0
 	jacp_[18,26] <- 0
@@ -1787,12 +1787,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[7,27] <- 0
 	jacp_[8,27] <- 0
 	jacp_[9,27] <- 0
-	jacp_[10,27] <- (0-(((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaMKII_CaM)-(KD__CaMKII_CaM__Ca*CaMKII_CaM_Ca1)))
-	jacp_[11,27] <- (((((1/(1+exp((-10*t))))*Ca_set)+caa)*CaMKII_CaM)-(KD__CaMKII_CaM__Ca*CaMKII_CaM_Ca1))
+	jacp_[10,27] <- CaMKII_CaM_Ca1*KD__CaMKII_CaM__Ca-CaMKII_CaM*(Ca_set*isOn+caa)
+	jacp_[11,27] <- CaMKII_CaM*(Ca_set*isOn+caa)-CaMKII_CaM_Ca1*KD__CaMKII_CaM__Ca
 	jacp_[12,27] <- 0
 	jacp_[13,27] <- 0
 	jacp_[14,27] <- 0
-	jacp_[15,27] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,27] <- 0
 	jacp_[16,27] <- 0
 	jacp_[17,27] <- 0
 	jacp_[18,27] <- 0
@@ -1802,7 +1802,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,27] <- 0
 	jacp_[23,27] <- 0
 # column 28 (df/dp_28)
-	jacp_[1,28] <- (0-((CaM_Ca1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)))*CaMKII_CaM_Ca1)))
+	jacp_[1,28] <- (CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)-CaM_Ca1*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jacp_[2,28] <- 0
 	jacp_[3,28] <- 0
 	jacp_[4,28] <- 0
@@ -1812,11 +1812,11 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[8,28] <- 0
 	jacp_[9,28] <- 0
 	jacp_[10,28] <- 0
-	jacp_[11,28] <- ((CaM_Ca1*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)))*CaMKII_CaM_Ca1))
+	jacp_[11,28] <- CaM_Ca1*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[12,28] <- 0
 	jacp_[13,28] <- 0
 	jacp_[14,28] <- 0
-	jacp_[15,28] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,28] <- 0
 	jacp_[16,28] <- 0
 	jacp_[17,28] <- 0
 	jacp_[18,28] <- 0
@@ -1827,7 +1827,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[23,28] <- 0
 # column 29 (df/dp_29)
 	jacp_[1,29] <- 0
-	jacp_[2,29] <- (0-((CaM_Ca2*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))*CaMKII_CaM_Ca2)))
+	jacp_[2,29] <- (CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)-CaM_Ca2*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jacp_[3,29] <- 0
 	jacp_[4,29] <- 0
 	jacp_[5,29] <- 0
@@ -1837,10 +1837,10 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[9,29] <- 0
 	jacp_[10,29] <- 0
 	jacp_[11,29] <- 0
-	jacp_[12,29] <- ((CaM_Ca2*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))*CaMKII_CaM_Ca2))
+	jacp_[12,29] <- CaM_Ca2*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[13,29] <- 0
 	jacp_[14,29] <- 0
-	jacp_[15,29] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,29] <- 0
 	jacp_[16,29] <- 0
 	jacp_[17,29] <- 0
 	jacp_[18,29] <- 0
@@ -1852,7 +1852,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 # column 30 (df/dp_30)
 	jacp_[1,30] <- 0
 	jacp_[2,30] <- 0
-	jacp_[3,30] <- (0-((CaM_Ca3*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)*CaMKII_CaM_Ca3)))
+	jacp_[3,30] <- (CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca-CaM_Ca3*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jacp_[4,30] <- 0
 	jacp_[5,30] <- 0
 	jacp_[6,30] <- 0
@@ -1862,9 +1862,9 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[10,30] <- 0
 	jacp_[11,30] <- 0
 	jacp_[12,30] <- 0
-	jacp_[13,30] <- ((CaM_Ca3*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)*CaMKII_CaM_Ca3))
+	jacp_[13,30] <- CaM_Ca3*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-(CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca
 	jacp_[14,30] <- 0
-	jacp_[15,30] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,30] <- 0
 	jacp_[16,30] <- 0
 	jacp_[17,30] <- 0
 	jacp_[18,30] <- 0
@@ -1877,7 +1877,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[1,31] <- 0
 	jacp_[2,31] <- 0
 	jacp_[3,31] <- 0
-	jacp_[4,31] <- (0-((CaM_Ca4*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(KD__CaM_Ca4__CaMKII*CaMKII_CaM_Ca4)))
+	jacp_[4,31] <- CaMKII_CaM_Ca4*KD__CaM_Ca4__CaMKII-CaM_Ca4*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jacp_[5,31] <- 0
 	jacp_[6,31] <- 0
 	jacp_[7,31] <- 0
@@ -1887,8 +1887,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[11,31] <- 0
 	jacp_[12,31] <- 0
 	jacp_[13,31] <- 0
-	jacp_[14,31] <- (((CaM_Ca4*((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-(KD__CaM_Ca4__CaMKII*CaMKII_CaM_Ca4))-(0*CaMKII_CaM_Ca4))
-	jacp_[15,31] <- (0*CaMKII_CaM_Ca4)
+	jacp_[14,31] <- CaM_Ca4*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)-CaMKII_CaM_Ca4*KD__CaM_Ca4__CaMKII
+	jacp_[15,31] <- 0
 	jacp_[16,31] <- 0
 	jacp_[17,31] <- 0
 	jacp_[18,31] <- 0
@@ -1898,21 +1898,21 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,31] <- 0
 	jacp_[23,31] <- 0
 # column 32 (df/dp_32)
-	jacp_[1,32] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))
-	jacp_[2,32] <- (0-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2)))
-	jacp_[3,32] <- (0-(0-(((KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3)))
-	jacp_[4,32] <- (0-(0-(kf__CaM_Ca4__CaMKII*CaMKII_CaM_Ca4)))
+	jacp_[1,32] <- (CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[2,32] <- (CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[3,32] <- (CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca
+	jacp_[4,32] <- CaMKII_CaM_Ca4*kf__CaM_Ca4__CaMKII
 	jacp_[5,32] <- 0
 	jacp_[6,32] <- 0
 	jacp_[7,32] <- 0
 	jacp_[8,32] <- 0
 	jacp_[9,32] <- 0
-	jacp_[10,32] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,32] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
-	jacp_[12,32] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2))
-	jacp_[13,32] <- (0-(((KD__CaM_Ca3__Ca/KD__CaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3))
-	jacp_[14,32] <- ((0-(kf__CaM_Ca4__CaMKII*CaMKII_CaM_Ca4))-(0*CaMKII_CaM_Ca4))
-	jacp_[15,32] <- (0*CaMKII_CaM_Ca4)
+	jacp_[10,32] <- -(CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,32] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[12,32] <- -(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[13,32] <- -(CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca
+	jacp_[14,32] <- -CaMKII_CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jacp_[15,32] <- 0
 	jacp_[16,32] <- 0
 	jacp_[17,32] <- 0
 	jacp_[18,32] <- 0
@@ -1922,21 +1922,21 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,32] <- 0
 	jacp_[23,32] <- 0
 # column 33 (df/dp_33)
-	jacp_[1,33] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca)))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))
-	jacp_[2,33] <- (0-(0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca)))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2)))
-	jacp_[3,33] <- (0-(0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca))*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3)))
+	jacp_[1,33] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca^2)
+	jacp_[2,33] <- -(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca^2)
+	jacp_[3,33] <- -(CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca^2
 	jacp_[4,33] <- 0
 	jacp_[5,33] <- 0
 	jacp_[6,33] <- 0
 	jacp_[7,33] <- 0
 	jacp_[8,33] <- 0
 	jacp_[9,33] <- 0
-	jacp_[10,33] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca)))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,33] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca)))/KD__CaMKII_CaM_Ca2__Ca))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
-	jacp_[12,33] <- (0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca)))/KD__CaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2))
-	jacp_[13,33] <- ((0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII))/(KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM_Ca3__Ca))*kf__CaM_Ca3__CaMKII)*CaMKII_CaM_Ca3))-(0-(kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca4)))
-	jacp_[14,33] <- ((0-(kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca4))-(0*CaMKII_CaM_Ca4))
-	jacp_[15,33] <- (0*CaMKII_CaM_Ca4)
+	jacp_[10,33] <- (CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca^2*KD__CaMKII_CaM__Ca)
+	jacp_[11,33] <- (CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca^2)
+	jacp_[12,33] <- (CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca^2)
+	jacp_[13,33] <- (CaMKII_CaM_Ca3*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca3__CaMKII)/KD__CaMKII_CaM_Ca3__Ca^2+CaMKII_CaM_Ca4*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[14,33] <- -CaMKII_CaM_Ca4*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[15,33] <- 0
 	jacp_[16,33] <- 0
 	jacp_[17,33] <- 0
 	jacp_[18,33] <- 0
@@ -1946,8 +1946,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,33] <- 0
 	jacp_[23,33] <- 0
 # column 34 (df/dp_34)
-	jacp_[1,34] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca2__Ca)))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))
-	jacp_[2,34] <- (0-(0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca2__Ca))*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2)))
+	jacp_[1,34] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca^2*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[2,34] <- -(CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca^2*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[3,34] <- 0
 	jacp_[4,34] <- 0
 	jacp_[5,34] <- 0
@@ -1955,12 +1955,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[7,34] <- 0
 	jacp_[8,34] <- 0
 	jacp_[9,34] <- 0
-	jacp_[10,34] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca2__Ca)))/KD__CaMKII_CaM_Ca1__Ca))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,34] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca2__Ca)))/KD__CaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))
-	jacp_[12,34] <- ((0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)))/(KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca2__Ca))*kf__CaM_Ca2__CaMKII)*CaMKII_CaM_Ca2))-(0-(kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca3)))
-	jacp_[13,34] <- (0-(kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca3))
+	jacp_[10,34] <- (CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca^2*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,34] <- (CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca^2*KD__CaMKII_CaM_Ca3__Ca)
+	jacp_[12,34] <- (CaMKII_CaM_Ca2*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca2__CaMKII)/(KD__CaMKII_CaM_Ca2__Ca^2*KD__CaMKII_CaM_Ca3__Ca)+CaMKII_CaM_Ca3*kf__CaMKII_CaM_Ca2__Ca
+	jacp_[13,34] <- -CaMKII_CaM_Ca3*kf__CaMKII_CaM_Ca2__Ca
 	jacp_[14,34] <- 0
-	jacp_[15,34] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,34] <- 0
 	jacp_[16,34] <- 0
 	jacp_[17,34] <- 0
 	jacp_[18,34] <- 0
@@ -1970,7 +1970,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,34] <- 0
 	jacp_[23,34] <- 0
 # column 35 (df/dp_35)
-	jacp_[1,35] <- (0-(0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))))/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca1__Ca))*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1)))
+	jacp_[1,35] <- -(CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca^2*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)
 	jacp_[2,35] <- 0
 	jacp_[3,35] <- 0
 	jacp_[4,35] <- 0
@@ -1979,12 +1979,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[7,35] <- 0
 	jacp_[8,35] <- 0
 	jacp_[9,35] <- 0
-	jacp_[10,35] <- (kf__CaM__CaMKII*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))))/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca1__Ca)))/KD__CaMKII_CaM__Ca)*CaMKII_CaM)))
-	jacp_[11,35] <- ((0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca))))/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca1__Ca))*kf__CaM_Ca1__CaMKII)*CaMKII_CaM_Ca1))-(0-(kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca2)))
-	jacp_[12,35] <- (0-(kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca2))
+	jacp_[10,35] <- (CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca^2*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca)
+	jacp_[11,35] <- (CaMKII_CaM_Ca1*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*kf__CaM_Ca1__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca^2*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca)+CaMKII_CaM_Ca2*kf__CaMKII_CaM_Ca1__Ca
+	jacp_[12,35] <- -CaMKII_CaM_Ca2*kf__CaMKII_CaM_Ca1__Ca
 	jacp_[13,35] <- 0
 	jacp_[14,35] <- 0
-	jacp_[15,35] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,35] <- 0
 	jacp_[16,35] <- 0
 	jacp_[17,35] <- 0
 	jacp_[18,35] <- 0
@@ -2003,12 +2003,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[7,36] <- 0
 	jacp_[8,36] <- 0
 	jacp_[9,36] <- 0
-	jacp_[10,36] <- ((kf__CaM__CaMKII*(0-(((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII)/KD__CaMKII_CaM_Ca3__Ca)/KD__CaMKII_CaM_Ca2__Ca)/KD__CaMKII_CaM_Ca1__Ca)))))/(KD__CaMKII_CaM__Ca*KD__CaMKII_CaM__Ca))*CaMKII_CaM)))-(kf__CaMKII_CaM__Ca*(0-CaMKII_CaM_Ca1)))
-	jacp_[11,36] <- (kf__CaMKII_CaM__Ca*(0-CaMKII_CaM_Ca1))
+	jacp_[10,36] <- (CaMKII_CaM*KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__CaMKII*KD__CaM__Ca*kf__CaM__CaMKII)/(KD__CaMKII_CaM_Ca1__Ca*KD__CaMKII_CaM_Ca2__Ca*KD__CaMKII_CaM_Ca3__Ca*KD__CaMKII_CaM__Ca^2)+CaMKII_CaM_Ca1*kf__CaMKII_CaM__Ca
+	jacp_[11,36] <- -CaMKII_CaM_Ca1*kf__CaMKII_CaM__Ca
 	jacp_[12,36] <- 0
 	jacp_[13,36] <- 0
 	jacp_[14,36] <- 0
-	jacp_[15,36] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,36] <- 0
 	jacp_[16,36] <- 0
 	jacp_[17,36] <- 0
 	jacp_[18,36] <- 0
@@ -2032,9 +2032,9 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,37] <- 0
 	jacp_[13,37] <- 0
 	jacp_[14,37] <- 0
-	jacp_[15,37] <- (((pCaMKII_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4))+(0*CaMKII_CaM_Ca4))
+	jacp_[15,37] <- (Ca_set*isOn+caa)*pCaMKII_CaM_Ca3-KD__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4
 	jacp_[16,37] <- 0
-	jacp_[17,37] <- (0-((pCaMKII_CaM_Ca3*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4)))
+	jacp_[17,37] <- KD__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4-(Ca_set*isOn+caa)*pCaMKII_CaM_Ca3
 	jacp_[18,37] <- 0
 	jacp_[19,37] <- 0
 	jacp_[20,37] <- 0
@@ -2056,17 +2056,17 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,38] <- 0
 	jacp_[13,38] <- 0
 	jacp_[14,38] <- 0
-	jacp_[15,38] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,38] <- (0-(((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*pCaMKIIa)-((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)/KD__pCaMKII_CaM__Ca))))*pCaMKII_CaM)))
+	jacp_[15,38] <- 0
+	jacp_[16,38] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)-((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)*pCaMKIIa
 	jacp_[17,38] <- 0
 	jacp_[18,38] <- 0
 	jacp_[19,38] <- 0
-	jacp_[20,38] <- (((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))*pCaMKIIa)-((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)/KD__pCaMKII_CaM__Ca))))*pCaMKII_CaM))
+	jacp_[20,38] <- ((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)*pCaMKIIa-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,38] <- 0
 	jacp_[22,38] <- 0
 	jacp_[23,38] <- 0
 # column 39 (df/dp_39)
-	jacp_[1,39] <- (0-((CaM_Ca1*pCaMKIIa)-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))*pCaMKII_CaM_Ca1)))
+	jacp_[1,39] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)-CaM_Ca1*pCaMKIIa
 	jacp_[2,39] <- 0
 	jacp_[3,39] <- 0
 	jacp_[4,39] <- 0
@@ -2080,18 +2080,18 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,39] <- 0
 	jacp_[13,39] <- 0
 	jacp_[14,39] <- 0
-	jacp_[15,39] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,39] <- (0-((CaM_Ca1*pCaMKIIa)-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))*pCaMKII_CaM_Ca1)))
+	jacp_[15,39] <- 0
+	jacp_[16,39] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)-CaM_Ca1*pCaMKIIa
 	jacp_[17,39] <- 0
 	jacp_[18,39] <- 0
-	jacp_[19,39] <- ((CaM_Ca1*pCaMKIIa)-((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))*pCaMKII_CaM_Ca1))
+	jacp_[19,39] <- CaM_Ca1*pCaMKIIa-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
 	jacp_[20,39] <- 0
 	jacp_[21,39] <- 0
 	jacp_[22,39] <- 0
 	jacp_[23,39] <- 0
 # column 40 (df/dp_40)
 	jacp_[1,40] <- 0
-	jacp_[2,40] <- (0-((CaM_Ca2*pCaMKIIa)-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))*pCaMKII_CaM_Ca2)))
+	jacp_[2,40] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)-CaM_Ca2*pCaMKIIa
 	jacp_[3,40] <- 0
 	jacp_[4,40] <- 0
 	jacp_[5,40] <- 0
@@ -2104,10 +2104,10 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,40] <- 0
 	jacp_[13,40] <- 0
 	jacp_[14,40] <- 0
-	jacp_[15,40] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,40] <- (0-((CaM_Ca2*pCaMKIIa)-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))*pCaMKII_CaM_Ca2)))
+	jacp_[15,40] <- 0
+	jacp_[16,40] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)-CaM_Ca2*pCaMKIIa
 	jacp_[17,40] <- 0
-	jacp_[18,40] <- ((CaM_Ca2*pCaMKIIa)-((KD__CaM_Ca2__Ca*(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))*pCaMKII_CaM_Ca2))
+	jacp_[18,40] <- CaM_Ca2*pCaMKIIa-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
 	jacp_[19,40] <- 0
 	jacp_[20,40] <- 0
 	jacp_[21,40] <- 0
@@ -2116,7 +2116,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 # column 41 (df/dp_41)
 	jacp_[1,41] <- 0
 	jacp_[2,41] <- 0
-	jacp_[3,41] <- (0-((CaM_Ca3*pCaMKIIa)-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)*pCaMKII_CaM_Ca3)))
+	jacp_[3,41] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca-CaM_Ca3*pCaMKIIa
 	jacp_[4,41] <- 0
 	jacp_[5,41] <- 0
 	jacp_[6,41] <- 0
@@ -2128,9 +2128,9 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,41] <- 0
 	jacp_[13,41] <- 0
 	jacp_[14,41] <- 0
-	jacp_[15,41] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,41] <- (0-((CaM_Ca3*pCaMKIIa)-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)*pCaMKII_CaM_Ca3)))
-	jacp_[17,41] <- ((CaM_Ca3*pCaMKIIa)-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)*pCaMKII_CaM_Ca3))
+	jacp_[15,41] <- 0
+	jacp_[16,41] <- (KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca-CaM_Ca3*pCaMKIIa
+	jacp_[17,41] <- CaM_Ca3*pCaMKIIa-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca
 	jacp_[18,41] <- 0
 	jacp_[19,41] <- 0
 	jacp_[20,41] <- 0
@@ -2152,10 +2152,10 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,42] <- 0
 	jacp_[13,42] <- 0
 	jacp_[14,42] <- 0
-	jacp_[15,42] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,42] <- 0
 	jacp_[16,42] <- 0
-	jacp_[17,42] <- ((pCaMKII_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3))
-	jacp_[18,42] <- (0-((pCaMKII_CaM_Ca2*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3)))
+	jacp_[17,42] <- (Ca_set*isOn+caa)*pCaMKII_CaM_Ca2-KD__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3
+	jacp_[18,42] <- KD__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3-(Ca_set*isOn+caa)*pCaMKII_CaM_Ca2
 	jacp_[19,42] <- 0
 	jacp_[20,42] <- 0
 	jacp_[21,42] <- 0
@@ -2176,11 +2176,11 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,43] <- 0
 	jacp_[13,43] <- 0
 	jacp_[14,43] <- 0
-	jacp_[15,43] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,43] <- 0
 	jacp_[16,43] <- 0
 	jacp_[17,43] <- 0
-	jacp_[18,43] <- ((pCaMKII_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2))
-	jacp_[19,43] <- (0-((pCaMKII_CaM_Ca1*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2)))
+	jacp_[18,43] <- (Ca_set*isOn+caa)*pCaMKII_CaM_Ca1-KD__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2
+	jacp_[19,43] <- KD__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2-(Ca_set*isOn+caa)*pCaMKII_CaM_Ca1
 	jacp_[20,43] <- 0
 	jacp_[21,43] <- 0
 	jacp_[22,43] <- 0
@@ -2189,7 +2189,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[1,44] <- 0
 	jacp_[2,44] <- 0
 	jacp_[3,44] <- 0
-	jacp_[4,44] <- (0-((CaM_Ca4*pCaMKIIa)-(KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4)))
+	jacp_[4,44] <- KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4-CaM_Ca4*pCaMKIIa
 	jacp_[5,44] <- 0
 	jacp_[6,44] <- 0
 	jacp_[7,44] <- 0
@@ -2200,8 +2200,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,44] <- 0
 	jacp_[13,44] <- 0
 	jacp_[14,44] <- 0
-	jacp_[15,44] <- (((CaM_Ca4*pCaMKIIa)-(KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4))+(0*CaMKII_CaM_Ca4))
-	jacp_[16,44] <- (-1*((CaM_Ca4*pCaMKIIa)-(KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4)))
+	jacp_[15,44] <- CaM_Ca4*pCaMKIIa-KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4
+	jacp_[16,44] <- KD__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4-CaM_Ca4*pCaMKIIa
 	jacp_[17,44] <- 0
 	jacp_[18,44] <- 0
 	jacp_[19,44] <- 0
@@ -2224,19 +2224,19 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,45] <- 0
 	jacp_[13,45] <- 0
 	jacp_[14,45] <- 0
-	jacp_[15,45] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,45] <- 0
 	jacp_[16,45] <- 0
 	jacp_[17,45] <- 0
 	jacp_[18,45] <- 0
-	jacp_[19,45] <- ((pCaMKII_CaM*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1))
-	jacp_[20,45] <- (0-((pCaMKII_CaM*(((1/(1+exp((-10*t))))*Ca_set)+caa))-(KD__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1)))
+	jacp_[19,45] <- (Ca_set*isOn+caa)*pCaMKII_CaM-KD__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1
+	jacp_[20,45] <- KD__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1-(Ca_set*isOn+caa)*pCaMKII_CaM
 	jacp_[21,45] <- 0
 	jacp_[22,45] <- 0
 	jacp_[23,45] <- 0
 # column 46 (df/dp_46)
-	jacp_[1,46] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,46] <- (0-(0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))
-	jacp_[3,46] <- (0-(0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca))*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))
+	jacp_[1,46] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)
+	jacp_[2,46] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)
+	jacp_[3,46] <- -(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca^2
 	jacp_[4,46] <- 0
 	jacp_[5,46] <- 0
 	jacp_[6,46] <- 0
@@ -2248,18 +2248,18 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,46] <- 0
 	jacp_[13,46] <- 0
 	jacp_[14,46] <- 0
-	jacp_[15,46] <- ((0-(kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4))+(0*CaMKII_CaM_Ca4))
-	jacp_[16,46] <- ((((0-(0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca))*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))-(0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
-	jacp_[17,46] <- ((0-((((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca))*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3))-(0-(kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4)))
-	jacp_[18,46] <- (0-((((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2))
-	jacp_[19,46] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,46] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*((0-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa))/(KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM_Ca3__Ca)))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[15,46] <- -kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4
+	jacp_[16,46] <- (-(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca^2)-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2*KD__pCaMKII_CaM__Ca)
+	jacp_[17,46] <- kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca4+(KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca^2
+	jacp_[18,46] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)
+	jacp_[19,46] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2)
+	jacp_[20,46] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca^2*KD__pCaMKII_CaM__Ca)
 	jacp_[21,46] <- 0
 	jacp_[22,46] <- 0
 	jacp_[23,46] <- 0
 # column 47 (df/dp_47)
-	jacp_[1,47] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca)))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,47] <- (0-(0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca))*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))
+	jacp_[1,47] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[2,47] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca)
 	jacp_[3,47] <- 0
 	jacp_[4,47] <- 0
 	jacp_[5,47] <- 0
@@ -2272,17 +2272,17 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,47] <- 0
 	jacp_[13,47] <- 0
 	jacp_[14,47] <- 0
-	jacp_[15,47] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,47] <- (((0-(0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca))*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca)))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca)))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
-	jacp_[17,47] <- (0-(kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3))
-	jacp_[18,47] <- ((0-((((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca))*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2))-(0-(kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3)))
-	jacp_[19,47] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca)))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,47] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(0-((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)))/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca2__Ca)))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[15,47] <- 0
+	jacp_[16,47] <- (-(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca))-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca)-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
+	jacp_[17,47] <- -kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3
+	jacp_[18,47] <- kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca3+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[19,47] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,47] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca^2*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,47] <- 0
 	jacp_[22,47] <- 0
 	jacp_[23,47] <- 0
 # column 48 (df/dp_48)
-	jacp_[1,48] <- (0-(0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca1__Ca))*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
+	jacp_[1,48] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca^2*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
 	jacp_[2,48] <- 0
 	jacp_[3,48] <- 0
 	jacp_[4,48] <- 0
@@ -2296,12 +2296,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,48] <- 0
 	jacp_[13,48] <- 0
 	jacp_[14,48] <- 0
-	jacp_[15,48] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,48] <- ((0-(0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca1__Ca))*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca1__Ca)))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
+	jacp_[15,48] <- 0
+	jacp_[16,48] <- (-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca^2*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca))-(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca^2*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[17,48] <- 0
-	jacp_[18,48] <- (0-(kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2))
-	jacp_[19,48] <- ((0-((((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca1__Ca))*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))-(0-(kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2)))
-	jacp_[20,48] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-(((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca))))/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca1__Ca)))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[18,48] <- -kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2
+	jacp_[19,48] <- kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca2+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca^2*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,48] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca^2*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,48] <- 0
 	jacp_[22,48] <- 0
 	jacp_[23,48] <- 0
@@ -2320,20 +2320,20 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,49] <- 0
 	jacp_[13,49] <- 0
 	jacp_[14,49] <- 0
-	jacp_[15,49] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,49] <- (0-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))))/(KD__pCaMKII_CaM__Ca*KD__pCaMKII_CaM__Ca))*pCaMKII_CaM))))
+	jacp_[15,49] <- 0
+	jacp_[16,49] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca^2)
 	jacp_[17,49] <- 0
 	jacp_[18,49] <- 0
-	jacp_[19,49] <- (0-(kf__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1))
-	jacp_[20,49] <- ((kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*(KD__CaM_Ca1__Ca*(KD__CaM_Ca2__Ca*(0-((((KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa)/KD__pCaMKII_CaM_Ca3__Ca)/KD__pCaMKII_CaM_Ca2__Ca)/KD__pCaMKII_CaM_Ca1__Ca)))))/(KD__pCaMKII_CaM__Ca*KD__pCaMKII_CaM__Ca))*pCaMKII_CaM)))-(0-(kf__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1)))
+	jacp_[19,49] <- -kf__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1
+	jacp_[20,49] <- kf__pCaMKII_CaM__Ca*pCaMKII_CaM_Ca1+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM_Ca4__pCaMKIIa*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca^2)
 	jacp_[21,49] <- 0
 	jacp_[22,49] <- 0
 	jacp_[23,49] <- 0
 # column 50 (df/dp_50)
-	jacp_[1,50] <- (0-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))
-	jacp_[2,50] <- (0-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))
-	jacp_[3,50] <- (0-(0-(((KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))
-	jacp_[4,50] <- (0-(0-(kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4)))
+	jacp_[1,50] <- (KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[2,50] <- (KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[3,50] <- (KD__CaM_Ca3__Ca*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca
+	jacp_[4,50] <- kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4
 	jacp_[5,50] <- 0
 	jacp_[6,50] <- 0
 	jacp_[7,50] <- 0
@@ -2344,12 +2344,12 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,50] <- 0
 	jacp_[13,50] <- 0
 	jacp_[14,50] <- 0
-	jacp_[15,50] <- ((0-(kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4))+(0*CaMKII_CaM_Ca4))
-	jacp_[16,50] <- (((((-1*(0-(kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4)))-(0-(((KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3)))-(0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2)))-(0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1)))-(kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM))))
-	jacp_[17,50] <- (0-(((KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca)*kf__CaM_Ca3__pCaMKIIa)*pCaMKII_CaM_Ca3))
-	jacp_[18,50] <- (0-((((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca)*kf__CaM_Ca2__pCaMKIIa)*pCaMKII_CaM_Ca2))
-	jacp_[19,50] <- (0-((((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca)*kf__CaM_Ca1__pCaMKIIa)*pCaMKII_CaM_Ca1))
-	jacp_[20,50] <- (kf__CaM__pCaMKIIa*(0-(((KD__CaM__Ca*((KD__CaM_Ca1__Ca*((KD__CaM_Ca2__Ca*(KD__CaM_Ca3__Ca/KD__pCaMKII_CaM_Ca3__Ca))/KD__pCaMKII_CaM_Ca2__Ca))/KD__pCaMKII_CaM_Ca1__Ca))/KD__pCaMKII_CaM__Ca)*pCaMKII_CaM)))
+	jacp_[15,50] <- -kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4
+	jacp_[16,50] <- kf__CaM_Ca4__pCaMKIIa*pCaMKII_CaM_Ca4+(KD__CaM_Ca3__Ca*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca+(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)+(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
+	jacp_[17,50] <- -(KD__CaM_Ca3__Ca*kf__CaM_Ca3__pCaMKIIa*pCaMKII_CaM_Ca3)/KD__pCaMKII_CaM_Ca3__Ca
+	jacp_[18,50] <- -(KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca2__pCaMKIIa*pCaMKII_CaM_Ca2)/(KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[19,50] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*kf__CaM_Ca1__pCaMKIIa*pCaMKII_CaM_Ca1)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca)
+	jacp_[20,50] <- -(KD__CaM_Ca1__Ca*KD__CaM_Ca2__Ca*KD__CaM_Ca3__Ca*KD__CaM__Ca*kf__CaM__pCaMKIIa*pCaMKII_CaM)/(KD__pCaMKII_CaM_Ca1__Ca*KD__pCaMKII_CaM_Ca2__Ca*KD__pCaMKII_CaM_Ca3__Ca*KD__pCaMKII_CaM__Ca)
 	jacp_[21,50] <- 0
 	jacp_[22,50] <- 0
 	jacp_[23,50] <- 0
@@ -2367,8 +2367,8 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[11,51] <- 0
 	jacp_[12,51] <- 0
 	jacp_[13,51] <- 0
-	jacp_[14,51] <- (0-((a*((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))/(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*CaMKII_CaM_Ca4))
-	jacp_[15,51] <- ((a*((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))/(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*CaMKII_CaM_Ca4)
+	jacp_[14,51] <- -(CaMKII_CaM_Ca4*a*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))
+	jacp_[15,51] <- (CaMKII_CaM_Ca4*a*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^2*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))
 	jacp_[16,51] <- 0
 	jacp_[17,51] <- 0
 	jacp_[18,51] <- 0
@@ -2392,13 +2392,13 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,52] <- 0
 	jacp_[13,52] <- 0
 	jacp_[14,52] <- 0
-	jacp_[15,52] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,52] <- (0-(pCaMKIIa*(PP1_0-PP1__pCaMKIIa)))
+	jacp_[15,52] <- 0
+	jacp_[16,52] <- -(PP1_0-PP1__pCaMKIIa)*pCaMKIIa
 	jacp_[17,52] <- 0
 	jacp_[18,52] <- 0
 	jacp_[19,52] <- 0
 	jacp_[20,52] <- 0
-	jacp_[21,52] <- (pCaMKIIa*(PP1_0-PP1__pCaMKIIa))
+	jacp_[21,52] <- (PP1_0-PP1__pCaMKIIa)*pCaMKIIa
 	jacp_[22,52] <- 0
 	jacp_[23,52] <- 0
 # column 53 (df/dp_53)
@@ -2416,13 +2416,13 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,53] <- 0
 	jacp_[13,53] <- 0
 	jacp_[14,53] <- 0
-	jacp_[15,53] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,53] <- (0-(0-PP1__pCaMKIIa))
+	jacp_[15,53] <- 0
+	jacp_[16,53] <- PP1__pCaMKIIa
 	jacp_[17,53] <- 0
 	jacp_[18,53] <- 0
 	jacp_[19,53] <- 0
 	jacp_[20,53] <- 0
-	jacp_[21,53] <- (0-PP1__pCaMKIIa)
+	jacp_[21,53] <- -PP1__pCaMKIIa
 	jacp_[22,53] <- 0
 	jacp_[23,53] <- 0
 # column 54 (df/dp_54)
@@ -2440,36 +2440,36 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,54] <- 0
 	jacp_[13,54] <- 0
 	jacp_[14,54] <- 0
-	jacp_[15,54] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,54] <- 0
 	jacp_[16,54] <- 0
 	jacp_[17,54] <- 0
 	jacp_[18,54] <- 0
 	jacp_[19,54] <- 0
 	jacp_[20,54] <- 0
-	jacp_[21,54] <- (0-PP1__pCaMKIIa)
+	jacp_[21,54] <- -PP1__pCaMKIIa
 	jacp_[22,54] <- 0
 	jacp_[23,54] <- 0
 # column 55 (df/dp_55)
-	jacp_[1,55] <- (1*((kf__CaM__Ca*((1/(1+exp((-10*t))))*(((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))))-((kf__CaM_Ca1__Ca*(1/(1+exp((-10*t)))))*CaM_Ca1)))
-	jacp_[2,55] <- ((1/(1+exp((-10*t))))*((kf__CaM_Ca1__Ca*CaM_Ca1)-(kf__CaM_Ca2__Ca*CaM_Ca2)))
-	jacp_[3,55] <- ((1/(1+exp((-10*t))))*((kf__CaM_Ca2__Ca*CaM_Ca2)-(kf__CaM_Ca3__Ca*CaM_Ca3)))
-	jacp_[4,55] <- ((kf__CaM_Ca3__Ca*CaM_Ca3)*(1/(1+exp((-10*t)))))
-	jacp_[5,55] <- (0-((kf__PP2B_CaM__Ca*PP2B_CaM)*(1/(1+exp((-10*t))))))
-	jacp_[6,55] <- (1*(((kf__PP2B_CaM__Ca*PP2B_CaM)*(1/(1+exp((-10*t)))))-((kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca1)*(1/(1+exp((-10*t)))))))
-	jacp_[7,55] <- (1*(((kf__PP2B_CaM_Ca1__Ca*PP2B_CaM_Ca1)*(1/(1+exp((-10*t)))))-((kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca2)*(1/(1+exp((-10*t)))))))
-	jacp_[8,55] <- (1*(((kf__PP2B_CaM_Ca2__Ca*PP2B_CaM_Ca2)*(1/(1+exp((-10*t)))))-((kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca3)*(1/(1+exp((-10*t)))))))
-	jacp_[9,55] <- ((kf__PP2B_CaM_Ca3__Ca*PP2B_CaM_Ca3)*(1/(1+exp((-10*t)))))
-	jacp_[10,55] <- (0-((kf__CaMKII_CaM__Ca*(1/(1+exp((-10*t)))))*CaMKII_CaM))
-	jacp_[11,55] <- (1*(((kf__CaMKII_CaM__Ca*(1/(1+exp((-10*t)))))*CaMKII_CaM)-((kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca1)*(1/(1+exp((-10*t)))))))
-	jacp_[12,55] <- (1*(((kf__CaMKII_CaM_Ca1__Ca*CaMKII_CaM_Ca1)*(1/(1+exp((-10*t)))))-((kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca2)*(1/(1+exp((-10*t)))))))
-	jacp_[13,55] <- (1*(((kf__CaMKII_CaM_Ca2__Ca*CaMKII_CaM_Ca2)*(1/(1+exp((-10*t)))))-((kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca3)*(1/(1+exp((-10*t)))))))
-	jacp_[14,55] <- (((kf__CaMKII_CaM_Ca3__Ca*CaMKII_CaM_Ca3)*(1/(1+exp((-10*t)))))-(0*CaMKII_CaM_Ca4))
-	jacp_[15,55] <- (((kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3)*(1/(1+exp((-10*t)))))+(0*CaMKII_CaM_Ca4))
+	jacp_[1,55] <- isOn*kf__CaM__Ca*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-CaM_Ca1*isOn*kf__CaM_Ca1__Ca
+	jacp_[2,55] <- CaM_Ca1*isOn*kf__CaM_Ca1__Ca-CaM_Ca2*isOn*kf__CaM_Ca2__Ca
+	jacp_[3,55] <- CaM_Ca2*isOn*kf__CaM_Ca2__Ca-CaM_Ca3*isOn*kf__CaM_Ca3__Ca
+	jacp_[4,55] <- CaM_Ca3*isOn*kf__CaM_Ca3__Ca
+	jacp_[5,55] <- -PP2B_CaM*isOn*kf__PP2B_CaM__Ca
+	jacp_[6,55] <- PP2B_CaM*isOn*kf__PP2B_CaM__Ca-PP2B_CaM_Ca1*isOn*kf__PP2B_CaM_Ca1__Ca
+	jacp_[7,55] <- PP2B_CaM_Ca1*isOn*kf__PP2B_CaM_Ca1__Ca-PP2B_CaM_Ca2*isOn*kf__PP2B_CaM_Ca2__Ca
+	jacp_[8,55] <- PP2B_CaM_Ca2*isOn*kf__PP2B_CaM_Ca2__Ca-PP2B_CaM_Ca3*isOn*kf__PP2B_CaM_Ca3__Ca
+	jacp_[9,55] <- PP2B_CaM_Ca3*isOn*kf__PP2B_CaM_Ca3__Ca
+	jacp_[10,55] <- -CaMKII_CaM*isOn*kf__CaMKII_CaM__Ca
+	jacp_[11,55] <- CaMKII_CaM*isOn*kf__CaMKII_CaM__Ca-CaMKII_CaM_Ca1*isOn*kf__CaMKII_CaM_Ca1__Ca
+	jacp_[12,55] <- CaMKII_CaM_Ca1*isOn*kf__CaMKII_CaM_Ca1__Ca-CaMKII_CaM_Ca2*isOn*kf__CaMKII_CaM_Ca2__Ca
+	jacp_[13,55] <- CaMKII_CaM_Ca2*isOn*kf__CaMKII_CaM_Ca2__Ca-CaMKII_CaM_Ca3*isOn*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[14,55] <- CaMKII_CaM_Ca3*isOn*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[15,55] <- isOn*kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
 	jacp_[16,55] <- 0
-	jacp_[17,55] <- ((1/(1+exp((-10*t))))*((kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2)-(kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3)))
-	jacp_[18,55] <- ((1/(1+exp((-10*t))))*((kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1)-(kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2)))
-	jacp_[19,55] <- ((1/(1+exp((-10*t))))*((kf__pCaMKII_CaM__Ca*pCaMKII_CaM)-(kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1)))
-	jacp_[20,55] <- (0-((kf__pCaMKII_CaM__Ca*pCaMKII_CaM)*(1/(1+exp((-10*t))))))
+	jacp_[17,55] <- isOn*kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2-isOn*kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
+	jacp_[18,55] <- isOn*kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1-isOn*kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2
+	jacp_[19,55] <- isOn*kf__pCaMKII_CaM__Ca*pCaMKII_CaM-isOn*kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1
+	jacp_[20,55] <- -isOn*kf__pCaMKII_CaM__Ca*pCaMKII_CaM
 	jacp_[21,55] <- 0
 	jacp_[22,55] <- 0
 	jacp_[23,55] <- 0
@@ -2488,31 +2488,31 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,56] <- 0
 	jacp_[13,56] <- 0
 	jacp_[14,56] <- 0
-	jacp_[15,56] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,56] <- (0-(kf__PP1__pCaMKIIa*pCaMKIIa))
+	jacp_[15,56] <- 0
+	jacp_[16,56] <- -kf__PP1__pCaMKIIa*pCaMKIIa
 	jacp_[17,56] <- 0
 	jacp_[18,56] <- 0
 	jacp_[19,56] <- 0
 	jacp_[20,56] <- 0
-	jacp_[21,56] <- (kf__PP1__pCaMKIIa*pCaMKIIa)
+	jacp_[21,56] <- kf__PP1__pCaMKIIa*pCaMKIIa
 	jacp_[22,56] <- 0
 	jacp_[23,56] <- 0
 # column 57 (df/dp_57)
-	jacp_[1,57] <- (0-(kf__CaM_Ca1__CaMKII*CaM_Ca1))
-	jacp_[2,57] <- (0-(kf__CaM_Ca2__CaMKII*CaM_Ca2))
-	jacp_[3,57] <- (0-(kf__CaM_Ca3__CaMKII*CaM_Ca3))
-	jacp_[4,57] <- (0-(kf__CaM_Ca4__CaMKII*CaM_Ca4))
+	jacp_[1,57] <- -CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jacp_[2,57] <- -CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jacp_[3,57] <- -CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jacp_[4,57] <- -CaM_Ca4*kf__CaM_Ca4__CaMKII
 	jacp_[5,57] <- 0
 	jacp_[6,57] <- 0
 	jacp_[7,57] <- 0
 	jacp_[8,57] <- 0
 	jacp_[9,57] <- 0
-	jacp_[10,57] <- (kf__CaM__CaMKII*((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))-(0*CaMKII_CaM)))
-	jacp_[11,57] <- (kf__CaM_Ca1__CaMKII*CaM_Ca1)
-	jacp_[12,57] <- (kf__CaM_Ca2__CaMKII*CaM_Ca2)
-	jacp_[13,57] <- (kf__CaM_Ca3__CaMKII*CaM_Ca3)
-	jacp_[14,57] <- ((kf__CaM_Ca4__CaMKII*CaM_Ca4)-((kautMax*((a*((0-(CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4))*(1*(((1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4))
-	jacp_[15,57] <- ((kautMax*((a*((0-(CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4))*(1*(((1*(((1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))+(((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))-((((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))*(b*(1/((s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))*(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))))/((1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)))))*(1+(b*((CaMKII_CaM_Ca4+pCaMKII_CaM_Ca4)/(s+(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM))))))))*CaMKII_CaM_Ca4)
+	jacp_[10,57] <- kf__CaM__CaMKII*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jacp_[11,57] <- CaM_Ca1*kf__CaM_Ca1__CaMKII
+	jacp_[12,57] <- CaM_Ca2*kf__CaM_Ca2__CaMKII
+	jacp_[13,57] <- CaM_Ca3*kf__CaM_Ca3__CaMKII
+	jacp_[14,57] <- (2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))-(CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^3)/((s-PP1__pCaMKIIa+CaMKII_0)^4*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)+CaM_Ca4*kf__CaM_Ca4__CaMKII
+	jacp_[15,57] <- (CaMKII_CaM_Ca4*a*b*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^3)/((s-PP1__pCaMKIIa+CaMKII_0)^4*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1)^2)-(2*CaMKII_CaM_Ca4*a*kautMax*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4)^2)/((s-PP1__pCaMKIIa+CaMKII_0)^3*((b*(pCaMKII_CaM_Ca4+CaMKII_CaM_Ca4))/(s-PP1__pCaMKIIa+CaMKII_0)+1))
 	jacp_[16,57] <- 0
 	jacp_[17,57] <- 0
 	jacp_[18,57] <- 0
@@ -2522,45 +2522,45 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[22,57] <- 0
 	jacp_[23,57] <- 0
 # column 58 (df/dp_58)
-	jacp_[1,58] <- (kf__CaM__Ca*(((1/(1+exp((-10*t))))*Ca_set)+caa))
+	jacp_[1,58] <- (Ca_set*isOn+caa)*kf__CaM__Ca
 	jacp_[2,58] <- 0
 	jacp_[3,58] <- 0
 	jacp_[4,58] <- 0
-	jacp_[5,58] <- (kf__CaM__PP2B*((PP2B_0-((((PP2B_CaM+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4))-(0*PP2B_CaM)))
+	jacp_[5,58] <- ((-PP2B_CaM_Ca4)-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM+PP2B_0)*kf__CaM__PP2B
 	jacp_[6,58] <- 0
 	jacp_[7,58] <- 0
 	jacp_[8,58] <- 0
 	jacp_[9,58] <- 0
-	jacp_[10,58] <- (kf__CaM__CaMKII*(((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa)))-(0*CaMKII_CaM)))
+	jacp_[10,58] <- kf__CaM__CaMKII*((-pCaMKIIa)-pCaMKII_CaM_Ca4-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP1__pCaMKIIa-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM+CaMKII_0)
 	jacp_[11,58] <- 0
 	jacp_[12,58] <- 0
 	jacp_[13,58] <- 0
 	jacp_[14,58] <- 0
-	jacp_[15,58] <- (0*CaMKII_CaM_Ca4)
-	jacp_[16,58] <- (0-(kf__CaM__pCaMKIIa*(pCaMKIIa-(0*pCaMKII_CaM))))
+	jacp_[15,58] <- 0
+	jacp_[16,58] <- -kf__CaM__pCaMKIIa*pCaMKIIa
 	jacp_[17,58] <- 0
 	jacp_[18,58] <- 0
 	jacp_[19,58] <- 0
-	jacp_[20,58] <- (kf__CaM__pCaMKIIa*(pCaMKIIa-(0*pCaMKII_CaM)))
+	jacp_[20,58] <- kf__CaM__pCaMKIIa*pCaMKIIa
 	jacp_[21,58] <- 0
 	jacp_[22,58] <- 0
 	jacp_[23,58] <- 0
 # column 59 (df/dp_59)
-	jacp_[1,59] <- (0-(kf__CaM_Ca1__PP2B*CaM_Ca1))
-	jacp_[2,59] <- (0-(kf__CaM_Ca2__PP2B*CaM_Ca2))
-	jacp_[3,59] <- (0-(kf__CaM_Ca3__PP2B*CaM_Ca3))
-	jacp_[4,59] <- (0-(kf__CaM_Ca4__PP2B*CaM_Ca4))
-	jacp_[5,59] <- (kf__CaM__PP2B*((((CaM_0+PP1_0)-CaMKII_0)-(((((((((((CaM_Ca1+CaM_Ca2)+CaM_Ca3)+CaM_Ca4)+PP2B_CaM)+PP2B_CaM_Ca1)+PP2B_CaM_Ca2)+PP2B_CaM_Ca3)+PP2B_CaM_Ca4)+(PP1_0-PP1__pCaMKIIa))-((CaMKII_0-PP1_0)-(((((((((((CaMKII_CaM+CaMKII_CaM_Ca1)+CaMKII_CaM_Ca2)+CaMKII_CaM_Ca3)+CaMKII_CaM_Ca4)+pCaMKII_CaM_Ca4)+pCaMKIIa)+pCaMKII_CaM_Ca3)+pCaMKII_CaM_Ca2)+pCaMKII_CaM_Ca1)+pCaMKII_CaM)-(PP1_0-PP1__pCaMKIIa))))-pCaMKIIa))-(0*PP2B_CaM)))
-	jacp_[6,59] <- (kf__CaM_Ca1__PP2B*CaM_Ca1)
-	jacp_[7,59] <- (kf__CaM_Ca2__PP2B*CaM_Ca2)
-	jacp_[8,59] <- (kf__CaM_Ca3__PP2B*CaM_Ca3)
-	jacp_[9,59] <- (kf__CaM_Ca4__PP2B*CaM_Ca4)
+	jacp_[1,59] <- -CaM_Ca1*kf__CaM_Ca1__PP2B
+	jacp_[2,59] <- -CaM_Ca2*kf__CaM_Ca2__PP2B
+	jacp_[3,59] <- -CaM_Ca3*kf__CaM_Ca3__PP2B
+	jacp_[4,59] <- -CaM_Ca4*kf__CaM_Ca4__PP2B
+	jacp_[5,59] <- kf__CaM__PP2B*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)
+	jacp_[6,59] <- CaM_Ca1*kf__CaM_Ca1__PP2B
+	jacp_[7,59] <- CaM_Ca2*kf__CaM_Ca2__PP2B
+	jacp_[8,59] <- CaM_Ca3*kf__CaM_Ca3__PP2B
+	jacp_[9,59] <- CaM_Ca4*kf__CaM_Ca4__PP2B
 	jacp_[10,59] <- 0
 	jacp_[11,59] <- 0
 	jacp_[12,59] <- 0
 	jacp_[13,59] <- 0
 	jacp_[14,59] <- 0
-	jacp_[15,59] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,59] <- 0
 	jacp_[16,59] <- 0
 	jacp_[17,59] <- 0
 	jacp_[18,59] <- 0
@@ -2584,7 +2584,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,60] <- 0
 	jacp_[13,60] <- 0
 	jacp_[14,60] <- 0
-	jacp_[15,60] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,60] <- 0
 	jacp_[16,60] <- 0
 	jacp_[17,60] <- 0
 	jacp_[18,60] <- 0
@@ -2592,7 +2592,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[20,60] <- 0
 	jacp_[21,60] <- 0
 	jacp_[22,60] <- 0
-	jacp_[23,60] <- (0-((kca2*caa)+cab))
+	jacp_[23,60] <- (-caa*kca2)-cab
 # column 61 (df/dp_61)
 	jacp_[1,61] <- 0
 	jacp_[2,61] <- 0
@@ -2608,7 +2608,7 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[12,61] <- 0
 	jacp_[13,61] <- 0
 	jacp_[14,61] <- 0
-	jacp_[15,61] <- (0*CaMKII_CaM_Ca4)
+	jacp_[15,61] <- 0
 	jacp_[16,61] <- 0
 	jacp_[17,61] <- 0
 	jacp_[18,61] <- 0
@@ -2616,9 +2616,33 @@ CaMKIIs_jacp<-function(t, state, parameters)
 	jacp_[20,61] <- 0
 	jacp_[21,61] <- 0
 	jacp_[22,61] <- 0
-	jacp_[23,61] <- (0-((kca1*caa)+cab))
+	jacp_[23,61] <- (-caa*kca1)-cab
+# column 62 (df/dp_62)
+	jacp_[1,62] <- Ca_set*kf__CaM__Ca*((-pCaMKII_CaM_Ca4)-pCaMKII_CaM_Ca3-pCaMKII_CaM_Ca2-pCaMKII_CaM_Ca1-pCaMKII_CaM-PP2B_CaM_Ca4-PP2B_CaM_Ca3-PP2B_CaM_Ca2-PP2B_CaM_Ca1-PP2B_CaM-CaM_Ca4-CaM_Ca3-CaM_Ca2-CaM_Ca1+CaM_0-CaMKII_CaM_Ca4-CaMKII_CaM_Ca3-CaMKII_CaM_Ca2-CaMKII_CaM_Ca1-CaMKII_CaM)-CaM_Ca1*Ca_set*kf__CaM_Ca1__Ca
+	jacp_[2,62] <- CaM_Ca1*Ca_set*kf__CaM_Ca1__Ca-CaM_Ca2*Ca_set*kf__CaM_Ca2__Ca
+	jacp_[3,62] <- CaM_Ca2*Ca_set*kf__CaM_Ca2__Ca-CaM_Ca3*Ca_set*kf__CaM_Ca3__Ca
+	jacp_[4,62] <- CaM_Ca3*Ca_set*kf__CaM_Ca3__Ca
+	jacp_[5,62] <- -Ca_set*PP2B_CaM*kf__PP2B_CaM__Ca
+	jacp_[6,62] <- Ca_set*PP2B_CaM*kf__PP2B_CaM__Ca-Ca_set*PP2B_CaM_Ca1*kf__PP2B_CaM_Ca1__Ca
+	jacp_[7,62] <- Ca_set*PP2B_CaM_Ca1*kf__PP2B_CaM_Ca1__Ca-Ca_set*PP2B_CaM_Ca2*kf__PP2B_CaM_Ca2__Ca
+	jacp_[8,62] <- Ca_set*PP2B_CaM_Ca2*kf__PP2B_CaM_Ca2__Ca-Ca_set*PP2B_CaM_Ca3*kf__PP2B_CaM_Ca3__Ca
+	jacp_[9,62] <- Ca_set*PP2B_CaM_Ca3*kf__PP2B_CaM_Ca3__Ca
+	jacp_[10,62] <- -CaMKII_CaM*Ca_set*kf__CaMKII_CaM__Ca
+	jacp_[11,62] <- CaMKII_CaM*Ca_set*kf__CaMKII_CaM__Ca-CaMKII_CaM_Ca1*Ca_set*kf__CaMKII_CaM_Ca1__Ca
+	jacp_[12,62] <- CaMKII_CaM_Ca1*Ca_set*kf__CaMKII_CaM_Ca1__Ca-CaMKII_CaM_Ca2*Ca_set*kf__CaMKII_CaM_Ca2__Ca
+	jacp_[13,62] <- CaMKII_CaM_Ca2*Ca_set*kf__CaMKII_CaM_Ca2__Ca-CaMKII_CaM_Ca3*Ca_set*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[14,62] <- CaMKII_CaM_Ca3*Ca_set*kf__CaMKII_CaM_Ca3__Ca
+	jacp_[15,62] <- Ca_set*kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
+	jacp_[16,62] <- 0
+	jacp_[17,62] <- Ca_set*kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2-Ca_set*kf__pCaMKII_CaM_Ca3__Ca*pCaMKII_CaM_Ca3
+	jacp_[18,62] <- Ca_set*kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1-Ca_set*kf__pCaMKII_CaM_Ca2__Ca*pCaMKII_CaM_Ca2
+	jacp_[19,62] <- Ca_set*kf__pCaMKII_CaM__Ca*pCaMKII_CaM-Ca_set*kf__pCaMKII_CaM_Ca1__Ca*pCaMKII_CaM_Ca1
+	jacp_[20,62] <- -Ca_set*kf__pCaMKII_CaM__Ca*pCaMKII_CaM
+	jacp_[21,62] <- 0
+	jacp_[22,62] <- 0
+	jacp_[23,62] <- 0
 	rownames(jacp_) <- c("CaM_Ca1", "CaM_Ca2", "CaM_Ca3", "CaM_Ca4", "PP2B_CaM", "PP2B_CaM_Ca1", "PP2B_CaM_Ca2", "PP2B_CaM_Ca3", "PP2B_CaM_Ca4", "CaMKII_CaM", "CaMKII_CaM_Ca1", "CaMKII_CaM_Ca2", "CaMKII_CaM_Ca3", "CaMKII_CaM_Ca4", "pCaMKII_CaM_Ca4", "pCaMKIIa", "pCaMKII_CaM_Ca3", "pCaMKII_CaM_Ca2", "pCaMKII_CaM_Ca1", "pCaMKII_CaM", "PP1__pCaMKIIa", "caa", "cab")
-	colnames(jacp_) <- c("kf__CaM__Ca", "kf__CaM_Ca1__Ca", "kf__CaM_Ca2__Ca", "kf__CaM_Ca3__Ca", "kf__CaM__PP2B", "kf__CaM_Ca1__PP2B", "kf__CaM_Ca2__PP2B", "kf__CaM_Ca3__PP2B", "kf__CaM_Ca4__PP2B", "kf__PP2B_CaM__Ca", "kf__PP2B_CaM_Ca1__Ca", "kf__PP2B_CaM_Ca2__Ca", "kf__PP2B_CaM_Ca3__Ca", "KD__CaM_Ca3__Ca", "KD__CaM_Ca2__Ca", "KD__CaM_Ca1__Ca", "KD__CaM__Ca", "KD__CaM_Ca4__PP2B", "KD__PP2B_CaM_Ca3__Ca", "KD__PP2B_CaM_Ca2__Ca", "KD__PP2B_CaM_Ca1__Ca", "KD__PP2B_CaM__Ca", "kf__CaM__CaMKII", "kf__CaMKII_CaM_Ca3__Ca", "kf__CaMKII_CaM_Ca2__Ca", "kf__CaMKII_CaM_Ca1__Ca", "kf__CaMKII_CaM__Ca", "kf__CaM_Ca1__CaMKII", "kf__CaM_Ca2__CaMKII", "kf__CaM_Ca3__CaMKII", "kf__CaM_Ca4__CaMKII", "KD__CaM_Ca4__CaMKII", "KD__CaMKII_CaM_Ca3__Ca", "KD__CaMKII_CaM_Ca2__Ca", "KD__CaMKII_CaM_Ca1__Ca", "KD__CaMKII_CaM__Ca", "kf__pCaMKII_CaM_Ca3__Ca", "kf__CaM__pCaMKIIa", "kf__CaM_Ca1__pCaMKIIa", "kf__CaM_Ca2__pCaMKIIa", "kf__CaM_Ca3__pCaMKIIa", "kf__pCaMKII_CaM_Ca2__Ca", "kf__pCaMKII_CaM_Ca1__Ca", "kf__CaM_Ca4__pCaMKIIa", "kf__pCaMKII_CaM__Ca", "KD__pCaMKII_CaM_Ca3__Ca", "KD__pCaMKII_CaM_Ca2__Ca", "KD__pCaMKII_CaM_Ca1__Ca", "KD__pCaMKII_CaM__Ca", "KD__CaM_Ca4__pCaMKIIa", "kautMax", "kf__PP1__pCaMKIIa", "kr__PP1__pCaMKIIa", "kcat__PP1__pCaMKIIa", "Ca_set", "PP1_0", "CaMKII_0", "CaM_0", "PP2B_0", "kca1", "kca2")
+	colnames(jacp_) <- c("kf__CaM__Ca", "kf__CaM_Ca1__Ca", "kf__CaM_Ca2__Ca", "kf__CaM_Ca3__Ca", "kf__CaM__PP2B", "kf__CaM_Ca1__PP2B", "kf__CaM_Ca2__PP2B", "kf__CaM_Ca3__PP2B", "kf__CaM_Ca4__PP2B", "kf__PP2B_CaM__Ca", "kf__PP2B_CaM_Ca1__Ca", "kf__PP2B_CaM_Ca2__Ca", "kf__PP2B_CaM_Ca3__Ca", "KD__CaM_Ca3__Ca", "KD__CaM_Ca2__Ca", "KD__CaM_Ca1__Ca", "KD__CaM__Ca", "KD__CaM_Ca4__PP2B", "KD__PP2B_CaM_Ca3__Ca", "KD__PP2B_CaM_Ca2__Ca", "KD__PP2B_CaM_Ca1__Ca", "KD__PP2B_CaM__Ca", "kf__CaM__CaMKII", "kf__CaMKII_CaM_Ca3__Ca", "kf__CaMKII_CaM_Ca2__Ca", "kf__CaMKII_CaM_Ca1__Ca", "kf__CaMKII_CaM__Ca", "kf__CaM_Ca1__CaMKII", "kf__CaM_Ca2__CaMKII", "kf__CaM_Ca3__CaMKII", "kf__CaM_Ca4__CaMKII", "KD__CaM_Ca4__CaMKII", "KD__CaMKII_CaM_Ca3__Ca", "KD__CaMKII_CaM_Ca2__Ca", "KD__CaMKII_CaM_Ca1__Ca", "KD__CaMKII_CaM__Ca", "kf__pCaMKII_CaM_Ca3__Ca", "kf__CaM__pCaMKIIa", "kf__CaM_Ca1__pCaMKIIa", "kf__CaM_Ca2__pCaMKIIa", "kf__CaM_Ca3__pCaMKIIa", "kf__pCaMKII_CaM_Ca2__Ca", "kf__pCaMKII_CaM_Ca1__Ca", "kf__CaM_Ca4__pCaMKIIa", "kf__pCaMKII_CaM__Ca", "KD__pCaMKII_CaM_Ca3__Ca", "KD__pCaMKII_CaM_Ca2__Ca", "KD__pCaMKII_CaM_Ca1__Ca", "KD__pCaMKII_CaM__Ca", "KD__CaM_Ca4__pCaMKIIa", "kautMax", "kf__PP1__pCaMKIIa", "kr__PP1__pCaMKIIa", "kcat__PP1__pCaMKIIa", "Ca_set", "PP1_0", "CaMKII_0", "CaM_0", "PP2B_0", "kca1", "kca2", "isOn")
 	return(jacp_)
 }
 # ode Functions F(t,y;p)
@@ -2688,6 +2712,7 @@ CaMKIIs_func<-function(t, state, parameters)
 	PP2B_0 <- parameters[59]
 	kca1 <- parameters[60]
 	kca2 <- parameters[61]
+	isOn <- parameters[62]
 	CaM_Ca1 <- state[1]
 	CaM_Ca2 <- state[2]
 	CaM_Ca3 <- state[3]
@@ -2754,8 +2779,7 @@ CaMKIIs_func<-function(t, state, parameters)
 	kr__CaM_Ca2__pCaMKIIa <- KD__CaM_Ca2__pCaMKIIa * kf__CaM_Ca2__pCaMKIIa
 	kr__CaM_Ca1__pCaMKIIa <- KD__CaM_Ca1__pCaMKIIa * kf__CaM_Ca1__pCaMKIIa
 	kr__CaM__pCaMKIIa <- KD__CaM__pCaMKIIa * kf__CaM__pCaMKIIa
-	logistic <- 1.0/(1+exp(-10*t))
-	Ca <- logistic*Ca_set+caa
+	Ca <- isOn*Ca_set+caa
 	PP1 <- PP1_0-PP1__pCaMKIIa
 	CaMKII <- CaMKII_0 - PP1_0 - (CaMKII_CaM + CaMKII_CaM_Ca1 + CaMKII_CaM_Ca2 + CaMKII_CaM_Ca3 + CaMKII_CaM_Ca4 + pCaMKII_CaM_Ca4 + pCaMKIIa + pCaMKII_CaM_Ca3 + pCaMKII_CaM_Ca2 + pCaMKII_CaM_Ca1 + pCaMKII_CaM - PP1)
 	CaM <- CaM_0 + PP1_0 - CaMKII_0 - (CaM_Ca1 + CaM_Ca2 + CaM_Ca3 + CaM_Ca4 + PP2B_CaM + PP2B_CaM_Ca1 + PP2B_CaM_Ca2 + PP2B_CaM_Ca3 + PP2B_CaM_Ca4 + PP1 - CaMKII - pCaMKIIa)
@@ -2820,12 +2844,12 @@ CaMKIIs_func<-function(t, state, parameters)
 	return(func_)
 }
 # ode default parameters; can depend on constants, and time  of initialization
-CaMKIIs_default<-function(t=0.0)
+CaMKIIs_default<-function(t)
 {
 	a <- 3.90264
 	b <- 2.86972
 	s <- 1e-05
-	parameters <- vector(mode='numeric',len=61)
+	parameters <- vector(mode='numeric',len=62)
 	parameters[1] <- 0.15191
 	parameters[2] <- 3.4245e-05
 	parameters[3] <- 0.073893
@@ -2887,11 +2911,12 @@ CaMKIIs_default<-function(t=0.0)
 	parameters[59] <- 3
 	parameters[60] <- 0.00978422
 	parameters[61] <- 0.03448
-	names(parameters) <- c("kf__CaM__Ca", "kf__CaM_Ca1__Ca", "kf__CaM_Ca2__Ca", "kf__CaM_Ca3__Ca", "kf__CaM__PP2B", "kf__CaM_Ca1__PP2B", "kf__CaM_Ca2__PP2B", "kf__CaM_Ca3__PP2B", "kf__CaM_Ca4__PP2B", "kf__PP2B_CaM__Ca", "kf__PP2B_CaM_Ca1__Ca", "kf__PP2B_CaM_Ca2__Ca", "kf__PP2B_CaM_Ca3__Ca", "KD__CaM_Ca3__Ca", "KD__CaM_Ca2__Ca", "KD__CaM_Ca1__Ca", "KD__CaM__Ca", "KD__CaM_Ca4__PP2B", "KD__PP2B_CaM_Ca3__Ca", "KD__PP2B_CaM_Ca2__Ca", "KD__PP2B_CaM_Ca1__Ca", "KD__PP2B_CaM__Ca", "kf__CaM__CaMKII", "kf__CaMKII_CaM_Ca3__Ca", "kf__CaMKII_CaM_Ca2__Ca", "kf__CaMKII_CaM_Ca1__Ca", "kf__CaMKII_CaM__Ca", "kf__CaM_Ca1__CaMKII", "kf__CaM_Ca2__CaMKII", "kf__CaM_Ca3__CaMKII", "kf__CaM_Ca4__CaMKII", "KD__CaM_Ca4__CaMKII", "KD__CaMKII_CaM_Ca3__Ca", "KD__CaMKII_CaM_Ca2__Ca", "KD__CaMKII_CaM_Ca1__Ca", "KD__CaMKII_CaM__Ca", "kf__pCaMKII_CaM_Ca3__Ca", "kf__CaM__pCaMKIIa", "kf__CaM_Ca1__pCaMKIIa", "kf__CaM_Ca2__pCaMKIIa", "kf__CaM_Ca3__pCaMKIIa", "kf__pCaMKII_CaM_Ca2__Ca", "kf__pCaMKII_CaM_Ca1__Ca", "kf__CaM_Ca4__pCaMKIIa", "kf__pCaMKII_CaM__Ca", "KD__pCaMKII_CaM_Ca3__Ca", "KD__pCaMKII_CaM_Ca2__Ca", "KD__pCaMKII_CaM_Ca1__Ca", "KD__pCaMKII_CaM__Ca", "KD__CaM_Ca4__pCaMKIIa", "kautMax", "kf__PP1__pCaMKIIa", "kr__PP1__pCaMKIIa", "kcat__PP1__pCaMKIIa", "Ca_set", "PP1_0", "CaMKII_0", "CaM_0", "PP2B_0", "kca1", "kca2")
+	parameters[62] <- 0
+	names(parameters) <- c("kf__CaM__Ca", "kf__CaM_Ca1__Ca", "kf__CaM_Ca2__Ca", "kf__CaM_Ca3__Ca", "kf__CaM__PP2B", "kf__CaM_Ca1__PP2B", "kf__CaM_Ca2__PP2B", "kf__CaM_Ca3__PP2B", "kf__CaM_Ca4__PP2B", "kf__PP2B_CaM__Ca", "kf__PP2B_CaM_Ca1__Ca", "kf__PP2B_CaM_Ca2__Ca", "kf__PP2B_CaM_Ca3__Ca", "KD__CaM_Ca3__Ca", "KD__CaM_Ca2__Ca", "KD__CaM_Ca1__Ca", "KD__CaM__Ca", "KD__CaM_Ca4__PP2B", "KD__PP2B_CaM_Ca3__Ca", "KD__PP2B_CaM_Ca2__Ca", "KD__PP2B_CaM_Ca1__Ca", "KD__PP2B_CaM__Ca", "kf__CaM__CaMKII", "kf__CaMKII_CaM_Ca3__Ca", "kf__CaMKII_CaM_Ca2__Ca", "kf__CaMKII_CaM_Ca1__Ca", "kf__CaMKII_CaM__Ca", "kf__CaM_Ca1__CaMKII", "kf__CaM_Ca2__CaMKII", "kf__CaM_Ca3__CaMKII", "kf__CaM_Ca4__CaMKII", "KD__CaM_Ca4__CaMKII", "KD__CaMKII_CaM_Ca3__Ca", "KD__CaMKII_CaM_Ca2__Ca", "KD__CaMKII_CaM_Ca1__Ca", "KD__CaMKII_CaM__Ca", "kf__pCaMKII_CaM_Ca3__Ca", "kf__CaM__pCaMKIIa", "kf__CaM_Ca1__pCaMKIIa", "kf__CaM_Ca2__pCaMKIIa", "kf__CaM_Ca3__pCaMKIIa", "kf__pCaMKII_CaM_Ca2__Ca", "kf__pCaMKII_CaM_Ca1__Ca", "kf__CaM_Ca4__pCaMKIIa", "kf__pCaMKII_CaM__Ca", "KD__pCaMKII_CaM_Ca3__Ca", "KD__pCaMKII_CaM_Ca2__Ca", "KD__pCaMKII_CaM_Ca1__Ca", "KD__pCaMKII_CaM__Ca", "KD__CaM_Ca4__pCaMKIIa", "kautMax", "kf__PP1__pCaMKIIa", "kr__PP1__pCaMKIIa", "kcat__PP1__pCaMKIIa", "Ca_set", "PP1_0", "CaMKII_0", "CaM_0", "PP2B_0", "kca1", "kca2", "isOn")
 	return(parameters);
 }
 # ode initial values
-CaMKIIs_init<-function(t=0.0, parameters=NA)
+CaMKIIs_init<-function(t, parameters)
 {
 	a<-3.90264
 	b<-2.86972
@@ -2957,6 +2982,7 @@ CaMKIIs_init<-function(t=0.0, parameters=NA)
 	PP2B_0 <- parameters[59]
 	kca1 <- parameters[60]
 	kca2 <- parameters[61]
+	isOn <- parameters[62]
 	# the initial value may depend on the parameters. 
 	state<-vector(mode='numeric',len=23)
 	state[1] <- 0
