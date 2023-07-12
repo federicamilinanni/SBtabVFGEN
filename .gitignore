@@ -3,6 +3,13 @@
 *.orig
 *~
 
+# model sbml, zips etc.
+*.zip
+*.tar.gz
+*.xml
+*.mod
+*.h5
+
 # History files
 .Rhistory
 .Rapp.history
