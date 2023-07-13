@@ -6,10 +6,10 @@
 \usage{
 \method{time}{series}(
   outputValues,
-  outputTimes = 1:dim(outputValues)[2],
+  outputTimes = as.double(1:dim(outputValues)[2]),
   errorValues = 0.05 * outputValues + 0.05 * max(outputValues),
   inputParameters,
-  initialTime = min(outputTimes),
+  initialTime = as.double(min(outputTimes)),
   initialState,
   events = NA
 )
