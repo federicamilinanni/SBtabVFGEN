@@ -362,7 +362,7 @@ sbtab.valid <- function(tab){
 time.series <- function(outputValues,outputTimes=as.double(1:dim(outputValues)[2]),errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=as.double(min(outputTimes)),initialState,events=NA){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
-	if (is.null(events) || is.na(events)){
+	if (is.null(events) || all(is.na(events))){
 		experiment <- list(
 			outputValues=as.double(outputValues),
 			errorValues=errorValues,
