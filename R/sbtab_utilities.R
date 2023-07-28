@@ -312,7 +312,7 @@ sbtab.valid <- function(tab){
 	## point out where ID and Name are different, maybe that is a problem
 	for (T in tab){
 		l <- id.eq.name(T)
-		if (!is.na(l) && !all(l)){
+		if (!any(is.na(l)) && !all(l)){
 			warning(sprintf("Not all IDs are equal to the Name attribute in «%s», but maybe this is on purpose.\n",attr(T,"TableName")))
 		}
 	}
@@ -364,7 +364,7 @@ time.series <- function(outputValues,outputTimes=as.double(1:dim(outputValues)[2
 	names(outputValues) <- outNames %s% ">"
 	if (is.null(events) || all(is.na(events))){
 		experiment <- list(
-			outputValues=as.double(outputValues),
+			outputValues=outputValues,
 			errorValues=errorValues,
 			input=inputParameters,
 			initialTime=as.double(initialTime),
@@ -478,13 +478,11 @@ sbtab.data <- function(tab){
 	}
 
 	t0 <- E %1% grepl("^!([tT]0|[Ii]nitialTime)$",names(E))
-
 	v <- sbtab_quantity(tab$Compound)
 	initVal <- update_from_table(v,E)
 
 	v <- sbtab_quantity(tab$Input)
 	input <- update_from_table(v,E)
-
 	id <- row.names(E)
 
 	if ("!Event" %in% names(E)){
@@ -509,7 +507,7 @@ sbtab.data <- function(tab){
 		}
 
 		if (time.series[i]){
-			oTime <- tab[[id[i]]][["!Time"]]
+			oTime <- as.double(tab[[id[i]]][["!Time"]])
 			initialTime <- ifelse(is.null(t0),min(oTime),t0[i])
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
@@ -517,7 +515,7 @@ sbtab.data <- function(tab){
 				outputValues=OUT,
 				errorValues=ERR,
 				inputParameters=input[,i],
-				initialTime=initialTime,
+				initialTime=as.double(initialTime),
 				initialState=initVal[,i],
 				outputTimes=oTime,
 				events=events
