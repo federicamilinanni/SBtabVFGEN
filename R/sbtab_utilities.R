@@ -362,6 +362,8 @@ sbtab.valid <- function(tab){
 time.series <- function(outputValues,outputTimes=as.double(1:dim(outputValues)[2]),errorValues=0.05*outputValues+0.05*max(outputValues),inputParameters,initialTime=as.double(min(outputTimes)),initialState,events=NA){
 	outNames <- names(outputValues)
 	names(outputValues) <- outNames %s% ">"
+	if (is.null(inputParameters))
+		inputParameters <- c()
 	if (is.null(events) || all(is.na(events))){
 		experiment <- list(
 			outputValues=outputValues,
@@ -389,10 +391,10 @@ sbtab.events <- function(ename,tab){
 	if (is.na(ename)) {
 		return(NULL)
 	}
-
+	ni <- ifelse("Input" %in% names(tab),nrow(tab$Input),0)
 	if (nzchar(ename) && ename %in% names(tab)){
 		n.sv <- nrow(tab$Compound)
-		n.par <- nrow(tab$Parameter) + nrow(tab$Input)
+		n.par <- nrow(tab$Parameter) + ni
 		n.t <- nrow(tab[[ename]])
 
 		tf <- list(
@@ -462,7 +464,11 @@ sbtab.data <- function(tab){
 		return(NA)
 	}
 	out.id <- row.names(tab$Output)
-	input.id <- row.names(tab$Input)
+	if ("Input" %in% names(tab)){
+		input.id <- row.names(tab$Input)
+	} else {
+		input.id <- NULL
+	}
 	n <- dim(E)[1]
 	experiments <- list()
 	l <- grepl("!([eE]xperiment)?[tT]ype",names(E))
@@ -480,9 +486,12 @@ sbtab.data <- function(tab){
 	t0 <- E %1% grepl("^!([tT]0|[Ii]nitialTime)$",names(E))
 	v <- sbtab_quantity(tab$Compound)
 	initVal <- update_from_table(v,E)
-
-	v <- sbtab_quantity(tab$Input)
-	input <- update_from_table(v,E)
+	if ("Input" %in% names(tab)){
+		v <- sbtab_quantity(tab$Input)
+		input <- update_from_table(v,E)
+	} else {
+		input <- NULL
+	}
 	id <- row.names(E)
 
 	if ("!Event" %in% names(E)){
@@ -521,7 +530,7 @@ sbtab.data <- function(tab){
 				events=events
 			)
 		} else if (dose.response[i]){
-			u <- update_from_table(input[,i],tab[[id[i]]])
+			u <- ifelse(!is.null(input),update_from_table(input[,i],tab[[id[i]]]),NULL)
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
 			outTime <- E[["!Time"]]
