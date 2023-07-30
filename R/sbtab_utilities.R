@@ -530,7 +530,7 @@ sbtab.data <- function(tab){
 				events=events
 			)
 		} else if (dose.response[i]){
-			u <- ifelse(!is.null(input),update_from_table(input[,i],tab[[id[i]]]),NULL)
+			if(!is.null(input)) u<-update_from_table(input[,i],tab[[id[i]]]) else u<-NULL
 			OUT <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix=">")))
 			ERR <- as.data.frame(t(update_from_table(v.out,tab[[id[i]]],prefix="~")))
 			outTime <- E[["!Time"]]
